@@ -9,20 +9,19 @@ function ActionIDGen (reducerName, actionName){
 
 
 const actionsBuilder = {};
-let dynamicReducers = {}, lookup = {}, lifecycle = {}
+let reducers = {}, lookup = {}, lifecycle = {}
 const mappingFromReducerActionNameToACTIONID = {};
 
 function mergeReducers(otherReducers){
-  return Object.assign({},otherReducers, dynamicReducers);
+  return Object.assign({},otherReducers, reducers);
 }
-
 
 export default actionsBuilder;
 
 
- function middleware (modules, fileNameArray){
-  
-  
+ function auto (modules, fileNameArray){
+
+
   fileNameArray.forEach(function(key){
 
   // get action name
@@ -36,12 +35,12 @@ export default actionsBuilder;
 
   lookup[reducerName] = lookup[reducerName] || {};
   lookup[reducerName][actionName] = modules(key).default;
-  
+
   lifecycle[reducerName] = lifecycle[reducerName] || { // defaults
     before : function defaultBefore(   oldstate, action)           { return action.payload },
     after  : function defaultAfter(updatedState, action, oldState) { return updatedState }
   };
-  
+
   if ("index" === actionName) {
     lifecycle[reducerName].after  = modules(key).after  || lifecycle[reducerName].after;
     lifecycle[reducerName].before = modules(key).before || lifecycle[reducerName].before;
@@ -50,18 +49,18 @@ export default actionsBuilder;
   const ACTIONID = ActionIDGen(reducerName, actionName);
   mappingFromReducerActionNameToACTIONID[ACTIONID] = actionName;
 
-  if(!(reducerName in dynamicReducers)){
-    dynamicReducers[reducerName] = (data, action) => {
-    
+  if(!(reducerName in reducers)){
+    reducers[reducerName] = (data, action) => {
+
       const avabileActions = lookup[reducerName];
       const actionFragments = action.type.split("_");
       const avabileAction = mappingFromReducerActionNameToACTIONID[actionFragments[0]];
 
       const payload = lifecycle[reducerName].before(data, action);
       let newState = data;
-      
+
       if(avabileAction in avabileActions){
-        
+
         if(actionFragments.length > 2)
           throw new Error('bad Action Name:'+action.type)
         else if(actionFragments.length === 2){
@@ -80,11 +79,11 @@ export default actionsBuilder;
       } else {// if("index" in lookup[reducerName]){
         newState = lookup[reducerName].index(data, Object.assign({},action, {payload:payload}))
       }
-      
+
       return lifecycle[reducerName].after(newState, action, data);
-      
-    } // END dynamicReducers[reducerName] = (data, action) => {
-  } // END !(reducerName in dynamicReducers)
+
+    } // END reducers[reducerName] = (data, action) => {
+  } // END !(reducerName in reducers)
 
   // !! index reduers DONT get to overload the action.. sorry :) !!
   if(actionName !== "index"){
@@ -107,11 +106,11 @@ export default actionsBuilder;
     } // END actionsBuilder[reducerName][actionName] = (payload = {}) => {
   } // END if(actionName !== "index")
 });
-  
+
   return function setDispatch ({ getState, dispatch}) {
 
    Object.keys(actionsBuilder).forEach( (reducerName) => {
-    
+
         Object.keys(actionsBuilder[reducerName]).forEach( (actionName) => {
           const actionDataFn = actionsBuilder[reducerName][actionName];
           actionsBuilder[reducerName][actionName] = (payload = {}) => {
@@ -135,17 +134,15 @@ export default actionsBuilder;
           const ACTIONID = ActionIDGen(reducerName, actionName);
           actionsBuilder[reducerName][actionName].toString = () => ACTIONID;
         })
-        
+
         // if there is an initialization action, fire it!!
         if (actionsBuilder[reducerName].init) {
-          actionsBuilder[reducerName].init();
+          actionsBuilder[reducerName].init({});
         }
    })
-   
+
     return next => action => next(action)
  }
 }
 
-export { middleware, mergeReducers  }
-
-
+export { auto, mergeReducers, reducers  }
