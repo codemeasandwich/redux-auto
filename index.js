@@ -8,15 +8,13 @@ function ActionIDGen (reducerName, actionName){
 }
 
 
-const actionsBuilder = {};
-let reducers = {}, lookup = {}, lifecycle = {}
+const actionsBuilder = {}, reducers = {}, lookup = {}, lifecycle = {}
 const mappingFromReducerActionNameToACTIONID = {};
 
 function mergeReducers(otherReducers){
   return Object.assign({},otherReducers, reducers);
 }
 
-export default actionsBuilder;
 
 
  function auto (modules, fileNameArray){
@@ -47,14 +45,15 @@ export default actionsBuilder;
   }
 
   const ACTIONID = ActionIDGen(reducerName, actionName);
-  mappingFromReducerActionNameToACTIONID[ACTIONID] = actionName;
+  mappingFromReducerActionNameToACTIONID[reducerName] = mappingFromReducerActionNameToACTIONID[reducerName] || {}
+  mappingFromReducerActionNameToACTIONID[reducerName][ACTIONID] = actionName;
 
   if(!(reducerName in reducers)){
     reducers[reducerName] = (data, action) => {
 
       const avabileActions = lookup[reducerName];
       const actionFragments = action.type.split("_");
-      const avabileAction = mappingFromReducerActionNameToACTIONID[actionFragments[0]];
+      const avabileAction = mappingFromReducerActionNameToACTIONID[reducerName][actionFragments[0]];
 
       const payload = lifecycle[reducerName].before(data, action);
       let newState = data;
@@ -119,6 +118,11 @@ export default actionsBuilder;
 
             if("object" === typeof actionOutput.payload){
               if(actionOutput.payload.then instanceof Function){
+
+                actionsBuilder[reducerName][actionName].pending   = actionOutput.type+"_PENDING"
+                actionsBuilder[reducerName][actionName].fulfilled = actionOutput.type+"_FULFILLED"
+                actionsBuilder[reducerName][actionName].rejected  = actionOutput.type+"_REJECTED"
+
                 //pending
                 dispatch({type:actionOutput.type+"_PENDING",payload:payload})
                 actionOutput.payload
@@ -133,6 +137,7 @@ export default actionsBuilder;
           } // END actionsBuilder[reducerName][actionName] = (payload = {}) =>
           const ACTIONID = ActionIDGen(reducerName, actionName);
           actionsBuilder[reducerName][actionName].toString = () => ACTIONID;
+          //actionsBuilder[reducerName][actionName].valueOf  = () => Symbol(ACTIONID); // double equales: (()=>{}) == Symbol *true
         })
 
         // if there is an initialization action, fire it!!
@@ -145,4 +150,5 @@ export default actionsBuilder;
  }
 }
 
+export default actionsBuilder;
 export { auto, mergeReducers, reducers  }
