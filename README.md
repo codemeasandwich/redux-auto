@@ -1,9 +1,32 @@
-This is where the data, logic & flow control of the application lives.
+
+# Redux-Auto
+
+### Removing the boilerplate code in setting up a store & actions
+
+[![npm version](https://badge.fury.io/js/redux-auto.svg)](https://badge.fury.io/js/redux-auto)
+
+## setup
+
+inside you enter file
+
+```JS
+...
+import { auto, reducers } from 'redux-auto';
+...
+// load the folder that hold you store
+const webpackModules = require.context("./store", true, /\.js$/);
+...
+                                // build 'auto' based on target files via Webpack
+const middleware = applyMiddleware( auto(webpackModules, webpackModules.keys()))
+const store = createStore(combineReducers(reducers), middleware );
+...
+
+```
+
+**/store** is where the data, logic & flow control of the application lives. This can be named whatever, just point to it with webpacks - require.context
 
  - each folder is an attribute on the state object. For example. the "user" folder will create an attribute of 'user'
  - the JS files within the folder are **actions** that can be fired to change the share for user.
-
-
 
 ### actions are avabile in the UI
 
