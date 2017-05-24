@@ -1,4 +1,3 @@
-
 # Redux-Auto
 
 ### Removing the boilerplate code in setting up a store & actions
@@ -20,12 +19,15 @@ Have an exising project? No worries. Drop it in, to work along side the traditio
 
 ## How
 
-You Redux-Auto was create to work with Webpacks.
+Redux-Auto was create to work with Webpacks.
 
 Steps:
 
 1) Create a folder to represent your store
-2) In this folder you will create folders to represent each attributes on the store
+	* This is where the data, logic & flow control of the application lives. This can be named whatever, just point to it with webpacks - require.context
+2) In this folder you will create folders to represent each attribute on the store
+	* For example. the "user" folder will create an attribute of 'user'
+	* the JS files within the folder are **actions** that can be fired to change the share for user.
 3) Create an index.js file to set default values 
 	* **export default** is catch all reducer function *(if an action cant be found)*
 	* export "before" & "after" function. Give lifecyclie functions
@@ -62,17 +64,45 @@ const store = createStore(combineReducers(reducers), middleware );
 
 ```
 
-**/store** is where the data, logic & flow control of the application lives. This can be named whatever, just point to it with webpacks - require.context
+### Using along side an existing Redux setup.
 
- - each folder is an attribute on the state object. For example. the "user" folder will create an attribute of 'user'
- - the JS files within the folder are **actions** that can be fired to change the share for user.
+inside you enter file
 
-### actions are avabile in the UI
+```JS
+...
+// import your exiting reducers
+import reducers from './reducers';
+// include mergeReducers
+import { auto, mergeReducers } from 'redux-auto';
+...
+// pass into: reducers >> mergeReducers >> combineReducers
+const store = createStore(combineReducers(mergeReducers(reducers)), middleware );
+...
+
+```
+
+### Using along side other Redux middleware.
+
+```JS
+
+...
+import logger from 'redux-logger';
+import { auto, reducers } from 'redux-auto';
+...
+                                // pass all the middlewares in a normal arguments
+const middleware = applyMiddleware( logger, auto(webpackModules, webpackModules.keys()))
+const store = createStore(combineReducers(reducers), middleware );
+...
+
+```
+
+
+### actions are available in the UI
 
 Example:
 
 ```JS
-import actions from 'actions'
+import actions from 'redux-auto'
 ...
 //action[folder][file]( data )
 action.apps.chageAppName({appId:123})
