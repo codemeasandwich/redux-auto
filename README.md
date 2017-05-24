@@ -5,6 +5,45 @@
 
 [![npm version](https://badge.fury.io/js/redux-auto.svg)](https://badge.fury.io/js/redux-auto)
 
+## why
+
+I created this utility to allow you to get up and running with Rudux in a fraction of the time!
+
+* No wiring togetter of actions & reduces 
+* No hardcoding actions types
+* No action creater or dispatcher to worry about
+* Easy Asyn for calling APIs
+* Easy *initialize* for parts of your store
+* Easy install = works as the same as other redux middleware
+
+Have an exising project? No worries. Drop it in, to work along side the traditional redux way. 
+
+## How
+
+You Redux-Auto was create to work with Webpacks.
+
+Steps:
+
+1) Create a folder to represent your store
+2) In this folder you will create folders to represent each attributes on the store
+3) Create an index.js file to set default values 
+	* **export default** is catch all reducer function *(if an action cant be found)*
+	* export "before" & "after" function. Give lifecyclie functions
+4) Create a js file with the name of the action you want it mapped to
+	* **export default** is the reducer function 
+	* export "action" function. Is an **action-middleware** that will allow you to create promises
+5) You can create an init.js that is automatically run once after store created
+	* using this to initialize from an API
+
+```
+└── store/ (1)
+    └──user/ (2)
+       └── index.js (3)
+       └── changeName.js (4)
+       └── init.js (5)
+```
+
+
 ## setup
 
 inside you enter file
