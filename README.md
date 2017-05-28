@@ -8,6 +8,7 @@
 
 I created this utility to allow you to get up and running with Rudux in a fraction of the time!
 
+### plug & Play
 * No wiring togetter of actions & reduces 
 * No hardcoding actions types
 * No action creater or dispatcher to worry about
@@ -16,6 +17,8 @@ I created this utility to allow you to get up and running with Rudux in a fracti
 * Easy install = works as the same as other redux middleware
 
 Have an exising project? No worries. Drop it in, to work along side the traditional redux way. 
+
+# [DEMO](https://github.com/codemeasandwich/redux-auto/tree/master/example)
 
 ## How
 
