@@ -1,9 +1,12 @@
 # How to run Example
 
-`cd` in this "example" folder and run the following commands
+1) `npm install redux-auto`
+2) `cd node_modules/redux-auto/example/`
 
-1) `npm install`
-2) `npm start`
+once you are in the "example" folder and run the following commands
+
+3) `npm install`
+4) `npm start`
 
 then open a web brower to http://localhost:1337
 
