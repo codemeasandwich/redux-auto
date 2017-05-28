@@ -52,7 +52,7 @@ function mergeReducers(otherReducers){
     reducers[reducerName] = (data, action) => {
 
       const avabileActions = lookup[reducerName];
-      const actionFragments = action.type.split("_");
+      const actionFragments = action.type.split(">>");
       const avabileAction = mappingFromReducerActionNameToACTIONID[reducerName][actionFragments[0]];
 
       const payload = lifecycle[reducerName].before(data, action);
@@ -68,7 +68,7 @@ function mergeReducers(otherReducers){
                  actionFragments[1] === "FULFILLED" ||
                  actionFragments[1] === "REJECTED"
               ){
-              newState = lookup[reducerName][avabileAction](data, payload, actionFragments[1]);
+              newState = lookup[reducerName][avabileAction](data, payload, actionFragments[1], action.err);
             } else {
               throw new Error('bad Action prefix:'+action.type)
             }
@@ -76,7 +76,7 @@ function mergeReducers(otherReducers){
           newState = lookup[reducerName][avabileAction](data, payload);
         }
       } else {// if("index" in lookup[reducerName]){
-        newState = lookup[reducerName].index(data, Object.assign({},action, {payload:payload}))
+        newState = lookup[reducerName].index(data, Object.assign({},action, {payload}))
       }
 
       return lifecycle[reducerName].after(newState, action, data);
@@ -101,7 +101,7 @@ function mergeReducers(otherReducers){
           } // else
           return { type: ACTIONID, payload:actionPreProcessor(payload) }
         } // else
-        return { type: ACTIONID, payload:payload }
+        return { type: ACTIONID, payload }
     } // END actionsBuilder[reducerName][actionName] = (payload = {}) => {
   } // END if(actionName !== "index")
 });
@@ -118,16 +118,17 @@ function mergeReducers(otherReducers){
 
             if("object" === typeof actionOutput.payload){
               if(actionOutput.payload.then instanceof Function){
-
-                actionsBuilder[reducerName][actionName].pending   = actionOutput.type+"_PENDING"
-                actionsBuilder[reducerName][actionName].fulfilled = actionOutput.type+"_FULFILLED"
-                actionsBuilder[reducerName][actionName].rejected  = actionOutput.type+"_REJECTED"
-
+		if( ! Object.isFrozen(actionDataFn)){
+                   actionDataFn.pending   = actionOutput.type+">>PENDING"
+                   actionDataFn.fulfilled = actionOutput.type+">>FULFILLED"
+                   actionDataFn.rejected  = actionOutput.type+">>REJECTED"
+                   Object.freeze(actionDataFn)
+		}
                 //pending
-                dispatch({type:actionOutput.type+"_PENDING",payload:payload})
+                dispatch({type:actionDataFn.pending,payload})
                 actionOutput.payload
-                .then(newPayload => dispatch({type:actionOutput.type+"_FULFILLED",payload:newPayload}))
-                .catch(err => dispatch({type:actionOutput.type+"_REJECTED",payload:err}))
+                .then(newPayload => dispatch({type:actionDataFn.fulfilled,payload:newPayload}))
+                .catch(err =>       dispatch({type:actionDataFn.rejected, payload, err}))
               } else {
                 dispatch(actionOutput);
               }
@@ -136,8 +137,8 @@ function mergeReducers(otherReducers){
             }
           } // END actionsBuilder[reducerName][actionName] = (payload = {}) =>
           const ACTIONID = ActionIDGen(reducerName, actionName);
-          actionsBuilder[reducerName][actionName].toString = () => ACTIONID;
-          //actionsBuilder[reducerName][actionName].valueOf  = () => Symbol(ACTIONID); // double equales: (()=>{}) == Symbol *true
+          actionDataFn.toString = () => ACTIONID;
+          //actionDataFn.valueOf  = () => Symbol(ACTIONID); // double equales: (()=>{}) == Symbol *true
         })
 
         // if there is an initialization action, fire it!!
