@@ -130,7 +130,7 @@ function mergeReducers(otherReducers){
                    Object.freeze(actionDataFn)
                 }
                 //pending
-                dispatch({type:actionDataFn.pending, payload})
+                dispatch({type:actionDataFn.pending, reqPayload:payload, payload:null})
                 actionOutput.payload
                 .then(result => dispatch({type:actionDataFn.fulfilled, reqPayload:payload, payload:result }))
                 .catch(err => dispatch({type:actionDataFn.rejected, reqPayload:payload, payload:err}))
