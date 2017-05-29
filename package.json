@@ -4,7 +4,9 @@
   "description": "automatically generate stories and actions from your folder and file structure",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest",
+    "test:cover": "jest --coverage",
+    "test:dev": "npm test -- --watch"
   },
   "repository": {
     "type": "git",
@@ -21,5 +23,8 @@
   "bugs": {
     "url": "https://github.com/codemeasandwich/redux-auto/issues"
   },
-  "homepage": "https://github.com/codemeasandwich/redux-auto#readme"
+  "homepage": "https://github.com/codemeasandwich/redux-auto#readme",
+  "devDependencies": {
+    "jest": "^20.0.4"
+  }
 }
