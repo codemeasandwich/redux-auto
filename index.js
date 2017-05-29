@@ -3,10 +3,12 @@
 //=================== Reducers and Actions from folders
 //=====================================================
 
-function ActionIDGen (reducerName, actionName){
-  return reducerName.toUpperCase() + ":" + actionName.toUpperCase();
+function ActionIDGen (reducerName, actionName, stage){
+  if (3 === arguments.length) 
+    return reducerName.toUpperCase() + ":" + actionName.toUpperCase() + ">>" + stage.toUpperCase();
+  else
+    return reducerName.toUpperCase() + ":" + actionName.toUpperCase();
 }
-
 
 const actionsBuilder = {}, reducers = {}, lookup = {}, lifecycle = {}
 const mappingFromReducerActionNameToACTIONID = {};
@@ -15,10 +17,7 @@ function mergeReducers(otherReducers){
   return Object.assign({},otherReducers, reducers);
 }
 
-
-
  function auto (modules, fileNameArray){
-
 
   fileNameArray.forEach(function(key){
 
@@ -32,7 +31,10 @@ function mergeReducers(otherReducers){
       return;
 
   lookup[reducerName] = lookup[reducerName] || {};
-  lookup[reducerName][actionName] = modules(key).default;
+  lookup[reducerName][actionName] = modules(key).default || {};
+  lookup[reducerName][actionName].pending   = modules(key).pending;
+  lookup[reducerName][actionName].fulfilled = modules(key).fulfilled;
+  lookup[reducerName][actionName].rejected  = modules(key).rejected;
 
   lifecycle[reducerName] = lifecycle[reducerName] || { // defaults
     before : function defaultBefore(   oldstate, action)           { return action.payload },
@@ -52,7 +54,7 @@ function mergeReducers(otherReducers){
     reducers[reducerName] = (data, action) => {
 
       const avabileActions = lookup[reducerName];
-      const actionFragments = action.type.split("_");
+      const actionFragments = action.type.split(">>");
       const avabileAction = mappingFromReducerActionNameToACTIONID[reducerName][actionFragments[0]];
 
       const payload = lifecycle[reducerName].before(data, action);
@@ -63,12 +65,15 @@ function mergeReducers(otherReducers){
         if(actionFragments.length > 2)
           throw new Error('bad Action Name:'+action.type)
         else if(actionFragments.length === 2){
+          
+          const stage = actionFragments[1].toLowerCase()
 
-            if(  actionFragments[1] === "PENDING"   ||
-                 actionFragments[1] === "FULFILLED" ||
-                 actionFragments[1] === "REJECTED"
-              ){
-              newState = lookup[reducerName][avabileAction](data, payload, actionFragments[1]);
+            if(  stage === "pending" || stage === "fulfilled" || stage === "rejected" ){
+              if ("function" === typeof lookup[reducerName][avabileAction][stage]) {
+                newState = lookup[reducerName][avabileAction][stage](data, action.reqPayload, payload)
+              } else {
+                newState = lookup[reducerName][avabileAction](data, action.reqPayload, actionFragments[1], payload);
+              }
             } else {
               throw new Error('bad Action prefix:'+action.type)
             }
@@ -76,7 +81,7 @@ function mergeReducers(otherReducers){
           newState = lookup[reducerName][avabileAction](data, payload);
         }
       } else {// if("index" in lookup[reducerName]){
-        newState = lookup[reducerName].index(data, Object.assign({},action, {payload:payload}))
+        newState = lookup[reducerName].index(data, Object.assign({},action, {payload}))
       }
 
       return lifecycle[reducerName].after(newState, action, data);
@@ -101,7 +106,7 @@ function mergeReducers(otherReducers){
           } // else
           return { type: ACTIONID, payload:actionPreProcessor(payload) }
         } // else
-        return { type: ACTIONID, payload:payload }
+        return { type: ACTIONID, payload }
     } // END actionsBuilder[reducerName][actionName] = (payload = {}) => {
   } // END if(actionName !== "index")
 });
@@ -118,16 +123,17 @@ function mergeReducers(otherReducers){
 
             if("object" === typeof actionOutput.payload){
               if(actionOutput.payload.then instanceof Function){
-
-                actionsBuilder[reducerName][actionName].pending   = actionOutput.type+"_PENDING"
-                actionsBuilder[reducerName][actionName].fulfilled = actionOutput.type+"_FULFILLED"
-                actionsBuilder[reducerName][actionName].rejected  = actionOutput.type+"_REJECTED"
-
+                if( ! Object.isFrozen(actionDataFn)){
+                   actionDataFn.pending   = ActionIDGen(reducerName, actionName,"pending");//actionOutput.type+">>PENDING"
+                   actionDataFn.fulfilled = ActionIDGen(reducerName, actionName,"fulfilled");//actionOutput.type+">>FULFILLED"
+                   actionDataFn.rejected  = ActionIDGen(reducerName, actionName,"rejected");//actionOutput.type+">>REJECTED"
+                   Object.freeze(actionDataFn)
+                }
                 //pending
-                dispatch({type:actionOutput.type+"_PENDING",payload:payload})
+                dispatch({type:actionDataFn.pending, reqPayload:payload, payload:null})
                 actionOutput.payload
-                .then(newPayload => dispatch({type:actionOutput.type+"_FULFILLED",payload:newPayload}))
-                .catch(err => dispatch({type:actionOutput.type+"_REJECTED",payload:err}))
+                .then(result => dispatch({type:actionDataFn.fulfilled, reqPayload:payload, payload:result }))
+                .catch(err => dispatch({type:actionDataFn.rejected, reqPayload:payload, payload:err}))
               } else {
                 dispatch(actionOutput);
               }
@@ -136,8 +142,8 @@ function mergeReducers(otherReducers){
             }
           } // END actionsBuilder[reducerName][actionName] = (payload = {}) =>
           const ACTIONID = ActionIDGen(reducerName, actionName);
-          actionsBuilder[reducerName][actionName].toString = () => ACTIONID;
-          //actionsBuilder[reducerName][actionName].valueOf  = () => Symbol(ACTIONID); // double equales: (()=>{}) == Symbol *true
+          actionDataFn.toString = () => ACTIONID;
+          //actionDataFn.valueOf  = () => Symbol(ACTIONID); // double equales: (()=>{}) == Symbol *true
         })
 
         // if there is an initialization action, fire it!!

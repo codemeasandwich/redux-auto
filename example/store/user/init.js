@@ -3,15 +3,15 @@
 //actions.apps.init.REJECTED
 //actions.apps.init.PENDING
 
-export default function (user, payload, stage) {
+export default function (user, payload, stage, result) {
 
   switch(stage){
     case 'FULFILLED':
     console.log("user now loaded from server")
-        return { name : payload.name }
+        return { name : result.name }
       break;
     case 'REJECTED':
-    console.error("problem loading user from server",payload)
+    console.error("problem loading user from server",result)
       break;
     case 'PENDING':
     console.log("wating for user to loaded from server")
