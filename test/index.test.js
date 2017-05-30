@@ -18,6 +18,69 @@ function RefrashStore(){
   store = createStore(combineReducers(reducers), middleware );
 }
 
+describe('action middlware', () => {
+
+    beforeEach(function() {
+      webpackModules.reset();
+    });
+
+    it('should call default if not a promise', (done) => {
+
+        const fakerName = Faker.Name.findName();
+
+        webpackModules.set("posts","index","default",(posts=[])=> posts )
+
+        webpackModules.set("posts","newPosts","default",(posts, payload)=>{
+
+          expect(posts).toEqual([])
+          expect(payload.author).toBe(fakerName)
+
+          done();
+          return posts;
+        })
+
+        webpackModules.set("posts","newPosts","action",(payload)=>({author:payload.name}))
+        RefrashStore();
+
+        actions.posts.newPosts({name:fakerName});
+    })
+
+    it('should call default with a promise', (done) => {
+
+        const fakerName = Faker.Name.findName();
+
+        webpackModules.set("posts","index","default",(posts=[])=> posts )
+
+        let callOrder = ["PENDING","FULFILLED"]
+        webpackModules.set("posts","newPosts","default",(posts, payload, stage, result)=>{
+
+          switch(stage){
+            case 'FULFILLED':
+              expect(callOrder[0]).toBe(stage);
+              expect(result.author).toBe(fakerName);
+              done();
+              break;
+            case 'PENDING':
+              expect(callOrder[0]).toBe(stage);
+              callOrder.shift();
+              break;
+          case 'REJECTED':
+          default :
+              expect(false).toBe(true)
+              done();
+              break;
+          }
+          return posts;
+
+        })
+
+        webpackModules.set("posts","newPosts","action",(payload)=> Promise.resolve({author:fakerName}) )
+
+        RefrashStore();
+        actions.posts.newPosts();
+    })
+})
+
 describe('Welcome', () => {
 
 /*
@@ -56,13 +119,15 @@ describe('Welcome', () => {
     RefrashStore();
 
     actions.posts.create({name:fakerName});
-console.log(store.getState())
+
+    //console.log(store.getState())
+
     const newPost = store.getState().posts[0];
 
     expect(newPost.name).toBe(fakerName)
 
-    console.log(auto);
-    console.log(reducers);
+    //console.log(auto);
+    //console.log(reducers);
     expect(true).toBeTruthy();
   });
 })
