@@ -123,11 +123,12 @@ function mergeReducers(otherReducers){
 
             if("object" === typeof actionOutput.payload){
               if(actionOutput.payload.then instanceof Function){
-                if( ! Object.isFrozen(actionDataFn)){
+                //if( ! Object.isFrozen(actionDataFn)){
                    actionDataFn.pending   = ActionIDGen(reducerName, actionName,"pending");//actionOutput.type+">>PENDING"
                    actionDataFn.fulfilled = ActionIDGen(reducerName, actionName,"fulfilled");//actionOutput.type+">>FULFILLED"
                    actionDataFn.rejected  = ActionIDGen(reducerName, actionName,"rejected");//actionOutput.type+">>REJECTED"
-                }
+                //}
+                //console.log(Object.isFrozen(actionDataFn),actionDataFn)
                 //pending
                 dispatch({type:actionDataFn.pending, reqPayload:payload, payload:null})
                 actionOutput.payload
@@ -142,7 +143,7 @@ function mergeReducers(otherReducers){
           } // END actionsBuilder[reducerName][actionName] = (payload = {}) =>
           const ACTIONID = ActionIDGen(reducerName, actionName);
           actionDataFn.toString = () => ACTIONID;
-          Object.freeze(actionDataFn)
+          //Object.freeze(actionDataFn)
           //actionDataFn.valueOf  = () => Symbol(ACTIONID); // double equales: (()=>{}) == Symbol *true
         })
 
