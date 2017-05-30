@@ -4,7 +4,7 @@
 //=====================================================
 
 function ActionIDGen (reducerName, actionName, stage){
-  if (3 === arguments.length) 
+  if (3 === arguments.length)
     return reducerName.toUpperCase() + ":" + actionName.toUpperCase() + ">>" + stage.toUpperCase();
   else
     return reducerName.toUpperCase() + ":" + actionName.toUpperCase();
@@ -65,7 +65,7 @@ function mergeReducers(otherReducers){
         if(actionFragments.length > 2)
           throw new Error('bad Action Name:'+action.type)
         else if(actionFragments.length === 2){
-          
+
           const stage = actionFragments[1].toLowerCase()
 
             if(  stage === "pending" || stage === "fulfilled" || stage === "rejected" ){
@@ -127,7 +127,6 @@ function mergeReducers(otherReducers){
                    actionDataFn.pending   = ActionIDGen(reducerName, actionName,"pending");//actionOutput.type+">>PENDING"
                    actionDataFn.fulfilled = ActionIDGen(reducerName, actionName,"fulfilled");//actionOutput.type+">>FULFILLED"
                    actionDataFn.rejected  = ActionIDGen(reducerName, actionName,"rejected");//actionOutput.type+">>REJECTED"
-                   Object.freeze(actionDataFn)
                 }
                 //pending
                 dispatch({type:actionDataFn.pending, reqPayload:payload, payload:null})
@@ -143,6 +142,7 @@ function mergeReducers(otherReducers){
           } // END actionsBuilder[reducerName][actionName] = (payload = {}) =>
           const ACTIONID = ActionIDGen(reducerName, actionName);
           actionDataFn.toString = () => ACTIONID;
+          Object.freeze(actionDataFn)
           //actionDataFn.valueOf  = () => Symbol(ACTIONID); // double equales: (()=>{}) == Symbol *true
         })
 
