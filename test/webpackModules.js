@@ -1,6 +1,6 @@
 
 
-let files
+let files;
 
 //const webpackModules       = files => files[files]
 const webpackModules       = function(file){ return files[file] }
@@ -25,6 +25,15 @@ const webpackModules       = function(file){ return files[file] }
         }
         return files;
       }
+      webpackModules.clear = () => { files = {  }   }
+
+      webpackModules.set = function(storeName,actionFileName,actionFunctionName,actionFunction){
+        const path = `./${storeName}/${actionFileName}.js`;
+        files[path] = files[path] || {}
+        files[path][actionFunctionName] = files[path][actionFunctionName] || {}
+        files[path][actionFunctionName] = actionFunction;
+      }
+
 
 webpackModules.reset();
 
