@@ -4,19 +4,119 @@ jest.unmock('./webpackModules');
 jest.unmock('redux');
 jest.unmock('Faker');
 
-import  Faker from 'Faker'
+import Faker from 'Faker'
 import { createStore, applyMiddleware, combineReducers } from 'redux'
 
 import   webpackModules   from './webpackModules';
-import actions, { auto, reducers } from '../index';
+import actions, { auto, reducers, reset } from '../index';
 
 let middleware,store;
 
 function RefrashStore(){
   // build 'auto' based on target files via Webpack
-  middleware = applyMiddleware( auto(webpackModules, webpackModules.keys()));
+  middleware = applyMiddleware( auto(webpackModules, webpackModules.keys(),true));
   store = createStore(combineReducers(reducers), middleware );
 }
+
+//=====================================================
+//========================================== life cycle
+//=====================================================
+
+describe('life cycle', () => {
+
+  let propName, actionName;
+
+    beforeEach(function() {
+      webpackModules.clear();
+      propName   = Faker.Address.city();
+      actionName = Faker.Address.streetName();
+    });
+
+//+++++++++++++++ should call default if not a promise
+//++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    it('should NOT change payload or state ', () => {
+
+        const fakerName = Faker.Name.findName();
+
+        webpackModules.set(propName,"index","default",(posts=[],{type})=> {
+          expect(type.startsWith("@@") || type.endsWith("INIT"),type).toBe(true);
+          return posts;
+        } )
+
+        webpackModules.set(propName,"index","before",(appsState, action)=> {
+          return action.payload
+        } )
+
+        webpackModules.set(propName,"index","after",(newAppsState, action, oldAppsState)=> {
+          return newAppsState;
+        } )
+
+        webpackModules.set(propName,actionName,"default",(posts, payload)=>{
+
+          expect(posts).toEqual([])
+          expect(payload.name).toBe(fakerName)
+          return [payload];
+        })
+
+        RefrashStore();
+        const actionPayload = {name:fakerName};
+        actions[propName][actionName](actionPayload);
+
+        const values = store.getState()[propName];
+        expect(Array.isArray(values)).toBe(true)
+        expect(values.length).toBe(1)
+        expect(values[0]).toBe(actionPayload)
+
+    })
+
+    it('should change payload and state ', () => {
+
+        const fakerName = Faker.Name.findName();
+
+        webpackModules.set(propName,"index","default",(posts=[],{type})=> {
+          expect(type.startsWith("@@") || type.endsWith("INIT"),type).toBe(true);
+          return posts;
+        } )
+
+        webpackModules.set(propName,"index","before",(appsState, action)=> {
+
+          //console.log(">",action.type,"<")
+          //console.log(actions[propName][actionName].toString(),action.type == actions[propName][actionName])
+
+
+          if(action.type == actions[propName][actionName])
+              return {name :action.payload.name.toUpperCase()}
+          else
+              return action.payload
+        } )
+
+        webpackModules.set(propName,"index","after",(newAppsState, action, oldAppsState)=> {
+          if(action.type == actions[propName][actionName])
+              return [newAppsState[0],newAppsState[0]]
+          else
+            return newAppsState;
+        } )
+
+        webpackModules.set(propName,actionName,"default",(posts, payload)=>{
+
+          expect(posts).toEqual([])
+          expect(payload.name).toBe(fakerName.toUpperCase())
+          return [payload];
+        })
+
+        RefrashStore();
+        const actionPayload = {name:fakerName};
+        actions[propName][actionName](actionPayload);
+
+        const values = store.getState()[propName];
+        expect(Array.isArray(values)).toBe(true)
+        expect(values.length).toBe(2)
+        expect(values[0].name).toBe(fakerName.toUpperCase())
+        expect(values[1].name).toBe(fakerName.toUpperCase())
+
+    })
+})
 
 //=====================================================
 //==================================== action middlware
@@ -24,8 +124,13 @@ function RefrashStore(){
 
 describe('action middlware', () => {
 
+    let propName, actionName;
+
     beforeEach(function() {
-      webpackModules.reset();
+      webpackModules.clear();
+
+      propName   = Faker.Address.city();
+      actionName = Faker.Address.streetName();
     });
 
 //+++++++++++++++ should call default if not a promise
@@ -35,9 +140,12 @@ describe('action middlware', () => {
 
         const fakerName = Faker.Name.findName();
 
-        webpackModules.set("posts","index","default",(posts=[])=> posts )
+        webpackModules.set(propName,"index","default",(posts=[],{type})=> {
+          expect(type.startsWith("@@") || type.endsWith("INIT")).toBe(true);
+          return posts;
+        } )
 
-        webpackModules.set("posts","newPosts","default",(posts, payload)=>{
+        webpackModules.set(propName,actionName,"default",(posts, payload)=>{
 
           expect(posts).toEqual([])
           expect(payload.author).toBe(fakerName)
@@ -46,10 +154,10 @@ describe('action middlware', () => {
           return posts;
         })
 
-        webpackModules.set("posts","newPosts","action",(payload)=>({author:payload.name}))
+        webpackModules.set(propName,actionName,"action",(payload)=>({author:payload.name}))
         RefrashStore();
 
-        actions.posts.newPosts({name:fakerName});
+        actions[propName][actionName]({name:fakerName});
     })
 
 //+++++++++++++++++ should call default with a promise
@@ -59,10 +167,13 @@ describe('action middlware', () => {
 
         const fakerName = Faker.Name.findName();
 
-        webpackModules.set("posts","index","default",(posts=[])=> posts )
+        webpackModules.set(propName,"index","default",(posts=[],{type})=> {
+          expect(type.startsWith("@@") || type.endsWith("INIT")).toBe(true);
+          return posts;
+        } )
 
         let callOrder = ["PENDING","FULFILLED"]
-        webpackModules.set("posts","newPosts","default",(posts, payload, stage, result)=>{
+        webpackModules.set(propName,actionName,"default",(posts, payload, stage, result)=>{
 
           switch(stage){
             case 'FULFILLED':
@@ -84,10 +195,10 @@ describe('action middlware', () => {
 
         })
 
-        webpackModules.set("posts","newPosts","action",(payload)=> Promise.resolve({author:fakerName}) )
+        webpackModules.set(propName,actionName,"action",(payload)=> Promise.resolve({author:fakerName}) )
 
         RefrashStore();
-        actions.posts.newPosts();
+        actions[propName][actionName]();
     })
 
 //+ should call fn: pending & fulfilled with a promise
@@ -99,26 +210,29 @@ describe('action middlware', () => {
 
             let callOrder = ["PENDING","FULFILLED"];
 
-            webpackModules.set("posts","index","default",(posts=[])=> posts )
-            webpackModules.set("posts","newPosts","default",(posts, payload, stage, result)=>{ expect(false).toBe(true); done();  })
-            webpackModules.set("posts","newPosts","REJECTED",(posts, payload, stage, result)=>{ expect(false).toBe(true); done();  })
+            webpackModules.set(propName,"index","default",(posts=[],{type})=> {
+              expect(type.startsWith("@@") || type.endsWith("INIT")).toBe(true);
+              return posts;
+            } )
+            webpackModules.set(propName,actionName,"default",(posts, payload, stage, result)=>{ expect(false).toBe(true); done();  })
+            webpackModules.set(propName,actionName,"REJECTED",(posts, payload, stage, result)=>{ expect(false).toBe(true); done();  })
 
-            webpackModules.set("posts","newPosts","pending",(posts, payload)=>{
+            webpackModules.set(propName,actionName,"pending",(posts, payload)=>{
               expect(callOrder[0]).toBe("PENDING");
                 callOrder.shift();
                 return posts;
             })
-            webpackModules.set("posts","newPosts","FULFILLED",(posts, payload, result)=>{
+            webpackModules.set(propName,actionName,"FULFILLED",(posts, payload, result)=>{
               expect(callOrder[0]).toBe("FULFILLED");
               expect(result.author).toBe(fakerName);
               done();
               return posts;
             })
 
-            webpackModules.set("posts","newPosts","action",(payload)=> Promise.resolve({author:fakerName}) )
+            webpackModules.set(propName,actionName,"action",(payload)=> Promise.resolve({author:fakerName}) )
 
             RefrashStore();
-            actions.posts.newPosts();
+            actions[propName][actionName]();
         })
 
 
@@ -129,10 +243,13 @@ describe('action middlware', () => {
 
         const errorMessage = "an error message";
 
-        webpackModules.set("posts","index","default",(posts=[])=> posts )
+        webpackModules.set(propName,"index","default",(posts=[],{type})=> {
+          expect(type.startsWith("@@") || type.endsWith("INIT")).toBe(true);
+          return posts;
+        } )
 
         let callOrder = ["PENDING","REJECTED"]
-        webpackModules.set("posts","newPosts","default",(posts, payload, stage, result)=>{
+        webpackModules.set(propName,actionName,"default",(posts, payload, stage, result)=>{
 
           switch(stage){
             case 'REJECTED':
@@ -155,10 +272,10 @@ describe('action middlware', () => {
 
         })
 
-        webpackModules.set("posts","newPosts","action",(payload)=> Promise.reject(new Error(errorMessage)) )
+        webpackModules.set(propName,actionName,"action",(payload)=> Promise.reject(new Error(errorMessage)) )
 
         RefrashStore();
-        actions.posts.newPosts();
+        actions[propName][actionName]();
     })
 
 
@@ -168,19 +285,21 @@ describe('action middlware', () => {
         it('should call fn: pending & rejected with a promise', (done) => {
 
             const errorMessage = "an error message";
-            let setup = true;
             let callOrder = ["PENDING","REJECTED"];
 
-            webpackModules.set("posts","index","default",(posts=[])=> { expect(setup).toBe(true); return posts;  } )
-            webpackModules.set("posts","newPosts","default",(posts, payload, stage, result)=>{ expect(false).toBe(true); done();  })
-            webpackModules.set("posts","newPosts","FULFILLED",(posts, payload, stage, result)=>{ expect(false).toBe(true); done();  })
+            webpackModules.set(propName,"index","default",(posts=[],{type})=> {
+              expect(type.startsWith("@@") || type.endsWith("INIT")).toBe(true);
+              return posts;
+            } )
+            webpackModules.set(propName,actionName,"default",(posts, payload, stage, result)=>{ expect(false).toBe(true); done();  })
+            webpackModules.set(propName,actionName,"FULFILLED",(posts, payload, stage, result)=>{ expect(false).toBe(true); done();  })
 
-            webpackModules.set("posts","newPosts","PENDING",(posts, payload)=>{
+            webpackModules.set(propName,actionName,"PENDING",(posts, payload)=>{
               expect(callOrder[0]).toBe("PENDING");
                 callOrder.shift();
                 return posts;
             })
-            webpackModules.set("posts","newPosts","REJECTED",(posts, payload, error)=>{
+            webpackModules.set(propName,actionName,"REJECTED",(posts, payload, error)=>{
               expect(callOrder[0]).toBe("REJECTED");
               expect(error instanceof Error).toBe(true);
               expect(error.message).toBe(errorMessage);
@@ -188,65 +307,14 @@ describe('action middlware', () => {
               return posts;
             })
 
-            webpackModules.set("posts","newPosts","action",(payload)=> Promise.reject(new Error(errorMessage)) )
+            webpackModules.set(propName,actionName,"action",(payload)=> Promise.reject(new Error(errorMessage)) )
 
             RefrashStore();
-            setup = false;
-            actions.posts.newPosts();
+            actions[propName][actionName]();
         })
 
 })
 
-describe('Welcome', () => {
-
-/*
-  before(function() {
-
-
-  });
-
-  after(function() {
-    webpackModules.reset();
-    // runs after all tests in this block
-  });
-
-  beforeEach(function() {
-    // runs before each test in this block
-  });
-
-  afterEach(function() {
-    // runs after each test in this block
-  });*/
-
-
-
-  it('Should ', () => {
-
-    webpackModules.set("posts","index","default",(posts = [])=>{
-      return posts;
-    })
-
-    const fakerName = Faker.Name.findName();
-
-    webpackModules.set("posts","create","default",(posts,{name})=>{
-      return [...posts,{name}];
-    })
-
-    RefrashStore();
-
-    actions.posts.create({name:fakerName});
-
-    //console.log(store.getState())
-
-    const newPost = store.getState().posts[0];
-
-    expect(newPost.name).toBe(fakerName)
-
-    //console.log(auto);
-    //console.log(reducers);
-    expect(true).toBeTruthy();
-  });
-})
 
 // redux-middlware
 //    - pass default

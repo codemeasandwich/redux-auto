@@ -13,11 +13,23 @@ function ActionIDGen (reducerName, actionName, stage){
 const actionsBuilder = {}, reducers = {}, lookup = {}, lifecycle = {}
 const mappingFromReducerActionNameToACTIONID = {};
 
+function reset(){
+
+  Object.keys(actionsBuilder).forEach(p => delete actionsBuilder[p]);
+  Object.keys(reducers).forEach(p => delete reducers[p]);
+  Object.keys(lookup).forEach(p => delete lookup[p]);
+  Object.keys(lifecycle).forEach(p => delete lifecycle[p]);
+  Object.keys(mappingFromReducerActionNameToACTIONID).forEach(p => delete mappingFromReducerActionNameToACTIONID[p]);
+
+}
+
 function mergeReducers(otherReducers){
   return Object.assign({},otherReducers, reducers);
 }
 
- function auto (modules, fileNameArray){
+ function auto (modules, fileNameArray,testMode = false){
+
+   if(testMode) reset();
 
   fileNameArray.forEach(function(key){
 
@@ -142,7 +154,7 @@ function mergeReducers(otherReducers){
             }
           } // END actionsBuilder[reducerName][actionName] = (payload = {}) =>
           const ACTIONID = ActionIDGen(reducerName, actionName);
-          actionDataFn.toString = () => ACTIONID;
+          actionsBuilder[reducerName][actionName].toString = () => ACTIONID;
           //Object.freeze(actionDataFn)
           //actionDataFn.valueOf  = () => Symbol(ACTIONID); // double equales: (()=>{}) == Symbol *true
         })
