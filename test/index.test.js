@@ -18,11 +18,18 @@ function RefrashStore(){
   store = createStore(combineReducers(reducers), middleware );
 }
 
+//=====================================================
+//==================================== action middlware
+//=====================================================
+
 describe('action middlware', () => {
 
     beforeEach(function() {
       webpackModules.reset();
     });
+
+//+++++++++++++++ should call default if not a promise
+//++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     it('should call default if not a promise', (done) => {
 
@@ -44,6 +51,9 @@ describe('action middlware', () => {
 
         actions.posts.newPosts({name:fakerName});
     })
+
+//+++++++++++++++++ should call default with a promise
+//++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     it('should call default with a promise', (done) => {
 
@@ -79,6 +89,112 @@ describe('action middlware', () => {
         RefrashStore();
         actions.posts.newPosts();
     })
+
+//+ should call fn: pending & fulfilled with a promise
+//++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+        it('should call fn: pending & fulfilled with a promise', (done) => {
+
+            const fakerName = Faker.Name.findName();
+
+            let callOrder = ["PENDING","FULFILLED"];
+
+            webpackModules.set("posts","index","default",(posts=[])=> posts )
+            webpackModules.set("posts","newPosts","default",(posts, payload, stage, result)=>{ expect(false).toBe(true); done();  })
+            webpackModules.set("posts","newPosts","REJECTED",(posts, payload, stage, result)=>{ expect(false).toBe(true); done();  })
+
+            webpackModules.set("posts","newPosts","pending",(posts, payload)=>{
+              expect(callOrder[0]).toBe("PENDING");
+                callOrder.shift();
+                return posts;
+            })
+            webpackModules.set("posts","newPosts","FULFILLED",(posts, payload, result)=>{
+              expect(callOrder[0]).toBe("FULFILLED");
+              expect(result.author).toBe(fakerName);
+              done();
+              return posts;
+            })
+
+            webpackModules.set("posts","newPosts","action",(payload)=> Promise.resolve({author:fakerName}) )
+
+            RefrashStore();
+            actions.posts.newPosts();
+        })
+
+
+//+++++++++ should call REJECTED with a reject promise
+//++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    it('should call REJECTED with a reject promise', (done) => {
+
+        const errorMessage = "an error message";
+
+        webpackModules.set("posts","index","default",(posts=[])=> posts )
+
+        let callOrder = ["PENDING","REJECTED"]
+        webpackModules.set("posts","newPosts","default",(posts, payload, stage, result)=>{
+
+          switch(stage){
+            case 'REJECTED':
+              expect(callOrder[0]).toBe(stage);
+              expect(result instanceof Error).toBe(true);
+              expect(result.message).toBe(errorMessage);
+              done();
+              break;
+            case 'PENDING':
+              expect(callOrder[0]).toBe(stage);
+              callOrder.shift();
+              break;
+          case 'FULFILLED':
+          default :
+              expect(false).toBe(true)
+              done();
+              break;
+          }
+          return posts;
+
+        })
+
+        webpackModules.set("posts","newPosts","action",(payload)=> Promise.reject(new Error(errorMessage)) )
+
+        RefrashStore();
+        actions.posts.newPosts();
+    })
+
+
+//+ should call fn: pending & fulfilled with a promise
+//++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+        it('should call fn: pending & rejected with a promise', (done) => {
+
+            const errorMessage = "an error message";
+            let setup = true;
+            let callOrder = ["PENDING","REJECTED"];
+
+            webpackModules.set("posts","index","default",(posts=[])=> { expect(setup).toBe(true); return posts;  } )
+            webpackModules.set("posts","newPosts","default",(posts, payload, stage, result)=>{ expect(false).toBe(true); done();  })
+            webpackModules.set("posts","newPosts","FULFILLED",(posts, payload, stage, result)=>{ expect(false).toBe(true); done();  })
+
+            webpackModules.set("posts","newPosts","PENDING",(posts, payload)=>{
+              expect(callOrder[0]).toBe("PENDING");
+                callOrder.shift();
+                return posts;
+            })
+            webpackModules.set("posts","newPosts","REJECTED",(posts, payload, error)=>{
+              expect(callOrder[0]).toBe("REJECTED");
+              expect(error instanceof Error).toBe(true);
+              expect(error.message).toBe(errorMessage);
+              done();
+              return posts;
+            })
+
+            webpackModules.set("posts","newPosts","action",(payload)=> Promise.reject(new Error(errorMessage)) )
+
+            RefrashStore();
+            setup = false;
+            actions.posts.newPosts();
+        })
+
 })
 
 describe('Welcome', () => {

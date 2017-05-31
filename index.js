@@ -32,9 +32,9 @@ function mergeReducers(otherReducers){
 
   lookup[reducerName] = lookup[reducerName] || {};
   lookup[reducerName][actionName] = modules(key).default || {};
-  lookup[reducerName][actionName].pending   = modules(key).pending;
-  lookup[reducerName][actionName].fulfilled = modules(key).fulfilled;
-  lookup[reducerName][actionName].rejected  = modules(key).rejected;
+  lookup[reducerName][actionName].pending   = modules(key).pending   || modules(key).PENDING;
+  lookup[reducerName][actionName].fulfilled = modules(key).fulfilled || modules(key).FULFILLED;
+  lookup[reducerName][actionName].rejected  = modules(key).rejected  || modules(key).REJECTED;
 
   lifecycle[reducerName] = lifecycle[reducerName] || { // defaults
     before : function defaultBefore(   oldstate, action)           { return action.payload },
