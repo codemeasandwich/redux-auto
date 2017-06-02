@@ -67,6 +67,7 @@ function mergeReducers(otherReducers){
 
       const avabileActions = lookup[reducerName];
       const actionFragments = action.type.split(">>");
+
       const avabileAction = mappingFromReducerActionNameToACTIONID[reducerName][actionFragments[0]];
 
       const payload = lifecycle[reducerName].before(data, action);
@@ -128,24 +129,29 @@ function mergeReducers(otherReducers){
    Object.keys(actionsBuilder).forEach( (reducerName) => {
 
         Object.keys(actionsBuilder[reducerName]).forEach( (actionName) => {
+          // hold a ref to the root Fn
           const actionDataFn = actionsBuilder[reducerName][actionName];
+          // replace the mapping object pointer the wrappingFn
           actionsBuilder[reducerName][actionName] = (payload = {}) => {
+
+            const wrappingFn = actionsBuilder[reducerName][actionName];
 
             const actionOutput = actionDataFn(payload,getState)
 
             if("object" === typeof actionOutput.payload){
               if(actionOutput.payload.then instanceof Function){
                 //if( ! Object.isFrozen(actionDataFn)){
-                   actionDataFn.pending   = ActionIDGen(reducerName, actionName,"pending");//actionOutput.type+">>PENDING"
-                   actionDataFn.fulfilled = ActionIDGen(reducerName, actionName,"fulfilled");//actionOutput.type+">>FULFILLED"
-                   actionDataFn.rejected  = ActionIDGen(reducerName, actionName,"rejected");//actionOutput.type+">>REJECTED"
+                   wrappingFn.pending   = ActionIDGen(reducerName, actionName,"pending");//actionOutput.type+">>PENDING"
+                   wrappingFn.fulfilled = ActionIDGen(reducerName, actionName,"fulfilled");//actionOutput.type+">>FULFILLED"
+                   wrappingFn.rejected  = ActionIDGen(reducerName, actionName,"rejected");//actionOutput.type+">>REJECTED"
                 //}
+
                 //console.log(Object.isFrozen(actionDataFn),actionDataFn)
                 //pending
-                dispatch({type:actionDataFn.pending, reqPayload:payload, payload:null})
+                dispatch({type:wrappingFn.pending, reqPayload:payload, payload:null})
                 actionOutput.payload
-                .then(result => dispatch({type:actionDataFn.fulfilled, reqPayload:payload, payload:result }))
-                .catch(err => dispatch({type:actionDataFn.rejected, reqPayload:payload, payload:err}))
+                .then(result => dispatch({type:wrappingFn.fulfilled, reqPayload:payload, payload:result }))
+                .catch(err => dispatch({type:wrappingFn.rejected, reqPayload:payload, payload:err}))
               } else {
                 dispatch(actionOutput);
               }
@@ -160,8 +166,9 @@ function mergeReducers(otherReducers){
         })
 
         // if there is an initialization action, fire it!!
-        if (actionsBuilder[reducerName].init) {
-          actionsBuilder[reducerName].init({});
+        const init = actionsBuilder[reducerName].init || actionsBuilder[reducerName].INIT
+        if ("function" === typeof init) {
+          init();
         }
    })
 
