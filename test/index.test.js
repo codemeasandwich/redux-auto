@@ -19,6 +19,157 @@ function RefrashStore(){
 }
 
 //=====================================================
+//=============================================== Setup
+//=====================================================
+/*
+describe('Setup', () => {
+
+    beforeEach(function() {
+      webpackModules.clear();
+    });
+
+    it('should throw an Error when no index is found', () => expect( RefrashStore ).toThrow() )
+}) */
+//=====================================================
+//====================================== initialization
+//=====================================================
+
+describe('initialization', () => {
+
+  let propName, actionName;
+
+    beforeEach(function() {
+      webpackModules.clear();
+      propName   = Faker.Address.city();
+      actionName = Faker.Address.streetName();
+    });
+
+//++++++++++++++++++ should work with an INIT function
+//++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    it('should work with an INIT function ', (done) => {
+
+      webpackModules.set(propName,"index","default",(posts=[],{type})=> {
+        expect(type.startsWith("@@") || type.endsWith("INIT"),type).toBe(true);
+        return posts;
+      } )
+
+      webpackModules.set(propName,"init","default",(posts, payload, stage, result)=> {
+
+        switch(stage){
+          case 'FULFILLED':
+              expect(true).toBe(true)
+              done();
+            break;
+          case 'PENDING':
+              expect(true).toBe(true)
+            break;
+          case 'REJECTED':
+          default :
+              expect(false).toBe(true)
+            break;
+        }
+        return posts;
+
+      } )
+
+      webpackModules.set(propName,"init","action", ()=> Promise.resolve({posts:[1,2,3,4,5]}) )
+      RefrashStore();
+      // should be automatically called
+    })
+
+//+++++++++++++++++ should work with an INIT Excepsion
+//++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    it('should work with an INIT Excepsion ', (done) => {
+
+      webpackModules.set(propName,"index","default",(posts=[],{type})=> {
+        expect(type.startsWith("@@") || type.endsWith("INIT"),type).toBe(true);
+        return posts;
+      } )
+
+      webpackModules.set(propName,"init","default",(posts, payload, stage, result)=> {
+
+        switch(stage){
+          case 'REJECTED':
+              expect(true).toBe(true)
+              done();
+            break;
+          case 'PENDING':
+              expect(true).toBe(true)
+            break;
+          case 'FULFILLED':
+          default :
+              expect(false).toBe(true)
+            break;
+        }
+        return posts;
+
+      } )
+
+      webpackModules.set(propName,"init","action", ()=> Promise.reject(new Error("Boom!!")) )
+      RefrashStore();
+      // should be automatically called
+    })
+
+//++++ should call other indexs for each INIT function
+//++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    it('should call other indexs for each INIT function ', (done) => {
+
+      webpackModules.set(propName+"_other","index","default",(other={},{type})=> {
+
+            if(type.startsWith("@@"))
+              return other;
+
+            switch(type){
+              case actions[propName].init.fulfilled:
+                  expect(true).toBe(true)
+                  done();
+                break;
+              case actions[propName].init.pending:
+                  expect(true).toBe(true)
+                break;
+              case actions[propName].init.rejected:
+              default :
+                  expect(false).toBe(true)
+                break;
+            }
+            return other;
+    })
+
+      webpackModules.set(propName,"index","default",(posts=[],{type})=> {
+
+        expect(type.startsWith("@@")).toBe(true);
+        return posts;
+      } )
+
+      webpackModules.set(propName,"init","default",(posts, payload, stage, result)=> {
+
+        switch(stage){
+          case 'FULFILLED':
+              expect(true).toBe(true)
+              done();
+            break;
+          case 'PENDING':
+              expect(true).toBe(true)
+            break;
+          case 'REJECTED':
+          default :
+              expect(false).toBe(true)
+            break;
+        }
+        return posts;
+
+      })
+
+      webpackModules.set(propName,"init","action", ()=> Promise.resolve({posts:[1,2,3,4,5]}) )
+      RefrashStore();
+      // should be automatically called
+    })
+})
+
+//=====================================================
 //========================================== life cycle
 //=====================================================
 
@@ -201,6 +352,50 @@ describe('action middlware', () => {
         actions[propName][actionName]();
     })
 
+//+++++++++++++++++ should call default with a promise passing part of store
+//++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    it('should call default with a promise passing part of store', (done) => {
+
+        const fakerName = Faker.Name.findName();
+
+        webpackModules.set(propName,"index","default",(posts=[42],{type})=> {
+          expect(type.startsWith("@@") || type.endsWith("INIT")).toBe(true);
+          return posts;
+        } )
+
+        let callOrder = ["PENDING","FULFILLED"]
+        webpackModules.set(propName,actionName,"default",(posts, payload, stage, result)=>{
+
+          switch(stage){
+            case 'FULFILLED':
+              expect(callOrder[0]).toBe(stage);
+              expect(result.author).toBe(fakerName);
+              done();
+              break;
+            case 'PENDING':
+              expect(callOrder[0]).toBe(stage);
+              callOrder.shift();
+              break;
+          case 'REJECTED':
+          default :
+              expect(false).toBe(true)
+              done();
+              break;
+          }
+          return posts;
+
+        })
+
+        webpackModules.set(propName,actionName,"action",(payload, posts)=> {
+          expect(posts[0]).toBe(42);
+          return Promise.resolve({author:fakerName})
+        })
+
+        RefrashStore();
+        actions[propName][actionName]();
+    })
+
 //+ should call fn: pending & fulfilled with a promise
 //++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -278,42 +473,96 @@ describe('action middlware', () => {
         actions[propName][actionName]();
     })
 
-
 //+ should call fn: pending & fulfilled with a promise
 //++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-        it('should call fn: pending & rejected with a promise', (done) => {
+    it('should call fn: pending & rejected with a promise', (done) => {
 
-            const errorMessage = "an error message";
-            let callOrder = ["PENDING","REJECTED"];
+        const errorMessage = "an error message";
+        let callOrder = ["PENDING","REJECTED"];
 
-            webpackModules.set(propName,"index","default",(posts=[],{type})=> {
-              expect(type.startsWith("@@") || type.endsWith("INIT")).toBe(true);
-              return posts;
-            } )
-            webpackModules.set(propName,actionName,"default",(posts, payload, stage, result)=>{ expect(false).toBe(true); done();  })
-            webpackModules.set(propName,actionName,"FULFILLED",(posts, payload, stage, result)=>{ expect(false).toBe(true); done();  })
+        webpackModules.set(propName,"index","default",(posts=[],{type})=> {
+          expect(type.startsWith("@@") || type.endsWith("INIT")).toBe(true);
+          return posts;
+        } )
+        webpackModules.set(propName,actionName,"default",(posts, payload, stage, result)=>{ expect(false).toBe(true); done();  })
+        webpackModules.set(propName,actionName,"FULFILLED",(posts, payload, stage, result)=>{ expect(false).toBe(true); done();  })
 
-            webpackModules.set(propName,actionName,"PENDING",(posts, payload)=>{
-              expect(callOrder[0]).toBe("PENDING");
-                callOrder.shift();
-                return posts;
-            })
-            webpackModules.set(propName,actionName,"REJECTED",(posts, payload, error)=>{
-              expect(callOrder[0]).toBe("REJECTED");
-              expect(error instanceof Error).toBe(true);
-              expect(error.message).toBe(errorMessage);
-              done();
-              return posts;
-            })
-
-            webpackModules.set(propName,actionName,"action",(payload)=> Promise.reject(new Error(errorMessage)) )
-
-            RefrashStore();
-            actions[propName][actionName]();
+        webpackModules.set(propName,actionName,"PENDING",(posts, payload)=>{
+          expect(callOrder[0]).toBe("PENDING");
+            callOrder.shift();
+            return posts;
+        })
+        webpackModules.set(propName,actionName,"REJECTED",(posts, payload, error)=>{
+          expect(callOrder[0]).toBe("REJECTED");
+          expect(error instanceof Error).toBe(true);
+          expect(error.message).toBe(errorMessage);
+          done();
+          return posts;
         })
 
+        webpackModules.set(propName,actionName,"action",(payload)=> Promise.reject(new Error(errorMessage)) )
+
+        RefrashStore();
+        actions[propName][actionName]();
+    })
+
 })
+
+
+//=====================================================
+//==================================== Using the stores
+//=====================================================
+
+describe('Using the stores', () => {
+
+  let propName, actionName;
+
+    beforeEach(function() {
+      webpackModules.clear();
+      propName   = Faker.Address.city();
+      actionName = Faker.Address.streetName();
+    });
+
+//should throw an exception if you dont pass an object
+//++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    it('should throw an exception if you dont pass an object ', () => {
+
+        const fakerName = Faker.Name.findName();
+
+        webpackModules.set(propName,"index","default",(posts=[])=> posts )
+        webpackModules.set(propName,actionName,"default",(posts, payload)=> expect(false).toEqual(true) )
+
+        RefrashStore();
+
+        expect(() => {
+          actions[propName][actionName](1);
+        }).toThrow(new RegExp("^payload must be an object if set:"));
+
+    })
+
+//+++++++++++++++ should call default if not a promise
+//++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    it.skip('should throw an exception if using a action with async separator ', () => {
+
+        const fakerName = Faker.Name.findName();
+
+        webpackModules.set(propName,"index","default",(posts=[])=> posts )
+        webpackModules.set(propName,actionName+">>y>>","default",(posts, payload)=> expect(false).toEqual(true) )
+
+        RefrashStore();
+
+      //  expect(() => {
+          actions[propName][actionName+">>y>>"]();
+        //}).toThrow(new RegExp("^bad Action prefix:"));
+
+    })
+
+})
+
+
 
 
 // redux-middlware
