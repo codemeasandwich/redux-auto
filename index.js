@@ -132,8 +132,12 @@ function mergeReducers(otherReducers){
           // hold a ref to the root Fn
           const actionDataFn = actionsBuilder[reducerName][actionName];
           // replace the mapping object pointer the wrappingFn
-          actionsBuilder[reducerName][actionName] = (payload = {}) => {
-
+          actionsBuilder[reducerName][actionName] = function(payload = {}) {
+            
+          if(arguments.length > 0 && undefined === arguments[0]){
+             throw new Error("Undefined was passed as payload. You may have misspelled of the variable");
+          }
+          
             const wrappingFn = actionsBuilder[reducerName][actionName];
 
             const actionOutput = actionDataFn(payload,getState)

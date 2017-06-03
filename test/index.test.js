@@ -8,7 +8,7 @@ import Faker from 'Faker'
 import { createStore, applyMiddleware, combineReducers } from 'redux'
 
 import   webpackModules   from './webpackModules';
-import actions, { auto, reducers, reset } from '../index';
+import actions, { auto, reducers, mergeReducers, reset } from '../index';
 
 let middleware,store;
 
@@ -43,6 +43,41 @@ describe('initialization', () => {
       propName   = Faker.Address.city();
       actionName = Faker.Address.streetName();
     });
+
+//++++++++++++++++++++++++ should merge other reducers
+//++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    it('should merge other reducers', () => {
+
+      webpackModules.set(propName,"index","default",(posts=[]) => posts );
+      
+      RefrashStore();
+
+      const otherReducers = {foo:()=>{}}
+      
+      const merged = mergeReducers(otherReducers);
+      
+      expect("function" === typeof merged.foo).toBe(true);
+      expect("function" === typeof merged[propName]).toBe(true);
+      
+    })
+
+//++++ should skip utility files start with underscore
+//++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    it('should skip utility files start with underscore', () => {
+
+      webpackModules.set(propName,"index","default",(posts=[]) => posts );
+      webpackModules.set(propName,actionName,"default",() => expect(false).toBe(true) );
+      webpackModules.set(propName,"_utility","default",() => expect(false).toBe(true) );
+      RefrashStore();
+      
+      const availableActions = Object.keys(actions[propName])
+
+      expect(availableActions.length).toBe(1);
+      expect(availableActions[0]).toBe(actionName);
+      
+    })
 
 //++++++++++++++++++ should work with an INIT function
 //++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -542,8 +577,8 @@ describe('Using the stores', () => {
 
     })
 
-//+++++++++++++++ should call default if not a promise
-//++++++++++++++++++++++++++++++++++++++++++++++++++++
+//++++++++ should throw an exception if using a action
+//+++++++++++++++++++++++++++++++ with async separator
 
     it.skip('should throw an exception if using a action with async separator ', () => {
 
@@ -554,12 +589,64 @@ describe('Using the stores', () => {
 
         RefrashStore();
 
-      //  expect(() => {
+        expect(() => {
           actions[propName][actionName+">>y>>"]();
-        //}).toThrow(new RegExp("^bad Action prefix:"));
+        }).toThrow(new RegExp("^bad Action prefix:"));
 
     })
 
+
+//+++ should throw an exception if undefined is passed
+//++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    it('should throw an exception if undefined is passed ', () => {
+
+        const fakerName = Faker.Name.findName();
+
+        webpackModules.set(propName,"index","default",(posts=[])=> posts )
+        webpackModules.set(propName,actionName,"default",()=> expect(false).toEqual(true) )
+
+        RefrashStore();
+        expect(() => {
+          actions[propName][actionName](undefined);
+        }).toThrow(new RegExp("Undefined was passed as payload. You may have misspelled of the variable"));
+
+    })
+
+//+++++++++++++should throw an exception if not return
+//++++++++++++++++++++++++++++++++ from action-creater
+
+    it('should throw an exception if not return from action-creater', () => {
+
+        const fakerName = Faker.Name.findName();
+
+        webpackModules.set(propName,"index","default",(posts=[])=> posts )
+        webpackModules.set(propName,actionName,"default",()=> expect(false).toEqual(true) )
+        webpackModules.set(propName,actionName,"action",()=> {} )
+
+        RefrashStore();
+        expect(() => {
+          actions[propName][actionName]();
+        }).toThrow(new RegExp("^action with bad payload"));
+
+    })
+//++++++++ should throw an exception if undefined from
+//+++++++++++++++++++++++++++++++++++++ action-creater
+
+    it('should throw an exception if undefined from action-creater', () => {
+
+        const fakerName = Faker.Name.findName();
+
+        webpackModules.set(propName,"index","default",(posts=[])=> posts )
+        webpackModules.set(propName,actionName,"default",()=> expect(false).toEqual(true) )
+        webpackModules.set(propName,actionName,"action",()=> undefined )
+
+        RefrashStore();
+        expect(() => {
+          actions[propName][actionName]();
+        }).toThrow(new RegExp("^action with bad payload"));
+
+    })
 })
 
 
