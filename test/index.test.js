@@ -2,9 +2,10 @@
 jest.unmock('../index');
 jest.unmock('./webpackModules');
 jest.unmock('redux');
-jest.unmock('Faker');
+jest.unmock('faker');
 
-import Faker from 'Faker'
+import faker from 'faker'
+
 import { createStore, applyMiddleware, combineReducers } from 'redux'
 
 import   webpackModules   from './webpackModules';
@@ -40,8 +41,8 @@ describe('initialization', () => {
 
     beforeEach(function() {
       webpackModules.clear();
-      propName   = Faker.Address.city();
-      actionName = Faker.Address.streetName();
+      propName   = faker.address.city();
+      actionName = faker.address.streetName();
     });
 
 //++++++++++++++++++++++++ should merge other reducers
@@ -214,8 +215,8 @@ describe('life cycle', () => {
 
     beforeEach(function() {
       webpackModules.clear();
-      propName   = Faker.Address.city();
-      actionName = Faker.Address.streetName();
+      propName   = faker.address.city();
+      actionName = faker.address.streetName();
     });
 
 //+++++++++++++++ should call default if not a promise
@@ -223,7 +224,7 @@ describe('life cycle', () => {
 
     it('should NOT change payload or state ', () => {
 
-        const fakerName = Faker.Name.findName();
+        const fakerName = faker.name.findName();
 
         webpackModules.set(propName,"index","default",(posts=[],{type})=> {
           expect(type.startsWith("@@") || type.endsWith("INIT"),type).toBe(true);
@@ -258,7 +259,7 @@ describe('life cycle', () => {
 
     it('should change payload and state ', () => {
 
-        const fakerName = Faker.Name.findName();
+        const fakerName = faker.name.findName();
 
         webpackModules.set(propName,"index","default",(posts=[],{type})=> {
           expect(type.startsWith("@@") || type.endsWith("INIT"),type).toBe(true);
@@ -315,8 +316,8 @@ describe('action middlware', () => {
     beforeEach(function() {
       webpackModules.clear();
 
-      propName   = Faker.Address.city();
-      actionName = Faker.Address.streetName();
+      propName   = faker.address.city();
+      actionName = faker.address.streetName();
     });
 
 //+++++++++++++++ should call default if not a promise
@@ -324,7 +325,7 @@ describe('action middlware', () => {
 
     it('should call default if not a promise', (done) => {
 
-        const fakerName = Faker.Name.findName();
+        const fakerName = faker.name.findName();
 
         webpackModules.set(propName,"index","default",(posts=[],{type})=> {
           expect(type.startsWith("@@") || type.endsWith("INIT")).toBe(true);
@@ -351,7 +352,7 @@ describe('action middlware', () => {
 
     it('should call default with a promise', (done) => {
 
-        const fakerName = Faker.Name.findName();
+        const fakerName = faker.name.findName();
 
         webpackModules.set(propName,"index","default",(posts=[],{type})=> {
           expect(type.startsWith("@@") || type.endsWith("INIT")).toBe(true);
@@ -392,7 +393,7 @@ describe('action middlware', () => {
 
     it('should call default with a promise passing part of store', (done) => {
 
-        const fakerName = Faker.Name.findName();
+        const fakerName = faker.name.findName();
 
         webpackModules.set(propName,"index","default",(posts=[42],{type})=> {
           expect(type.startsWith("@@") || type.endsWith("INIT")).toBe(true);
@@ -436,7 +437,7 @@ describe('action middlware', () => {
 
         it('should call fn: pending & fulfilled with a promise', (done) => {
 
-            const fakerName = Faker.Name.findName();
+            const fakerName = faker.name.findName();
 
             let callOrder = ["PENDING","FULFILLED"];
 
@@ -555,16 +556,14 @@ describe('Using the stores', () => {
 
     beforeEach(function() {
       webpackModules.clear();
-      propName   = Faker.Address.city();
-      actionName = Faker.Address.streetName();
+      propName   = faker.address.city();
+      actionName = faker.address.streetName();
     });
 
 //should throw an exception if you dont pass an object
 //++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     it('should throw an exception if you dont pass an object ', () => {
-
-        const fakerName = Faker.Name.findName();
 
         webpackModules.set(propName,"index","default",(posts=[])=> posts )
         webpackModules.set(propName,actionName,"default",(posts, payload)=> expect(false).toEqual(true) )
@@ -581,8 +580,6 @@ describe('Using the stores', () => {
 //+++++++++++++++++++++++++++++++ with async separator
 
     it.skip('should throw an exception if using a action with async separator ', () => {
-
-        const fakerName = Faker.Name.findName();
 
         webpackModules.set(propName,"index","default",(posts=[])=> posts )
         webpackModules.set(propName,actionName+">>y>>","default",(posts, payload)=> expect(false).toEqual(true) )
@@ -601,8 +598,6 @@ describe('Using the stores', () => {
 
     it('should throw an exception if undefined is passed ', () => {
 
-        const fakerName = Faker.Name.findName();
-
         webpackModules.set(propName,"index","default",(posts=[])=> posts )
         webpackModules.set(propName,actionName,"default",()=> expect(false).toEqual(true) )
 
@@ -618,8 +613,6 @@ describe('Using the stores', () => {
 
     it('should throw an exception if not return from action-creater', () => {
 
-        const fakerName = Faker.Name.findName();
-
         webpackModules.set(propName,"index","default",(posts=[])=> posts )
         webpackModules.set(propName,actionName,"default",()=> expect(false).toEqual(true) )
         webpackModules.set(propName,actionName,"action",()=> {} )
@@ -634,8 +627,6 @@ describe('Using the stores', () => {
 //+++++++++++++++++++++++++++++++++++++ action-creater
 
     it('should throw an exception if undefined from action-creater', () => {
-
-        const fakerName = Faker.Name.findName();
 
         webpackModules.set(propName,"index","default",(posts=[])=> posts )
         webpackModules.set(propName,actionName,"default",()=> expect(false).toEqual(true) )
