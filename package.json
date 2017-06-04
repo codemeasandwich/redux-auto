@@ -1,6 +1,6 @@
 {
   "name": "redux-auto",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "description": "automatically generate stories and actions from your folder and file structure",
   "main": "index.js",
   "scripts": {
@@ -19,9 +19,12 @@
   },
   "keywords": [
     "redux",
+    "thunk",
     "middleware",
     "reducers",
-    "actions"
+    "actions",
+    "loading",
+    "webpack"
   ],
   "author": "Brian Shannon (http://www.codemeasandwich.com)",
   "license": "MPL",

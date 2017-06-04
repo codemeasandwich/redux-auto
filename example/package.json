@@ -1,7 +1,7 @@
 {
   "name": "redux-auto-example",
   "version": "1.0.0",
-  "description": "automatically generate stories and actions from your folder and file structure",
+  "description": "Example: automatically generate stories and actions from your folder and file structure",
   "main": "main.jsx",
   "scripts": {
     "start": "webpack-dev-server",
@@ -23,7 +23,7 @@
   "bugs": {
     "url": "https://github.com/codemeasandwich/redux-auto/issues"
   },
-  "homepage": "https://github.com/codemeasandwich/redux-auto#readme",
+  "homepage": "https://github.com/codemeasandwich/redux-auto/example#readme",
   "dependencies": {
     "babel-cli": "^6.24.1",
     "babel-core": "^6.24.1",
