@@ -17,10 +17,21 @@ I created this utility to allow you to get up and running with Rudux in a fracti
 * Easy Asyn for calling APIs
 * Easy *initialize* for parts of your store
 * Easy install = works as the same as other redux middleware
+* pure JS no external dependencies!
 
 Have an exising project? No worries. Drop it in, to work along side the traditional redux way. 
 
-# [DEMO](https://github.com/codemeasandwich/redux-auto/tree/master/example)
+### asynchronous
+
+Redux your reducer returns a state object. This is very straight forward, but makes dealing with asynchronous updates quite tricky (there are [more than 60 different libraries](https://github.com/markerikson/redux-ecosystem-links/blob/master/side-effects.md) tackling this problem).
+
+redux-auto fixed this asynchronous problem simply by allowing you to create an ["action" function that returns a promise](#action-files). To accompany your "default" function action logic.
+
+1) No need for other Redux async middleware. e.g. thunk, promise-middleware, saga
+2) Easily allows you to pass a promise into redux and have it managed for you
+3) Allows you to co-locate external service calls with where they will be transformed
+
+# [Source Example](https://github.com/codemeasandwich/redux-auto/tree/master/example)
 
 ## How
 
