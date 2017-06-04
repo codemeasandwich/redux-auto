@@ -37,9 +37,11 @@ redux-auto fixed this asynchronous problem simply by allowing you to create an [
 
 ### If you like it, [★ it on github](https://github.com/codemeasandwich/graphql-query-builder) and share  :beers:
 
-## How
 
-Redux-Auto was create to work with Webpacks.
+
+## Overview: 
+
+**Redux-Auto was create to work with Webpacks.*
 
 Steps:
 
