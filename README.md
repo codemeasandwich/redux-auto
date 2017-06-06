@@ -130,6 +130,28 @@ import actions from 'redux-auto'
 action.apps.chageAppName({appId:123})
 ```
 
+
+## ⚠ gotchas
+
+1) *Uncaught Error: Expected the reducer to be a function* ``combineReducers`` must be called after ``mergeReducers``
+	
+	Good ✔: ``createStore( combineReducers( reducers ) )`` 
+	
+		OR createStore( combineReducers( mergeReducers( otherReducers ) ))
+	
+	Bad ✘: ``otherReducers = combineReducers(otherReducers); createStore(mergeReducers( otherReducers ))``
+
+2) *Redux-auto* starting! the ``auto`` function must called before setting up the **_reducers_**
+	
+	Good ✔: ``const middleware = applyMiddleware(auto(...), ...); createStore( ... , middleware);`` 
+	
+		OR const autoMiddleware = auto(...); createStore( ... , applyMiddleware(autoMiddleware, ...))
+	
+	Bad ✘: ``createStore( combineReducers(...), applyMiddleware( auto(...))``
+	
+	This is bad because the auto reducers is requested before the auto to read the file system
+
+
 ## action files
 
 the action file live within you attribute folder and become the exposed actions for the UI
