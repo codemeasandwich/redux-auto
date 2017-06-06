@@ -1,12 +1,29 @@
-# Redux-Auto
+![redux-auto][logo]
 
-### Removing the boilerplate code in setting up a store & actions
+[logo]: https://s3-eu-west-1.amazonaws.com/redux-auto/reduxautologo.png "redux-auto logo"
+
+## Redux made easy (with a plug and play approach)
+##### Removing the boilerplate code in setting up a store & actions
 
 [![npm version](https://badge.fury.io/js/redux-auto.svg)](https://badge.fury.io/js/redux-auto)
 [![Build Status](https://travis-ci.org/codemeasandwich/redux-auto.svg?branch=master)](https://travis-ci.org/codemeasandwich/redux-auto)
 [![Coverage Status](https://coveralls.io/repos/github/codemeasandwich/redux-auto/badge.svg?branch=master)](https://coveralls.io/github/codemeasandwich/redux-auto?branch=master)
 [![Known Vulnerabilities](https://snyk.io/test/npm/redux-auto/badge.svg)](https://snyk.io/test/npm/redux-auto)
 [![bitHound Dependencies](https://www.bithound.io/github/codemeasandwich/redux-auto/badges/dependencies.svg)](https://www.bithound.io/github/codemeasandwich/redux-auto/master/dependencies/npm)
+
+  * [why](#why)
+    + [plug & Play](#plug---play)
+    + [asynchronous](#asynchronous)
+- [Source Example](https://github.com/codemeasandwich/redux-auto/tree/master/example)
+- [Overview](#overview-)
+- [setup](#setup)
+  * [Using along side an existing Redux setup.](#using-along-side-an-existing-redux-setup)
+  * [Using along side other Redux middleware.](#using-along-side-other-redux-middleware)
+  * [actions are available in the UI](#actions-are-available-in-the-ui)
+- [⚠ gotchas](#--gotchas)
+- [action files](#action-files)
+- [lifecycle diagrame](#lifecycle-diagrame)
+- [index files](#index-files)
 
 ## why
 
@@ -21,8 +38,8 @@ I created this utility to allow you to get up and running with Rudux in a fracti
 * Easy install = works as the same as other redux middleware
 * pure JS no external dependencies!
 
-Have an exising project? No worries. Drop it in, to work along side the traditional redux way. 
-
+#### Have an exising project? No worries. Drop it in, to work along side the traditional redux way. 
+  
 ### asynchronous
 
 Redux your reducer returns a state object. This is very straight forward, but makes dealing with asynchronous updates quite tricky (there are [more than 60 different libraries](https://github.com/markerikson/redux-ecosystem-links/blob/master/side-effects.md) tackling this problem).
