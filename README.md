@@ -14,7 +14,8 @@
   * [why](#why)
     + [plug & Play](#plug---play)
     + [asynchronous](#asynchronous)
-- [Source Example](https://github.com/codemeasandwich/redux-auto/tree/master/example)
+- [Live Demo](http://redux-auto.s3-website-eu-west-1.amazonaws.com/)
+  * [Source](https://github.com/codemeasandwich/redux-auto/tree/master/example)
 - [Overview](#overview-)
 - [setup](#setup)
   * [Using along side an existing Redux setup.](#using-along-side-an-existing-redux-setup)
@@ -50,7 +51,9 @@ redux-auto fixed this asynchronous problem simply by allowing you to create an [
 2) Easily allows you to pass a promise into redux and have it managed for you
 3) Allows you to co-locate external service calls with where they will be transformed
 
-# [Source Example](https://github.com/codemeasandwich/redux-auto/tree/master/example)
+
+
+# [Live Demo](http://redux-auto.s3-website-eu-west-1.amazonaws.com/) / [Source](https://github.com/codemeasandwich/redux-auto/tree/master/example)
 
 ### If you like it, [★ it on github](https://github.com/codemeasandwich/graphql-query-builder) and share  :beers:
 
