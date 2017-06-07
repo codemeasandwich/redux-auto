@@ -21,7 +21,7 @@ console.log("index.jsx:MainUI = ",props.name)
               ))
              }
              </ul>
-             <h1 style={{textAlign: "center"}}> <a href="https://www.wickedlysmart.com/hfjsconsole/"  target="_blank">open console</a> to see actions firing </h1>
+             <h3 style={{textAlign: "center"}}> open console to see actions firing </h3>
     </div>
   )
 }
