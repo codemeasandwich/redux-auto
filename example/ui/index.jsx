@@ -6,11 +6,14 @@ const MainUi = (props) => {
 console.log("index.jsx:MainUI = ",props.name)
   return (
     <div>
-      redux-auto: 
-      <input type="text"
+    <img style={{ padding: 30 }} src="https://s3-eu-west-1.amazonaws.com/redux-auto/reduxautologo.png" alt="redux-auto" />
+    <br/>
+    <label htmlFor="label-input">Name:</label>
+    <input type="text"
+             id="label-input"
              onChange={ event => actions.user.changeName({name:event.target.value}) }
-             value={props.name}/>
-             
+             value={props.name}/>  = { props.name }
+
              <ul>
              {
               props.posts.map( ({title, id}) => (
@@ -18,7 +21,7 @@ console.log("index.jsx:MainUI = ",props.name)
               ))
              }
              </ul>
-             
+             <h1 style={{textAlign: "center"}}> <a href="https://www.wickedlysmart.com/hfjsconsole/"  target="_blank">open console</a> to see actions firing </h1>
     </div>
   )
 }

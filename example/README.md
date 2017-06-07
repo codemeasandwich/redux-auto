@@ -10,15 +10,21 @@ once you are in the "example" folder and run the following commands
 
 then open a web brower to http://localhost:1337
 
+## [open console](https://www.wickedlysmart.com/hfjsconsole/) to see actions firing
+
 ----
 
 Project structure:
 ```
 example/
 ├── store/
-│   └──user/
+│   ├──user/
+│   │  └── index.js
+│   │  └── changeName.js
+│   │  └── init.js
+│   └──posts/
 │      └── index.js
-│      └── changeName.js
+│      └── delete.js
 │      └── init.js
 ├── ui/
 │   └──index.jsx

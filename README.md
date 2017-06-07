@@ -21,7 +21,6 @@
   * [Using along side an existing Redux setup.](#using-along-side-an-existing-redux-setup)
   * [Using along side other Redux middleware.](#using-along-side-other-redux-middleware)
   * [actions are available in the UI](#actions-are-available-in-the-ui)
-- [⚠ gotchas](#--gotchas)
 - [action files](#action-files)
 - [lifecycle diagrame](#lifecycle-diagrame)
 - [index files](#index-files)
@@ -31,7 +30,7 @@
 I created this utility to allow you to get up and running with Rudux in a fraction of the time!
 
 ### plug & Play
-* No wiring togetter of actions & reduces 
+* No wiring togetter of actions & reduces
 * No hardcoding actions types
 * No action creater or dispatcher to worry about
 * Easy Asyn for calling APIs
@@ -39,8 +38,8 @@ I created this utility to allow you to get up and running with Rudux in a fracti
 * Easy install = works as the same as other redux middleware
 * pure JS no external dependencies!
 
-#### Have an exising project? No worries. Drop it in, to work along side the traditional redux way. 
-  
+#### Have an exising project? No worries. Drop it in, to work along side the traditional redux way.
+
 ### asynchronous
 
 Redux your reducer returns a state object. This is very straight forward, but makes dealing with asynchronous updates quite tricky (there are [more than 60 different libraries](https://github.com/markerikson/redux-ecosystem-links/blob/master/side-effects.md) tackling this problem).
@@ -55,11 +54,11 @@ redux-auto fixed this asynchronous problem simply by allowing you to create an [
 
 # [Live Demo](http://redux-auto.s3-website-eu-west-1.amazonaws.com/) / [Source](https://github.com/codemeasandwich/redux-auto/tree/master/example)
 
-### If you like it, [★ it on github](https://github.com/codemeasandwich/graphql-query-builder) and share  :beers:
+### If you like it, [★ it on github](https://github.com/codemeasandwich/redux-auto) and share  :beers:
 
 
 
-## Overview: 
+## Overview:
 
 **Redux-Auto was create to work with Webpacks.*
 
@@ -70,11 +69,11 @@ Steps:
 2) In this folder you will create folders to represent each attribute on the store
 	* For example. the "user" folder will create an attribute of 'user'
 	* the JS files within the folder are **actions** that can be fired to change the share for user.
-3) Create an index.js file to set default values 
+3) Create an index.js file to set default values
 	* **export default** is catch all reducer function *(if an action cant be found)*
 	* export "before" & "after" function. Give lifecyclie functions
 4) Create a js file with the name of the action you want it mapped to
-	* **export default** is the reducer function 
+	* **export default** is the reducer function
 	* export "action" function. Is an **action-middleware** that will allow you to create promises
 5) You can create an init.js that is automatically run once after store created
 	* using this to initialize from an API
@@ -154,21 +153,21 @@ action.apps.chageAppName({appId:123})
 ## ⚠ gotchas
 
 1) *Uncaught Error: Expected the reducer to be a function* ``combineReducers`` must be called after ``mergeReducers``
-	
-	Good ✔: ``createStore( combineReducers( reducers ) )`` 
-	
+
+	Good ✔: ``createStore( combineReducers( reducers ) )``
+
 		OR createStore( combineReducers( mergeReducers( otherReducers ) ))
-	
+
 	Bad ✘: ``otherReducers = combineReducers(otherReducers); createStore(mergeReducers( otherReducers ))``
 
 2) *Redux-auto* starting! the ``auto`` function must called before setting up the **_reducers_**
-	
-	Good ✔: ``const middleware = applyMiddleware(auto(...), ...); createStore( ... , middleware);`` 
-	
+
+	Good ✔: ``const middleware = applyMiddleware(auto(...), ...); createStore( ... , middleware);``
+
 		OR const autoMiddleware = auto(...); createStore( ... , applyMiddleware(autoMiddleware, ...))
-	
+
 	Bad ✘: ``createStore( combineReducers(...), applyMiddleware( auto(...))``
-	
+
 	This is bad because the auto reducers is requested before the auto to read the file system
 
 
