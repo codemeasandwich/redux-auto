@@ -10,8 +10,11 @@ function ActionIDGen (reducerName, actionName, stage){
     return reducerName.toUpperCase() + ":" + actionName.toUpperCase();
 }
 
-const actionsBuilder = {}, reducers = {}, lookup = {}, lifecycle = {}
+const actionsBuilder = {},  lookup = {}, lifecycle = {}
 const mappingFromReducerActionNameToACTIONID = {};
+const reducersBeforeAutoErrorMessage = "You are trying to get reducers before calling 'auto'. Trying moving applyMiddleware BEFORE combineReducers";
+const reducersAfterCombineReducersErrorMessage = "You need to pass an object of reducers to 'mergeReducers' BEFORE calling combineReducers. Try createStore( combineReducers( mergeReducers(otherReducers) ) )";
+let autoWasCalled = false, reducers = { auto_function_not_call_before_combineReducers: ()=>{throw new Error(reducersBeforeAutoErrorMessage)} }
 
 function reset(){
 
@@ -24,12 +27,20 @@ function reset(){
 }
 
 function mergeReducers(otherReducers){
-  return Object.assign({},otherReducers, reducers);
+
+  if(!autoWasCalled)
+    throw new Error(reducersBeforeAutoErrorMessage)
+
+  if("function" === typeof otherReducers)
+    throw new Error(reducersAfterCombineReducersErrorMessage)
+
+    return Object.assign({},otherReducers, reducers);
 }
 
- function auto (modules, fileNameArray,testMode = false){
+ function auto (modules, fileNameArray){
 
-   if(testMode) reset();
+   autoWasCalled = true;
+   reset();
 
   fileNameArray.forEach(function(key){
 
@@ -133,11 +144,11 @@ function mergeReducers(otherReducers){
           const actionDataFn = actionsBuilder[reducerName][actionName];
           // replace the mapping object pointer the wrappingFn
           actionsBuilder[reducerName][actionName] = function(payload = {}) {
-            
+
           if(arguments.length > 0 && undefined === arguments[0]){
              throw new Error("Undefined was passed as payload. You may have misspelled of the variable");
           }
-          
+
             const wrappingFn = actionsBuilder[reducerName][actionName];
 
             const actionOutput = actionDataFn(payload,getState)
