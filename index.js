@@ -65,8 +65,8 @@ function mergeReducers(otherReducers){
   };
 
   if ("index" === actionName) {
-    lifecycle[reducerName].after  = modules(key).after  || lifecycle[reducerName].after;
-    lifecycle[reducerName].before = modules(key).before || lifecycle[reducerName].before;
+    lifecycle[reducerName].after  = modules(key).after  || modules(key).AFTER  || lifecycle[reducerName].after;
+    lifecycle[reducerName].before = modules(key).before || modules(key).BEFORE || lifecycle[reducerName].before;
   }
 
   const ACTIONID = ActionIDGen(reducerName, actionName);
@@ -82,6 +82,12 @@ function mergeReducers(otherReducers){
       const avabileAction = mappingFromReducerActionNameToACTIONID[reducerName][actionFragments[0]];
 
       const payload = lifecycle[reducerName].before(data, action);
+
+      // redux-auto ALLOWS has an object payload (other like '@@redux/INIT' will not)
+      // before should return a payload object
+      if("object" === typeof action.payload && "object" !== typeof payload)
+      throw new Error(`${reducerName}-before returned a "${typeof payload}" should be a payload object`)
+
       let newState = data;
 
       if(avabileAction in avabileActions){
@@ -121,9 +127,6 @@ function mergeReducers(otherReducers){
 
     actionsBuilder[reducerName][actionName] = (payload,getState) => {
 
-        if("object" !== typeof payload)
-            throw new Error('payload must be an object if set:'+JSON.stringify(payload))
-
         if(actionPreProcessor){
           if(1 < actionPreProcessor.length){
             return { type: ACTIONID, payload:actionPreProcessor(payload,getState()[reducerName])}
@@ -145,8 +148,8 @@ function mergeReducers(otherReducers){
           // replace the mapping object pointer the wrappingFn
           actionsBuilder[reducerName][actionName] = function(payload = {}) {
 
-          if(arguments.length > 0 && undefined === arguments[0]){
-             throw new Error("Undefined was passed as payload. You may have misspelled of the variable");
+          if(arguments.length > 0 && undefined === arguments[0] || "object" !== typeof payload){
+             throw new Error(typeof arguments[0]+" was passed as payload. You may have misspelled of the variable");
           }
 
             const wrappingFn = actionsBuilder[reducerName][actionName];

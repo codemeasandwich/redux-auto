@@ -45,22 +45,52 @@ describe('initialization', () => {
       actionName = faker.address.streetName();
     });
 
+//+ should throw when using mergeReducers before "auto"
+//++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    it('should throw when using mergeReducers before "auto"', () => {
+
+      expect(() => {
+        mergeReducers({foo:"bar"});
+      }).toThrow(new RegExp("You are trying to get reducers before calling 'auto'. Trying moving applyMiddleware BEFORE combineReducers"));
+    })
+
+//+ should throw when using reducers before "auto"
+//++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    it('should throw when using reducers before "auto"', () => {
+
+      expect(() => {
+        Object.keys(reducers).forEach(propName=>reducers[propName]());
+      }).toThrow(new RegExp("You are trying to get reducers before calling 'auto'. Trying moving applyMiddleware BEFORE combineReducers"));
+    })
+
 //++++++++++++++++++++++++ should merge other reducers
 //++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     it('should merge other reducers', () => {
 
       webpackModules.set(propName,"index","default",(posts=[]) => posts );
-      
+
       RefrashStore();
 
       const otherReducers = {foo:()=>{}}
-      
+
       const merged = mergeReducers(otherReducers);
-      
+
       expect("function" === typeof merged.foo).toBe(true);
       expect("function" === typeof merged[propName]).toBe(true);
-      
+
+    })
+
+    //should throw when otherReducers used combineReducers
+    //++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    it('should throw when otherReducers used combineReducers', () => {
+
+      expect(() => {
+        mergeReducers(()=>{})
+      }).toThrow(new RegExp("^You need to pass an object of reducers to 'mergeReducers'"));
     })
 
 //++++ should skip utility files start with underscore
@@ -72,12 +102,12 @@ describe('initialization', () => {
       webpackModules.set(propName,actionName,"default",() => expect(false).toBe(true) );
       webpackModules.set(propName,"_utility","default",() => expect(false).toBe(true) );
       RefrashStore();
-      
+
       const availableActions = Object.keys(actions[propName])
 
       expect(availableActions.length).toBe(1);
       expect(availableActions[0]).toBe(actionName);
-      
+
     })
 
 //++++++++++++++++++ should work with an INIT function
@@ -303,6 +333,30 @@ describe('life cycle', () => {
         expect(values[1].name).toBe(fakerName.toUpperCase())
 
     })
+
+    it('should throw when before returns NOT an object', () => {
+
+        webpackModules.set(propName,"index","default",(posts=[])=> posts )
+        webpackModules.set(propName,"index","before",()=> { return 123 } )
+        webpackModules.set(propName,actionName,"default", posts => posts);
+
+        RefrashStore();
+        expect(() => actions[propName][actionName]()).toThrowError(new RegExp(`${propName}-before returned a "number" should be a payload object`));
+    })
+
+    it('should throw when before returns undefined', () => {
+
+        webpackModules.set(propName,"index","default",(posts=[])=> posts )
+        webpackModules.set(propName,"index","before",()=> { } )
+        webpackModules.set(propName,actionName,"default", posts => posts);
+
+        RefrashStore();
+        expect(() => actions[propName][actionName]()).toThrowError(new RegExp(`${propName}-before returned a "undefined" should be a payload object`));
+    })
+
+
+
+
 })
 
 //=====================================================
@@ -572,7 +626,7 @@ describe('Using the stores', () => {
 
         expect(() => {
           actions[propName][actionName](1);
-        }).toThrow(new RegExp("^payload must be an object if set:"));
+        }).toThrow(new RegExp("number was passed as payload. You may have misspelled of the variable"));
 
     })
 
@@ -604,7 +658,7 @@ describe('Using the stores', () => {
         RefrashStore();
         expect(() => {
           actions[propName][actionName](undefined);
-        }).toThrow(new RegExp("Undefined was passed as payload. You may have misspelled of the variable"));
+        }).toThrow(new RegExp("undefined was passed as payload. You may have misspelled of the variable"));
 
     })
 
