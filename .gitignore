@@ -10,7 +10,7 @@ Thumbs.db
 # Dependency directory
 node_modules
 example/node_modules
-bower_components/
+example/dist
 
 # Linter
 linters/

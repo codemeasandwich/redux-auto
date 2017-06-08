@@ -5,6 +5,7 @@
   "main": "main.jsx",
   "scripts": {
     "start": "webpack-dev-server",
+    "prod": "webpack --optimize-minimize --env=prod --progress --profile --colors",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
