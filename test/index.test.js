@@ -575,7 +575,8 @@ describe('action middlware', () => {
           expect(type.startsWith("@@") || type.endsWith("INIT")).toBe(true);
           return posts;
         } )
-        webpackModules.set(propName,actionName,"default",(posts, payload, stage, result)=>{ expect(false).toBe(true); done();  })
+        // TEST when NO default is set
+        //webpackModules.set(propName,actionName,"default",(posts, payload, stage, result)=>{ expect(false).toBe(true); done();  })
         webpackModules.set(propName,actionName,"FULFILLED",(posts, payload, stage, result)=>{ expect(false).toBe(true); done();  })
 
         webpackModules.set(propName,actionName,"PENDING",(posts, payload)=>{
@@ -630,22 +631,31 @@ describe('Using the stores', () => {
 
     })
 
-//++++++++ should throw an exception if using a action
+//++ should throw if action contains a DOT in its name
 //+++++++++++++++++++++++++++++++ with async separator
 
-    it.skip('should throw an exception if using a action with async separator ', () => {
+    it('should throw if action contains a DOT in its name', () => {
 
         webpackModules.set(propName,"index","default",(posts=[])=> posts )
-        webpackModules.set(propName,actionName+">>y>>","default",(posts, payload)=> expect(false).toEqual(true) )
-
-        RefrashStore();
+        webpackModules.set(propName,actionName+".cats","default",(posts, payload)=> {} )
 
         expect(() => {
-          actions[propName][actionName+">>y>>"]();
-        }).toThrow(new RegExp("^bad Action prefix:"));
-
+        RefrashStore();
+      }).toThrow(new RegExp(`file ${actionName+".cats"} in ${propName} contains a DOT in its name`));
     })
 
+//++++ should throw if prop contains a DOT in its name
+//+++++++++++++++++++++++++++++++ with async separator
+
+    it('should throw if prop contains a DOT in its name', () => {
+
+        webpackModules.set(propName+".dog","index","default",(posts=[])=> posts )
+        webpackModules.set(propName+".dog",actionName,"default",(posts, payload)=> {} )
+
+        expect(() => {
+        RefrashStore();
+      }).toThrow(new RegExp(`the folder ${propName+".dog"} contains a DOT in its name`));
+    })
 
 //+++ should throw an exception if undefined is passed
 //++++++++++++++++++++++++++++++++++++++++++++++++++++

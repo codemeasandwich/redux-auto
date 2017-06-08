@@ -5,9 +5,9 @@
 
 function ActionIDGen (reducerName, actionName, stage){
   if (3 === arguments.length)
-    return reducerName.toUpperCase() + ":" + actionName.toUpperCase() + ">>" + stage.toUpperCase();
+    return reducerName.toUpperCase() + "/" + actionName.toUpperCase() + "." + stage.toUpperCase();
   else
-    return reducerName.toUpperCase() + ":" + actionName.toUpperCase();
+    return reducerName.toUpperCase() + "/" + actionName.toUpperCase();
 }
 
 const actionsBuilder = {},  lookup = {}, lifecycle = {}
@@ -47,7 +47,10 @@ function mergeReducers(otherReducers){
   // get action name
   const actionName = key.match(/([^\/]+)(?=\.\w+$)/)[0];
   // get reducer name
-  const reducerName = key.match(/(.*)[\/\\]/)[1].substring(2)||null;
+  const reducerName = key.match(/(.*)[\/\\]/)[1].substring(2);//||null;
+
+  if(actionName.includes(".")) throw new Error(`file ${actionName} in ${reducerName} contains a DOT in its name`)
+  if(reducerName.includes(".")) throw new Error(`the folder ${reducerName} contains a DOT in its name`)
 
   // get action name starts with _ skip it
   if(actionName.startsWith("_") || null === reducerName)
@@ -77,7 +80,7 @@ function mergeReducers(otherReducers){
     reducers[reducerName] = (data, action) => {
 
       const avabileActions = lookup[reducerName];
-      const actionFragments = action.type.split(">>");
+      const actionFragments = action.type.split(".");
 
       const avabileAction = mappingFromReducerActionNameToACTIONID[reducerName][actionFragments[0]];
 
@@ -92,25 +95,22 @@ function mergeReducers(otherReducers){
 
       if(avabileAction in avabileActions){
 
-        if(actionFragments.length > 2)
-          throw new Error('bad Action Name:'+action.type)
-        else if(actionFragments.length === 2){
+        if(actionFragments.length === 2){
 
           const stage = actionFragments[1].toLowerCase()
 
-            if(  stage === "pending" || stage === "fulfilled" || stage === "rejected" ){
+        //    if(  stage === "pending" || stage === "fulfilled" || stage === "rejected" ){
               if ("function" === typeof lookup[reducerName][avabileAction][stage]) {
                 newState = lookup[reducerName][avabileAction][stage](data, action.reqPayload, payload)
               } else {
                 newState = lookup[reducerName][avabileAction](data, action.reqPayload, actionFragments[1], payload);
               }
-            } else {
-              throw new Error('bad Action prefix:'+action.type)
-            }
+        //    }
         } else {
           newState = lookup[reducerName][avabileAction](data, payload);
         }
       } else {// if("index" in lookup[reducerName]){
+
         newState = lookup[reducerName].index(data, Object.assign({},action, {payload}))
       }
 
@@ -159,9 +159,9 @@ function mergeReducers(otherReducers){
             if("object" === typeof actionOutput.payload){
               if(actionOutput.payload.then instanceof Function){
                 //if( ! Object.isFrozen(actionDataFn)){
-                   wrappingFn.pending   = ActionIDGen(reducerName, actionName,"pending");//actionOutput.type+">>PENDING"
-                   wrappingFn.fulfilled = ActionIDGen(reducerName, actionName,"fulfilled");//actionOutput.type+">>FULFILLED"
-                   wrappingFn.rejected  = ActionIDGen(reducerName, actionName,"rejected");//actionOutput.type+">>REJECTED"
+                   wrappingFn.pending   = ActionIDGen(reducerName, actionName,"pending");//actionOutput.type+"/PENDING"
+                   wrappingFn.fulfilled = ActionIDGen(reducerName, actionName,"fulfilled");//actionOutput.type+"/FULFILLED"
+                   wrappingFn.rejected  = ActionIDGen(reducerName, actionName,"rejected");//actionOutput.type+"/REJECTED"
                 //}
 
                 //console.log(Object.isFrozen(actionDataFn),actionDataFn)
@@ -173,7 +173,8 @@ function mergeReducers(otherReducers){
               } else {
                 dispatch(actionOutput);
               }
-            } else if(undefined !== typeof actionOutput.payload){  // because an action-middlware my set a simple value
+            } else {// if(undefined === actionOutput.payload)
+              // because an action-middlware my set a simple value
               throw new Error("action with bad payload:"+actionOutput.type+" >> "+JSON.stringify(actionOutput.payload))
             }
           } // END actionsBuilder[reducerName][actionName] = (payload = {}) =>
