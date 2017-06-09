@@ -1,9 +1,10 @@
 import React  from "react"
 import actions from 'redux-auto'
 import { connect } from 'react-redux'
+import ConsoleElem from "./console.jsx"
 
 const MainUi = (props) => {
-console.log("index.jsx:MainUI = ",props.name)
+
   return (
     <div>
     <img style={{ padding: 30 }} src="https://s3-eu-west-1.amazonaws.com/redux-auto/reduxautologo.png" alt="redux-auto" />
@@ -21,7 +22,7 @@ console.log("index.jsx:MainUI = ",props.name)
               ))
              }
              </ul>
-             <h3 style={{textAlign: "center"}}> open console to see actions firing </h3>
+             <ConsoleElem/>
     </div>
   )
 }
