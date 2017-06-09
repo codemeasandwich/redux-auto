@@ -9,7 +9,7 @@ import Ui from './ui/index.jsx';
 //++++++++++++++++++++++++++++++++++++++++++++ Webpack
 //++++++++++++++++++++++++++++++++++++++++ redux logic
 
-const webpackModules = require.context("./store", true, /\.js$/);
+const webpackModules = require.context("./store", true, /^(?!.*\.test\.js$).*\.js$/);
 
                                 // build 'auto' based on target files via Webpack
 const middleware = applyMiddleware( auto(webpackModules, webpackModules.keys()))
@@ -17,7 +17,7 @@ const middleware = applyMiddleware( auto(webpackModules, webpackModules.keys()))
 const store = createStore(combineReducers(reducers), middleware );
 
 
-// === create the element to attach react 
+// === create the element to attach react
 const reactElement = document.createElement('div');
 document.body.appendChild(reactElement);
 
