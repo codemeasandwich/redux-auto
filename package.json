@@ -11,7 +11,8 @@
   },
   "jest": {
     "verbose": true,
-    "browser": true
+    "browser": true,
+    "testPathIgnorePatterns":["<rootDir>/example/", "<rootDir>/node_modules/"]
   },
   "repository": {
     "type": "git",

@@ -2,24 +2,20 @@ var path = require("path");
 var HtmlWebpackPlugin = require('html-webpack-plugin');
 var webpack = require('webpack');
 
-var config = {
+module.exports = {
   entry: "./main.jsx",
   target:"web",
   devtool: 'source-map',
   output: {
     path: path.resolve(__dirname, "dist"),
-    filename: "[name]-[hash].js",
-    chunkFilename: "[id].[name]-[hash].js"
+    filename: "[name]-[hash].min.js",
+    chunkFilename: "[id].[name]-[hash].min.js"
   },
-  devServer: {
-    contentBase: path.join(__dirname, "ui"),
-    port: 1337
-  },
-  plugins:[
-    new HtmlWebpackPlugin({
-      title: 'redux-auto: example'
-    })
-  ],
+
+  plugins: [ new HtmlWebpackPlugin({
+        title: 'redux-auto: example'
+      }),
+      new webpack.optimize.UglifyJsPlugin({sourceMap:true}) ],
   resolve:{
     alias:{
       'redux-auto':__dirname+'/../index.js',
@@ -33,13 +29,12 @@ var config = {
                     query:{
                         presets:["react", "es2015"]
                     }
-                }]
+                },{
+                      test: /\.js$/,
+                      loader:"babel-loader",
+                      query:{
+                          presets:["es2015"]
+                      }
+                  }]
     }
-};
-
-module.exports = function(env) {
-  if("prod"===env)
-  return require(`./webpack.${env}.js`)
-  else
-  return config
 }
