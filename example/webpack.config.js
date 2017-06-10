@@ -13,6 +13,7 @@ var config = {
   },
   devServer: {
     contentBase: path.join(__dirname, "ui"),
+    compress: true,
     port: 1337
   },
   plugins:[
