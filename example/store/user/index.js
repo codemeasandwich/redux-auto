@@ -2,20 +2,19 @@
 import actions from 'redux-auto'
 
 export default function user(user = { name:"?" }, action) {
-  console.log("default function for user")
+  console.log("user / index >> default function for user | TYPE = ",action.type)
   return user;
 }
 
 export function before (appsState, action){
-  console.log(" ======================== ",action.type)
-  console.log("BEFORE every action on behalf of user")
+  console.log("user / index / before >> every action on behalf of user | TYPE = ",action.type)
   return action.payload;
 }
 
 export function after (newAppsState, action, oldAppsState){
   if(action.type == actions.user.changeName){
-    console.log(" you have change the users name")
+    console.log("user / index / after >> actions.user.changeName -> you have change the users name")
   }
-  console.log(" ======================== ",action.type)
+  console.log("user / index / after >> TYPE = ",action.type)
   return newAppsState;
 }
