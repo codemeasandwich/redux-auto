@@ -92,6 +92,7 @@ function mergeReducers(otherReducers){
       throw new Error(`${reducerName}-before returned a "${typeof payload}" should be a payload object`)
 
       let newState = data;
+      let async = (data && data.__proto__.async)?data.__proto__.async : {};
 
       if(avabileAction in avabileActions){
 
@@ -105,6 +106,9 @@ function mergeReducers(otherReducers){
               } else {
                 newState = lookup[reducerName][avabileAction](data, action.reqPayload, actionFragments[1], payload);
               }
+              async = Object.assign({}, async);
+              async[avabileAction] = (stage === "pending") ? true : (stage === "fulfilled") ? false : payload;
+              
         //    }
         } else {
           newState = lookup[reducerName][avabileAction](data, payload);
@@ -114,6 +118,8 @@ function mergeReducers(otherReducers){
         newState = lookup[reducerName].index(data, Object.assign({},action, {payload}))
       }
 
+      newState.__proto__.async = async;
+      
       return lifecycle[reducerName].after(newState, action, data);
 
     } // END reducers[reducerName] = (data, action) => {
