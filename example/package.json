@@ -5,8 +5,8 @@
   "main": "main.jsx",
   "scripts": {
     "start": "webpack-dev-server",
-    "prod": "webpack --env=prod --progress --profile --colors",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "prod": "npm test && webpack --env=prod --progress --profile --colors",
+    "test": "echo \"Error: no test specified\""
   },
   "repository": {
     "type": "git",
