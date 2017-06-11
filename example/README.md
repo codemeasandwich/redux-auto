@@ -1,4 +1,4 @@
-# How to run Example
+# How to run Example / [Live Demo](http://redux-auto.s3-website-eu-west-1.amazonaws.com/)
 
 1) `npm install redux-auto`
 2) `cd node_modules/redux-auto/example/`

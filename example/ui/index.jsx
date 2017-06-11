@@ -2,6 +2,7 @@ import React  from "react"
 import actions from 'redux-auto'
 import { connect } from 'react-redux'
 import ConsoleElem from "./console.jsx"
+import BadgesElem from "./badges.jsx"
 
 function Posts(props){
 
@@ -24,13 +25,20 @@ const MainUi = (props) => {
 
   return (
     <div>
-    <a href="https://www.npmjs.com/package/redux-auto"><img style={{ padding: 30 }} src="https://s3-eu-west-1.amazonaws.com/redux-auto/reduxautologo.png" alt="redux-auto" /></a>
+    <a href="https://github.com/codemeasandwich/redux-auto">
+        <img style={{ padding: 30 }} src="https://s3-eu-west-1.amazonaws.com/redux-auto/reduxautologo.png" alt="redux-auto" />
+    </a>
+    
+    <BadgesElem/>
+    
+    
+    
     <br/>
     <label htmlFor="label-input">Name:</label>
     <input type="text"
              id="label-input"
              onChange={ event => actions.user.changeName({name:event.target.value}) }
-             value={props.user.name}/>  = { (props.user.async.init)?"checking..?": props.user.name }
+             value={props.user.name}/>  = { (props.user.async.init)?"checking..?": <span style={{textShadow: "2px 2px 2px gray"}}>{props.user.name}</span> }
 
              
              

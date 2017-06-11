@@ -38,7 +38,7 @@ class ConsoleElem extends Component {
       overflow:"hidden",
       padding:10,
       width:"90vw",
-      maxHeight:"25vh",
+      height:"25vh",
       backgroundColor:"black",
       position: "absolute",
       bottom: 10, 

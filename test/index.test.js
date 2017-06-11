@@ -354,8 +354,38 @@ describe('life cycle', () => {
         expect(() => actions[propName][actionName]()).toThrowError(new RegExp(`${propName}-before returned a "undefined" should be a payload object`));
     })
 
-
-
+    it('should set async after lifecycle', (done) => {
+      
+        webpackModules.set(propName,"index","default",(posts=[])=> posts )
+        
+        webpackModules.set(propName,"index","after",(newAppsState, action, oldAppsState)=> {
+            return JSON.parse(JSON.stringify(newAppsState)); // return a new object
+        } )
+        
+        webpackModules.set(propName,"savePost","default",(posts, payload, stage, result)=>  posts )
+        webpackModules.set(propName,"savePost","action", ()=> Promise.resolve({ ok:true }) )
+    
+        let unsubscribe;
+        const values = [false,true];
+        
+        const testFn = function() {
+          
+          const posts = store.getState()[propName];
+      
+          expect(values.pop()).toBe(posts.async.savePost);
+          
+          if (values.length === 0) {
+            expect(Array.isArray(posts)).toBe(true);
+            expect(typeof posts.async).toBe("object");
+            expect(typeof [].async).toBe("undefined");
+            unsubscribe();
+            done();
+          }
+        }
+        RefrashStore();
+        unsubscribe = store.subscribe(testFn); // fires after a "dispatch"
+        actions[propName].savePost();
+    })
 
 })
 

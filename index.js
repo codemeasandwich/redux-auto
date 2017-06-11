@@ -1,8 +1,8 @@
-
-//=====================================================
-//=================== Reducers and Actions from folders
-//=====================================================
-
+/**
+//========================================== redux-auto
+//=========== Copyright (c) 2017-present, Brian Shannon
+//======= https://github.com/codemeasandwich/redux-auto
+*/
 function ActionIDGen (reducerName, actionName, stage){
   if (3 === arguments.length)
     return reducerName.toUpperCase() + "/" + actionName.toUpperCase() + "." + stage.toUpperCase();
@@ -117,10 +117,24 @@ function mergeReducers(otherReducers){
 
         newState = lookup[reducerName].index(data, Object.assign({},action, {payload}))
       }
-
-      newState.__proto__.async = async;
       
-      return lifecycle[reducerName].after(newState, action, data);
+      newState = lifecycle[reducerName].after(newState, action, data);
+      
+      // check if newState's prototype is the shared Object? 
+      //console.log (action.type, newState, ({}).__proto__ === newState.__proto__)
+      
+      
+      
+      if(Array.isArray(newState)){
+        newState.__proto__ = {}
+        newState.__proto__.__proto__ = [].__proto__
+      } else if (({}).__proto__ === newState.__proto__) {
+        newState.__proto__ = {} // if it is, then give it it's own
+      } // else the user has set the prototype manually
+
+      newState.__proto__.async = async
+      
+      return newState
 
     } // END reducers[reducerName] = (data, action) => {
   } // END !(reducerName in reducers)
