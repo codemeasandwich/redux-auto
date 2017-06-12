@@ -355,25 +355,25 @@ describe('life cycle', () => {
     })
 
     it('should set async after lifecycle', (done) => {
-      
+
         webpackModules.set(propName,"index","default",(posts=[])=> posts )
-        
+
         webpackModules.set(propName,"index","after",(newAppsState, action, oldAppsState)=> {
             return JSON.parse(JSON.stringify(newAppsState)); // return a new object
         } )
-        
-        webpackModules.set(propName,"savePost","default",(posts, payload, stage, result)=>  posts )
-        webpackModules.set(propName,"savePost","action", ()=> Promise.resolve({ ok:true }) )
-    
+
+        webpackModules.set(propName,[actionName],"default",(posts, payload, stage, result)=>  posts )
+        webpackModules.set(propName,[actionName],"action", ()=> Promise.resolve({ ok:true }) )
+
         let unsubscribe;
         const values = [false,true];
-        
+
         const testFn = function() {
-          
+
           const posts = store.getState()[propName];
-      
-          expect(values.pop()).toBe(posts.async.savePost);
-          
+
+          expect(values.pop()).toBe(posts.async[actionName]);
+
           if (values.length === 0) {
             expect(Array.isArray(posts)).toBe(true);
             expect(typeof posts.async).toBe("object");
@@ -384,9 +384,78 @@ describe('life cycle', () => {
         }
         RefrashStore();
         unsubscribe = store.subscribe(testFn); // fires after a "dispatch"
-        actions[propName].savePost();
+        actions[propName][actionName]();
     })
 
+
+    it('should not set async with non-object', (done) => {
+
+        webpackModules.set(propName,"index","default",(txt="")=> txt )
+
+        webpackModules.set(propName,"index","after",(newAppsState, action, oldAppsState)=> {
+            return JSON.parse(JSON.stringify(newAppsState)); // return a new object
+        } )
+
+        webpackModules.set(propName,[actionName],"default",(txt, payload, stage, result)=>  txt )
+        webpackModules.set(propName,[actionName],"action", ()=> Promise.resolve({ ok:true }) )
+
+        let unsubscribe;
+        const values = [undefined,undefined];
+
+        const testFn = function() {
+
+          const txt = store.getState()[propName];
+
+          expect(txt.async).toBe(values.pop());
+
+          if (values.length === 0) {
+            expect(typeof txt).toBe("string");
+            unsubscribe();
+            done();
+          }
+        }
+        RefrashStore();
+        unsubscribe = store.subscribe(testFn); // fires after a "dispatch"
+        actions[propName][actionName]();
+    })
+
+    it('should set async on error with a clear function', (done) => {
+
+        webpackModules.set(propName,"index","default",(user={})=> user )
+
+        webpackModules.set(propName,[actionName],"default",(user, payload, stage, result)=> { return user;} )
+
+        const error = new Error("Boom with the async");
+
+        webpackModules.set(propName,[actionName],"action", ()=> Promise.reject(error) )
+
+        let unsubscribe;
+        const values = [undefined,error,true];
+
+        const testFn = function() {
+
+          const user = store.getState()[propName];
+
+          expect(values.pop()).toBe(user.async[actionName]);
+
+          if (values.length === 0) {
+            unsubscribe();
+            done();
+          } else if (values.length === 1) {
+            expect(typeof user).toBe("object");
+            expect(typeof user.async).toBe("object");
+            expect(({}).async).toBeUndefined();
+            expect(user.async[actionName]).toBe(error);
+            expect(typeof user.async[actionName].clear).toBe("function");
+            user.async[actionName].clear();
+          } else {
+            expect(user.async[actionName].clear).toBeUndefined()
+          }
+        }
+        RefrashStore();
+        unsubscribe = store.subscribe(testFn); // fires after a "dispatch"
+        actions[propName][actionName]();
+    })
 })
 
 //=====================================================

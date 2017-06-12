@@ -98,18 +98,31 @@ function mergeReducers(otherReducers){
 
         if(actionFragments.length === 2){
 
-          const stage = actionFragments[1].toLowerCase()
+          const stage = actionFragments[1].toLowerCase();
 
-        //    if(  stage === "pending" || stage === "fulfilled" || stage === "rejected" ){
-              if ("function" === typeof lookup[reducerName][avabileAction][stage]) {
-                newState = lookup[reducerName][avabileAction][stage](data, action.reqPayload, payload)
-              } else {
-                newState = lookup[reducerName][avabileAction](data, action.reqPayload, actionFragments[1], payload);
-              }
-              async = Object.assign({}, async);
-              async[avabileAction] = (stage === "pending") ? true : (stage === "fulfilled") ? false : payload;
-              
-        //    }
+          if(stage === "clear" ){
+            async = Object.assign({}, async);
+            async[avabileAction] = undefined;
+          } else {
+
+                let clearFn;
+                if(stage === "rejected" ){
+                  clearFn = payload.clear;
+                  delete payload.clear;
+                }
+
+              //    if(  stage === "pending" || stage === "fulfilled" || stage === "rejected" ){
+                if ("function" === typeof lookup[reducerName][avabileAction][stage]) {
+                  newState = lookup[reducerName][avabileAction][stage](data, action.reqPayload, payload)
+                } else {
+                  newState = lookup[reducerName][avabileAction](data, action.reqPayload, actionFragments[1], payload);
+                }
+                async = Object.assign({}, async);
+                async[avabileAction] = (stage === "pending") ? true : (stage === "fulfilled") ? false : payload;
+
+                if(clearFn)//(async[avabileAction] instanceof Error){
+                  async[avabileAction].clear = clearFn
+           }
         } else {
           newState = lookup[reducerName][avabileAction](data, payload);
         }
@@ -117,23 +130,22 @@ function mergeReducers(otherReducers){
 
         newState = lookup[reducerName].index(data, Object.assign({},action, {payload}))
       }
-      
-      newState = lifecycle[reducerName].after(newState, action, data);
-      
-      // check if newState's prototype is the shared Object? 
-      //console.log (action.type, newState, ({}).__proto__ === newState.__proto__)
-      
-      
-      
-      if(Array.isArray(newState)){
-        newState.__proto__ = {}
-        newState.__proto__.__proto__ = [].__proto__
-      } else if (({}).__proto__ === newState.__proto__) {
-        newState.__proto__ = {} // if it is, then give it it's own
-      } // else the user has set the prototype manually
 
-      newState.__proto__.async = async
-      
+      newState = lifecycle[reducerName].after(newState, action, data);
+
+      // check if newState's prototype is the shared Object?
+      //console.log (action.type, newState, ({}).__proto__ === newState.__proto__)
+
+      if("object" === typeof newState){
+        // I am a redux-auto proto
+        if(newState.__proto__.hasOwnProperty("async")){
+          async.__proto__ = newState.__proto__.__proto__;
+        } else {
+          async.__proto__ = newState.__proto__;
+        }
+
+        newState.__proto__ = {async};
+      }
       return newState
 
     } // END reducers[reducerName] = (data, action) => {
@@ -182,6 +194,7 @@ function mergeReducers(otherReducers){
                    wrappingFn.pending   = ActionIDGen(reducerName, actionName,"pending");//actionOutput.type+"/PENDING"
                    wrappingFn.fulfilled = ActionIDGen(reducerName, actionName,"fulfilled");//actionOutput.type+"/FULFILLED"
                    wrappingFn.rejected  = ActionIDGen(reducerName, actionName,"rejected");//actionOutput.type+"/REJECTED"
+                   wrappingFn.clear  = ActionIDGen(reducerName, actionName,"clear");//actionOutput.type+"/REJECTED"
                 //}
 
                 //console.log(Object.isFrozen(actionDataFn),actionDataFn)
@@ -189,7 +202,10 @@ function mergeReducers(otherReducers){
                 dispatch({type:wrappingFn.pending, reqPayload:payload, payload:null})
                 actionOutput.payload
                 .then(result => dispatch({type:wrappingFn.fulfilled, reqPayload:payload, payload:result }))
-                .catch(err => dispatch({type:wrappingFn.rejected, reqPayload:payload, payload:err}))
+                .catch(err => {
+                  err.clear = ()=>{dispatch({type:wrappingFn.clear})};
+                  dispatch({type:wrappingFn.rejected, reqPayload:payload, payload:err})
+                })
               } else {
                 dispatch(actionOutput);
               }
