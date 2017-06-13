@@ -92,16 +92,20 @@ function mergeReducers(otherReducers){
       throw new Error(`${reducerName}-before returned a "${typeof payload}" should be a payload object`)
 
       let newState = data;
-      let async = (data && data.__proto__.async)?data.__proto__.async : {};
+      let newAsyncVal = !!(data && data.__proto__.async);
+      let async = (newAsyncVal)?data.__proto__.async : {};
 
       if(avabileAction in avabileActions){
 
         if(actionFragments.length === 2){
 
+          newAsyncVal = true;
           const stage = actionFragments[1].toLowerCase();
 
+          async = (data && data.__proto__.async)?data.__proto__.async : {};
+          async = Object.assign({}, async);
+
           if(stage === "clear" ){
-            async = Object.assign({}, async);
             async[avabileAction] = undefined;
           } else {
 
@@ -117,7 +121,7 @@ function mergeReducers(otherReducers){
                 } else {
                   newState = lookup[reducerName][avabileAction](data, action.reqPayload, actionFragments[1], payload);
                 }
-                async = Object.assign({}, async);
+
                 async[avabileAction] = (stage === "pending") ? true : (stage === "fulfilled") ? false : payload;
 
                 if(clearFn)//(async[avabileAction] instanceof Error){
@@ -136,15 +140,15 @@ function mergeReducers(otherReducers){
       // check if newState's prototype is the shared Object?
       //console.log (action.type, newState, ({}).__proto__ === newState.__proto__)
 
-      if("object" === typeof newState){
+      if(newAsyncVal && "object" === typeof newState ){
         // I am a redux-auto proto
+        let _p_ = newState.__proto__;
         if(newState.__proto__.hasOwnProperty("async")){
-          async.__proto__ = newState.__proto__.__proto__;
-        } else {
-          async.__proto__ = newState.__proto__;
+          _p_ = newState.__proto__.__proto__;
         }
-
-        newState.__proto__ = {async};
+        const _newProto_ = {async}
+        _newProto_.__proto__ = _p_
+        newState.__proto__ = _newProto_;
       }
       return newState
 

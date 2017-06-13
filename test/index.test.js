@@ -376,6 +376,7 @@ describe('life cycle', () => {
 
           if (values.length === 0) {
             expect(Array.isArray(posts)).toBe(true);
+            expect(typeof posts.map).toBe("function");
             expect(typeof posts.async).toBe("object");
             expect(typeof [].async).toBe("undefined");
             unsubscribe();
