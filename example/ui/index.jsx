@@ -45,8 +45,8 @@ const MainUi = (props) => {
   )
 }
 
-const mapStateToProps = (x) => {
-throw new Error(JSON.stringify(x))
+const mapStateToProps = ( { user,posts }) => {
+//throw new Error(JSON.stringify(x))
   return { user,posts }
 };
 

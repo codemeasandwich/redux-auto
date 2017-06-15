@@ -8,7 +8,9 @@ export function pending (posts, payload){
 export function fulfilled (posts, payload, serverPosts){
     console.log("posts / init / fulfilled")
   return serverPosts
-}
+} fulfilled.chain = ()=> console.log(" Changing actions togetter is easy ")
+
+
 export function rejected (posts, payload, error){
     console.log("posts / init / rejected")
   return posts;
