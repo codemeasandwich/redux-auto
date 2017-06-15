@@ -15,6 +15,16 @@ const reducersBeforeAutoErrorMessage = "You are trying to get reducers before ca
 const reducersAfterCombineReducersErrorMessage = "You need to pass an object of reducers to 'mergeReducers' BEFORE calling combineReducers. Try createStore( combineReducers( mergeReducers(otherReducers) ) )";
 let autoWasCalled = false, reducers = { auto_function_not_call_before_combineReducers: ()=>{throw new Error(reducersBeforeAutoErrorMessage)} }
 
+function chaining(actionType){
+  if(undefined === chaining[actionType])
+    return
+  if("function" === typeof chaining[actionType]){debugger;chaining[actionType]()}
+
+  else
+  throw new Error(`Chaining function used with ${actionType} was not a function. ${typeof chaining[actionType]}`)
+}
+
+
 function reset(){
 
   Object.keys(actionsBuilder).forEach(p => delete actionsBuilder[p]);
@@ -36,11 +46,33 @@ function mergeReducers(otherReducers){
     return Object.assign({},otherReducers, reducers);
 }
 
+  function buildActionLayout(fileNameArray){
+
+      fileNameArray.forEach(function(key){
+
+      // get action name
+      const actionName = key.match(/([^\/]+)(?=\.\w+$)/)[0];
+      // get reducer name
+      const reducerName = key.match(/(.*)[\/\\]/)[1].substring(2);//||null;
+
+      if(actionName.includes(".")) throw new Error(`file ${actionName} in ${reducerName} contains a DOT in its name`)
+      if(reducerName.includes(".")) throw new Error(`the folder ${reducerName} contains a DOT in its name`)
+
+      // get action name starts with _ skip it
+      if(actionName.startsWith("_") || null === reducerName)
+          return;
+
+
+          actionsBuilder[reducerName] = actionsBuilder[reducerName] || {};
+          actionsBuilder[reducerName][actionName] = ()=>{ actionsBuilder[reducerName][actionName]() };
+    })
+  }
+
  function auto (modules, fileNameArray){
 
    autoWasCalled = true;
    reset();
-
+  buildActionLayout(fileNameArray)
   fileNameArray.forEach(function(key){
 
   // get action name
@@ -116,9 +148,15 @@ function mergeReducers(otherReducers){
 
               //    if(  stage === "pending" || stage === "fulfilled" || stage === "rejected" ){
                 if ("function" === typeof lookup[reducerName][avabileAction][stage]) {
-                  newState = lookup[reducerName][avabileAction][stage](data, action.reqPayload, payload)
+                  newState = lookup[reducerName][avabileAction][stage](data, action.reqPayload, payload);
+                  if("function" === typeof lookup[reducerName][avabileAction][stage].chain){ debugger;
+                      chaining[action.type] = lookup[reducerName][avabileAction][stage].chain
+                  }
                 } else {
                   newState = lookup[reducerName][avabileAction](data, action.reqPayload, actionFragments[1], payload);
+                  if("function" === typeof lookup[reducerName][avabileAction].chain){
+                      chaining[action.type] = lookup[reducerName][avabileAction].chain
+                  }
                 }
 
                 async[avabileAction] = (stage === "pending") ? true : (stage === "fulfilled") ? false : payload;
@@ -128,6 +166,9 @@ function mergeReducers(otherReducers){
            }
         } else {
           newState = lookup[reducerName][avabileAction](data, payload);
+          if("function" === typeof lookup[reducerName][avabileAction].chain){
+              chaining.after[action.type] = lookup[reducerName][avabileAction].chain
+          }
         }
       } else {// if("index" in lookup[reducerName]){
 
@@ -197,20 +238,26 @@ function mergeReducers(otherReducers){
                    wrappingFn.pending   = ActionIDGen(reducerName, actionName,"pending");//actionOutput.type+"/PENDING"
                    wrappingFn.fulfilled = ActionIDGen(reducerName, actionName,"fulfilled");//actionOutput.type+"/FULFILLED"
                    wrappingFn.rejected  = ActionIDGen(reducerName, actionName,"rejected");//actionOutput.type+"/REJECTED"
-                   wrappingFn.clear  = ActionIDGen(reducerName, actionName,"clear");//actionOutput.type+"/REJECTED"
+                   wrappingFn.clear     = ActionIDGen(reducerName, actionName,"clear");//actionOutput.type+"/REJECTED"
                 //}
 
                 //console.log(Object.isFrozen(actionDataFn),actionDataFn)
                 //pending
                 dispatch({type:wrappingFn.pending, reqPayload:payload, payload:null})
+                chaining(wrappingFn.pending)
                 actionOutput.payload
-                .then(result => dispatch({type:wrappingFn.fulfilled, reqPayload:payload, payload:result }))
+                .then(result => {
+                  dispatch({type:wrappingFn.fulfilled, reqPayload:payload, payload:result })
+                  chaining(wrappingFn.fulfilled)
+                })
                 .catch(err => {
                   err.clear = ()=>{dispatch({type:wrappingFn.clear})};
                   dispatch({type:wrappingFn.rejected, reqPayload:payload, payload:err})
+                  chaining(wrappingFn.rejected)
                 })
               } else {
                 dispatch(actionOutput);
+                chaining(actionOutput.type)
               }
             } else {// if(undefined === actionOutput.payload)
               // because an action-middlware my set a simple value
