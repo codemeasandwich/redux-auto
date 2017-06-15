@@ -724,10 +724,10 @@ describe('Using the stores', () => {
         webpackModules.set(propName,actionName,"default",(posts, payload)=> expect(false).toEqual(true) )
 
         RefrashStore();
-
+        const value = 1
         expect(() => {
-          actions[propName][actionName](1);
-        }).toThrow(new RegExp("number was passed as payload. You may have misspelled of the variable"));
+          actions[propName][actionName](value);
+        }).toThrow(new RegExp(`${typeof value} was passed as payload to ${propName}.${actionName}. This need to be an object. Check you have not misspelled of the variable`));
 
     })
 
@@ -768,7 +768,7 @@ describe('Using the stores', () => {
         RefrashStore();
         expect(() => {
           actions[propName][actionName](undefined);
-        }).toThrow(new RegExp("undefined was passed as payload. You may have misspelled of the variable"));
+        }).toThrow(new RegExp(`undefined was passed as payload to ${propName}.${actionName}. This need to be an object. Check you have not misspelled of the variable`));
 
     })
 

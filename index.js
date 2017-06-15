@@ -1,6 +1,5 @@
 /**
 //========================================== redux-auto
-//=========== Copyright (c) 2017-present, Brian Shannon
 //======= https://github.com/codemeasandwich/redux-auto
 */
 function ActionIDGen (reducerName, actionName, stage){
@@ -185,8 +184,8 @@ function mergeReducers(otherReducers){
           actionsBuilder[reducerName][actionName] = function(payload = {}) {
 
           if(arguments.length > 0 && undefined === arguments[0] || "object" !== typeof payload){
-             throw new Error(typeof arguments[0]+" was passed as payload. You may have misspelled of the variable");
-          }
+            throw new Error(`${typeof arguments[0]} was passed as payload to ${reducerName}.${actionName}. This need to be an object. Check you have not misspelled of the variable`);
+         }
 
             const wrappingFn = actionsBuilder[reducerName][actionName];
 
