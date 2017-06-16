@@ -194,6 +194,49 @@ export function action (payload,apps){
 }
 
 ```
+### chaining action together
+
+You chain actions back-to-back by setting a chain function on the exported function.
+
+There are 2 ways to chain actions together.
+
+**1:** Attach a function to the "chain" property
+
+**Example:**
+/store/user/getInfo
+```JS
+export function fulfilled (user, payload, userFromServer){
+  return userFromServer;
+} fulfilled.chain = () => actions.nav.move({page:"home"})
+
+export function rejected (user, payload, userFromServer){
+  return userFromServer;
+} rejected.chain = actions.user.reset
+...
+
+export function action (payload){
+	return fetch('/api/foo/bar/user/'+payload.userId)
+}
+```
+Calling "**actions.user.login({userId:1})**" will automatically call  **actions.nav.move** OR **actions.user.reset** *with out arguments
+
+
+**2:** Call the action from the index action - *(anti-pattern)*
+
+**Example:**
+/store/nav/index
+```JS
+
+import actions from 'redux-auto'
+
+export default function nav(nav = defaultNavSetting, action) {
+if(action.type == actions.user.login.fulfilled){
+actions.nav.move({page:"home"})
+}
+  return nav;
+}
+```
+**!! WARNING !!** Starting another dispatch before your reducer is finished an anti-pattern, because the state you received at the beginning of your reducer will not be the current application state anymore when your reducer finishes.
 
 ## lifecycle diagrame
 
