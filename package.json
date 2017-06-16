@@ -12,7 +12,15 @@
   "jest": {
     "verbose": true,
     "browser": true,
-    "testPathIgnorePatterns":["<rootDir>/example/", "<rootDir>/node_modules/"]
+    "testPathIgnorePatterns": [
+      "<rootDir>/example/",
+      "<rootDir>/node_modules/"
+    ],
+    "haste": {
+      "providesModuleNodeModules": [
+        ".*"
+      ]
+    }
   },
   "repository": {
     "type": "git",
