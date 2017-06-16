@@ -71,9 +71,7 @@ function mergeReducers(otherReducers){
 
 
           actionsBuilder[reducerName] = actionsBuilder[reducerName] || {};
-          actionsBuilder[reducerName][actionName] = function (payload){
-            actionsBuilder[reducerName][actionName](payload)
-          };
+          actionsBuilder[reducerName][actionName] = (...args) => actionsBuilder[reducerName][actionName](...args);
     })
   }
 
