@@ -9,7 +9,7 @@ import faker from 'faker'
 import { createStore, applyMiddleware, combineReducers } from 'redux'
 
 import   webpackModules   from './webpackModules';
-import actions, { auto, reducers, mergeReducers, reset } from '../index';
+import actions, { auto, reducers, mergeReducers, reset, after } from '../index';
 
 let middleware,store;
 
@@ -34,6 +34,7 @@ describe('Setup', () => {
 //=====================================================
 //====================================== initialization
 //=====================================================
+
 
 describe('initialization', () => {
 
@@ -64,6 +65,39 @@ describe('initialization', () => {
         Object.keys(reducers).forEach(propName=>reducers[propName]());
       }).toThrow(new RegExp("You are trying to get reducers before calling 'auto'. Trying moving applyMiddleware BEFORE combineReducers"));
     })
+
+//+++++++++++ should have place holder action function
+//++++++++++++++++++ for reducers to ref at build time
+
+    it('should have a testing function', () => {
+
+        auto.testing({foo:"bar"})
+    })
+
+//+++++++++++ should have place holder action function
+//++++++++++++++++++ for reducers to ref at build time
+
+    it('should have a settings function', () => {
+
+        auto.settings({foo:"bar"})
+    })
+
+//+++++++++++ should have place holder action function
+//++++++++++++++++++ for reducers to ref at build time
+
+    it.skip('should have place holder action function for reducers to ref at build time', (done) => {
+
+        webpackModules.set(propName,"index","default",(data=[]) => data );
+        webpackModules.set(propName,actionName,"default",data => data );
+
+        auto.testing({preOnly:true})
+        auto(webpackModules, webpackModules.keys(),true)
+
+        const pointerToAction = actions[propName][actionName];
+                                actions[propName][actionName] = ()=>done();
+              pointerToAction();
+    })
+
 
 //++++++++++++++++++++++++ should merge other reducers
 //++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -376,6 +410,7 @@ describe('life cycle', () => {
 
           if (values.length === 0) {
             expect(Array.isArray(posts)).toBe(true);
+            expect(typeof posts.map).toBe("function");
             expect(typeof posts.async).toBe("object");
             expect(typeof [].async).toBe("undefined");
             unsubscribe();
@@ -697,6 +732,115 @@ describe('action middlware', () => {
         actions[propName][actionName]();
     })
 
+//++++++++++ should chain actions for default function
+//++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    it('should chain actions for default function', (done) => {
+
+
+        webpackModules.set(propName,"index","default",(data={})=> data )
+
+        const actionFunction = data => data;
+              actionFunction.chain = done;
+
+        webpackModules.set(propName,actionName,"default",actionFunction)
+        RefrashStore();
+        actions[propName][actionName]();
+    })
+
+//++++++++++ should chain actions for PENDING function
+//++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    it('should chain actions for PENDING function', (done) => {
+
+        const actionFunction = function (data, payload){ return data }
+              actionFunction.chain = done;
+
+        webpackModules.set(propName,"index","default",(data={})=> data )
+        webpackModules.set(propName,actionName,"default",(data)=>data)
+
+        webpackModules.set(propName,actionName,"PENDING",actionFunction)
+
+        webpackModules.set(propName,actionName,"action",()=> Promise.resolve() )
+
+        RefrashStore();
+        actions[propName][actionName]();
+
+    })
+
+//++++++++++ should chain actions for fulfilled function
+//++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    it('should chain actions for fulfilled function', (done) => {
+
+        const actionFunction =  data => data;
+              actionFunction.chain = done;
+
+        webpackModules.set(propName,"index","default",(data={})=> data )
+        webpackModules.set(propName,actionName,"default", data => data )
+
+        webpackModules.set(propName,actionName,"fulfilled",actionFunction)
+
+        webpackModules.set(propName,actionName,"action",()=> Promise.resolve() )
+
+        RefrashStore();
+        actions[propName][actionName]();
+
+    })
+
+//+++++++++ should chain actions for rejected function
+//++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    it('should chain actions for rejected function', (done) => {
+
+        const actionFunction =  data => data;
+              actionFunction.chain = done;
+
+        webpackModules.set(propName,"index","default",(data={})=> data )
+        webpackModules.set(propName,actionName,"default", data => data )
+
+        webpackModules.set(propName,actionName,"rejected",actionFunction)
+
+        webpackModules.set(propName,actionName,"action",()=> Promise.reject({}) )
+
+        RefrashStore();
+        actions[propName][actionName]();
+
+    })
+
+//++++ should chain actions for async default function
+//++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    it('should chain actions for async default function', (done) => {
+
+        const actionFunction = data => data;
+              actionFunction.chain = done;
+
+        webpackModules.set(propName,"index","default",(data={})=> data )
+        webpackModules.set(propName,actionName,"default",actionFunction)
+        webpackModules.set(propName,actionName,"action",()=> Promise.resolve() )
+
+        RefrashStore();
+        actions[propName][actionName]();
+
+    })
+
+//++ should throw if chained actions is not a function
+//++++++++++++++++++++++++++++++++++++++++++++++++++++
+/*
+    it('should throw if chained actions is not a function', () => {
+
+        const actionFunction = data => data
+              actionFunction.chain = "";
+
+        webpackModules.set(propName,"index","default",(data={})=> data )
+        webpackModules.set(propName,actionName,"default", actionFunction )
+
+        RefrashStore();
+        expect(actions[propName][actionName]).toThrow(new RegExp(`Chaining function used with ${actions[propName][actionName]} was not a function. string`));
+
+    })
+*/
 })
 
 
@@ -723,10 +867,10 @@ describe('Using the stores', () => {
         webpackModules.set(propName,actionName,"default",(posts, payload)=> expect(false).toEqual(true) )
 
         RefrashStore();
-
+        const value = 1
         expect(() => {
-          actions[propName][actionName](1);
-        }).toThrow(new RegExp("number was passed as payload. You may have misspelled of the variable"));
+          actions[propName][actionName](value);
+        }).toThrow(new RegExp(`${typeof value} was passed as payload to ${propName}.${actionName}. This need to be an object. Check you have not misspelled of the variable`));
 
     })
 
@@ -767,7 +911,7 @@ describe('Using the stores', () => {
         RefrashStore();
         expect(() => {
           actions[propName][actionName](undefined);
-        }).toThrow(new RegExp("undefined was passed as payload. You may have misspelled of the variable"));
+        }).toThrow(new RegExp(`undefined was passed as payload to ${propName}.${actionName}. This need to be an object. Check you have not misspelled of the variable`));
 
     })
 

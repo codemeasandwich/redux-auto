@@ -12,9 +12,10 @@ export function before (appsState, action){
 }
 
 export function after (newAppsState, action, oldAppsState){
-  if(action.type == actions.user.changeName){
+  console.log("actions",actions)
+/*  if(action.type == actions.user.changeName){
     console.log("user / index / after >> actions.user.changeName -> you have change the users name")
-  }
+  }*/
   console.log("user / index / after >> TYPE = ",action.type)
   return newAppsState;
 }

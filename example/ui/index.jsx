@@ -8,12 +8,12 @@ function Posts(props){
 
 const posts = props.children;
 
+  if( posts.async.init instanceof Error )
+    return <div style={{color:"red"}}> Error: { posts.async.init.message } <button onClick={posts.async.init.clear}> clear </button></div>
+
   if(posts.async.init)
     return <div> loading posts... </div>
-    
-  if(Object === typeof posts.async.init)
-    return <div style={{color:"red"}}> Error: { posts.async.init.message } </div>
-  
+
    return <ul> { posts.map( ({title, id}) => (
                 <li key={id}>#{id} - {title} <button  onClick={()=>actions.posts.delete({id})} className="close" >
  &times;
@@ -25,14 +25,10 @@ const MainUi = (props) => {
 
   return (
     <div>
-    <a href="https://github.com/codemeasandwich/redux-auto">
+    <a href="https://github.com/codemeasandwich/redux-auto" >
         <img style={{ padding: 30 }} src="https://s3-eu-west-1.amazonaws.com/redux-auto/reduxautologo.png" alt="redux-auto" />
     </a>
-    
-    <BadgesElem/>
-    
-    
-    
+
     <br/>
     <label htmlFor="label-input">Name:</label>
     <input type="text"
@@ -40,16 +36,17 @@ const MainUi = (props) => {
              onChange={ event => actions.user.changeName({name:event.target.value}) }
              value={props.user.name}/>  = { (props.user.async.init)?"checking..?": <span style={{textShadow: "2px 2px 2px gray"}}>{props.user.name}</span> }
 
-             
-             
+
+
              <Posts>{props.posts}</Posts>
-            
+
              <ConsoleElem/>
     </div>
   )
 }
 
-const mapStateToProps = ({user,posts}) => {
+const mapStateToProps = ( { user,posts }) => {
+//throw new Error(JSON.stringify(x))
   return { user,posts }
 };
 

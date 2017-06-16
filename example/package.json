@@ -6,7 +6,9 @@
   "scripts": {
     "start": "webpack-dev-server",
     "prod": "npm test && webpack --env=prod --progress --profile --colors",
-    "test": "echo \"Error: no test specified\""
+    "build":            "webpack --env=prod --progress --profile --colors",
+    "test": "jest --no-cache",
+    "test:watch": "jest -- --watch"
   },
   "repository": {
     "type": "git",
@@ -38,5 +40,12 @@
     "redux": "^3.6.0",
     "webpack": "^2.5.1",
     "webpack-dev-server": "^2.4.5"
+  },
+  "devDependencies": {
+    "babel-jest": "^20.0.3",
+    "babel-plugin-module-resolver": "^2.7.1",
+    "enzyme": "^2.8.2",
+    "jest": "^20.0.4",
+    "react-addons-test-utils": "^15.5.1"
   }
 }

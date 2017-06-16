@@ -1,6 +1,6 @@
 {
   "name": "redux-auto",
-  "version": "1.4.2",
+  "version": "1.5.0",
   "description": "automatically generate stories and actions from your folder and file structure",
   "main": "index.js",
   "scripts": {
@@ -12,7 +12,15 @@
   "jest": {
     "verbose": true,
     "browser": true,
-    "testPathIgnorePatterns":["<rootDir>/example/", "<rootDir>/node_modules/"]
+    "testPathIgnorePatterns": [
+      "<rootDir>/example/",
+      "<rootDir>/node_modules/"
+    ],
+    "haste": {
+      "providesModuleNodeModules": [
+        ".*"
+      ]
+    }
   },
   "repository": {
     "type": "git",

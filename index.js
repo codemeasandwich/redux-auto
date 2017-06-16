@@ -1,6 +1,5 @@
 /**
 //========================================== redux-auto
-//=========== Copyright (c) 2017-present, Brian Shannon
 //======= https://github.com/codemeasandwich/redux-auto
 */
 function ActionIDGen (reducerName, actionName, stage){
@@ -14,10 +13,27 @@ const actionsBuilder = {},  lookup = {}, lifecycle = {}
 const mappingFromReducerActionNameToACTIONID = {};
 const reducersBeforeAutoErrorMessage = "You are trying to get reducers before calling 'auto'. Trying moving applyMiddleware BEFORE combineReducers";
 const reducersAfterCombineReducersErrorMessage = "You need to pass an object of reducers to 'mergeReducers' BEFORE calling combineReducers. Try createStore( combineReducers( mergeReducers(otherReducers) ) )";
-let autoWasCalled = false, reducers = { auto_function_not_call_before_combineReducers: ()=>{throw new Error(reducersBeforeAutoErrorMessage)} }
+let autoWasCalled = false, reducers = {
+  auto_function_not_call_before_combineReducers: ()=>{
+    throw new Error(reducersBeforeAutoErrorMessage);
+  }
+}
+
+function chaining(actionType){
+  // console.log(actionType, typeof chaining[actionType])
+  //if(undefined === chaining[actionType])
+  //  return;
+  if("function" === typeof chaining[actionType])
+    chaining[actionType]();
+  // else throw new Error(`Chaining function used with ${actionType} was not a function. ${typeof chaining[actionType]}`)
+}
+
+const settings = {}, testing = {};
 
 function reset(){
 
+  Object.keys(settings).forEach(p => delete settings[p]);
+  Object.keys(testing).forEach(p => delete testing[p]);
   Object.keys(actionsBuilder).forEach(p => delete actionsBuilder[p]);
   Object.keys(reducers).forEach(p => delete reducers[p]);
   Object.keys(lookup).forEach(p => delete lookup[p]);
@@ -37,11 +53,35 @@ function mergeReducers(otherReducers){
     return Object.assign({},otherReducers, reducers);
 }
 
+  function buildActionLayout(fileNameArray){
+
+      fileNameArray.forEach(function(key){
+
+      // get action name
+      const actionName = key.match(/([^\/]+)(?=\.\w+$)/)[0];
+      // get reducer name
+      const reducerName = key.match(/(.*)[\/\\]/)[1].substring(2);//||null;
+
+      //if(actionName.includes(".")) throw new Error(`file ${actionName} in ${reducerName} contains a DOT in its name`)
+      //if(reducerName.includes(".")) throw new Error(`the folder ${reducerName} contains a DOT in its name`)
+
+      // get action name starts with _ skip it
+      if(actionName.startsWith("_") || null === reducerName || "index" === actionName)
+          return;
+
+
+          actionsBuilder[reducerName] = actionsBuilder[reducerName] || {};
+          actionsBuilder[reducerName][actionName] = function (payload){
+            actionsBuilder[reducerName][actionName](payload)
+          };
+    })
+  }
+
  function auto (modules, fileNameArray){
 
    autoWasCalled = true;
    reset();
-
+  buildActionLayout(fileNameArray); if(testing.preOnly) return;
   fileNameArray.forEach(function(key){
 
   // get action name
@@ -49,8 +89,10 @@ function mergeReducers(otherReducers){
   // get reducer name
   const reducerName = key.match(/(.*)[\/\\]/)[1].substring(2);//||null;
 
-  if(actionName.includes(".")) throw new Error(`file ${actionName} in ${reducerName} contains a DOT in its name`)
-  if(reducerName.includes(".")) throw new Error(`the folder ${reducerName} contains a DOT in its name`)
+  if(actionName.includes("."))
+      throw new Error(`file ${actionName} in ${reducerName} contains a DOT in its name`)
+  if(reducerName.includes("."))
+      throw new Error(`the folder ${reducerName} contains a DOT in its name`)
 
   // get action name starts with _ skip it
   if(actionName.startsWith("_") || null === reducerName)
@@ -92,16 +134,20 @@ function mergeReducers(otherReducers){
       throw new Error(`${reducerName}-before returned a "${typeof payload}" should be a payload object`)
 
       let newState = data;
-      let async = (data && data.__proto__.async)?data.__proto__.async : {};
+      let newAsyncVal = !!(data && data.__proto__.async);
+      let async = (newAsyncVal)?data.__proto__.async : {};
 
       if(avabileAction in avabileActions){
 
         if(actionFragments.length === 2){
 
+          newAsyncVal = true;
           const stage = actionFragments[1].toLowerCase();
 
+          async = (data && data.__proto__.async)?data.__proto__.async : {};
+          async = Object.assign({}, async);
+
           if(stage === "clear" ){
-            async = Object.assign({}, async);
             async[avabileAction] = undefined;
           } else {
 
@@ -113,11 +159,17 @@ function mergeReducers(otherReducers){
 
               //    if(  stage === "pending" || stage === "fulfilled" || stage === "rejected" ){
                 if ("function" === typeof lookup[reducerName][avabileAction][stage]) {
-                  newState = lookup[reducerName][avabileAction][stage](data, action.reqPayload, payload)
+                  newState = lookup[reducerName][avabileAction][stage](data, action.reqPayload, payload);
+                  if("function" === typeof lookup[reducerName][avabileAction][stage].chain){
+                      chaining[action.type] = lookup[reducerName][avabileAction][stage].chain
+                  }
                 } else {
                   newState = lookup[reducerName][avabileAction](data, action.reqPayload, actionFragments[1], payload);
+                  if("function" === typeof lookup[reducerName][avabileAction].chain){
+                      chaining[action.type] = lookup[reducerName][avabileAction].chain
+                  }
                 }
-                async = Object.assign({}, async);
+
                 async[avabileAction] = (stage === "pending") ? true : (stage === "fulfilled") ? false : payload;
 
                 if(clearFn)//(async[avabileAction] instanceof Error){
@@ -125,6 +177,10 @@ function mergeReducers(otherReducers){
            }
         } else {
           newState = lookup[reducerName][avabileAction](data, payload);
+
+          if("function" === typeof lookup[reducerName][avabileAction].chain){
+              chaining[action.type] = lookup[reducerName][avabileAction].chain
+          }
         }
       } else {// if("index" in lookup[reducerName]){
 
@@ -136,15 +192,16 @@ function mergeReducers(otherReducers){
       // check if newState's prototype is the shared Object?
       //console.log (action.type, newState, ({}).__proto__ === newState.__proto__)
 
-      if("object" === typeof newState){
+      if(newAsyncVal && "object" === typeof newState ){
         // I am a redux-auto proto
-        if(newState.__proto__.hasOwnProperty("async")){
-          async.__proto__ = newState.__proto__.__proto__;
-        } else {
-          async.__proto__ = newState.__proto__;
-        }
+        const _newProto_ = {async}
 
-        newState.__proto__ = {async};
+        if(newState.__proto__.hasOwnProperty("async"))
+          _newProto_.__proto__ = newState.__proto__.__proto__;
+         else
+          _newProto_.__proto__ = newState.__proto__;
+
+        newState.__proto__ = _newProto_;
       }
       return newState
 
@@ -155,7 +212,7 @@ function mergeReducers(otherReducers){
   if(actionName !== "index"){
 
     const actionPreProcessor = modules(key).action;
-    actionsBuilder[reducerName] = actionsBuilder[reducerName] || {};
+    // actionsBuilder[reducerName] = actionsBuilder[reducerName] || {};
 
     actionsBuilder[reducerName][actionName] = (payload,getState) => {
 
@@ -181,8 +238,8 @@ function mergeReducers(otherReducers){
           actionsBuilder[reducerName][actionName] = function(payload = {}) {
 
           if(arguments.length > 0 && undefined === arguments[0] || "object" !== typeof payload){
-             throw new Error(typeof arguments[0]+" was passed as payload. You may have misspelled of the variable");
-          }
+            throw new Error(`${typeof arguments[0]} was passed as payload to ${reducerName}.${actionName}. This need to be an object. Check you have not misspelled of the variable`);
+         }
 
             const wrappingFn = actionsBuilder[reducerName][actionName];
 
@@ -194,20 +251,26 @@ function mergeReducers(otherReducers){
                    wrappingFn.pending   = ActionIDGen(reducerName, actionName,"pending");//actionOutput.type+"/PENDING"
                    wrappingFn.fulfilled = ActionIDGen(reducerName, actionName,"fulfilled");//actionOutput.type+"/FULFILLED"
                    wrappingFn.rejected  = ActionIDGen(reducerName, actionName,"rejected");//actionOutput.type+"/REJECTED"
-                   wrappingFn.clear  = ActionIDGen(reducerName, actionName,"clear");//actionOutput.type+"/REJECTED"
+                   wrappingFn.clear     = ActionIDGen(reducerName, actionName,"clear");//actionOutput.type+"/REJECTED"
                 //}
 
                 //console.log(Object.isFrozen(actionDataFn),actionDataFn)
                 //pending
                 dispatch({type:wrappingFn.pending, reqPayload:payload, payload:null})
+                chaining(wrappingFn.pending)
                 actionOutput.payload
-                .then(result => dispatch({type:wrappingFn.fulfilled, reqPayload:payload, payload:result }))
+                .then(result => {
+                  dispatch({type:wrappingFn.fulfilled, reqPayload:payload, payload:result })
+                  chaining(wrappingFn.fulfilled)
+                })
                 .catch(err => {
                   err.clear = ()=>{dispatch({type:wrappingFn.clear})};
                   dispatch({type:wrappingFn.rejected, reqPayload:payload, payload:err})
+                  chaining(wrappingFn.rejected)
                 })
               } else {
                 dispatch(actionOutput);
+                chaining(actionOutput.type)
               }
             } else {// if(undefined === actionOutput.payload)
               // because an action-middlware my set a simple value
@@ -229,6 +292,14 @@ function mergeReducers(otherReducers){
 
     return next => action => next(action)
  }
+}
+
+auto.settings = function settings(options){
+  Object.assign(settings,options)
+}
+
+auto.testing = function testing(options){
+  Object.assign(testing,options)
 }
 
 export default actionsBuilder;
