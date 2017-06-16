@@ -13,20 +13,27 @@ const actionsBuilder = {},  lookup = {}, lifecycle = {}
 const mappingFromReducerActionNameToACTIONID = {};
 const reducersBeforeAutoErrorMessage = "You are trying to get reducers before calling 'auto'. Trying moving applyMiddleware BEFORE combineReducers";
 const reducersAfterCombineReducersErrorMessage = "You need to pass an object of reducers to 'mergeReducers' BEFORE calling combineReducers. Try createStore( combineReducers( mergeReducers(otherReducers) ) )";
-let autoWasCalled = false, reducers = { auto_function_not_call_before_combineReducers: ()=>{throw new Error(reducersBeforeAutoErrorMessage)} }
+let autoWasCalled = false, reducers = {
+  auto_function_not_call_before_combineReducers: ()=>{
+    throw new Error(reducersBeforeAutoErrorMessage);
+  }
+}
 
 function chaining(actionType){
   // console.log(actionType, typeof chaining[actionType])
   //if(undefined === chaining[actionType])
-  //  return; 
+  //  return;
   if("function" === typeof chaining[actionType])
     chaining[actionType]();
   // else throw new Error(`Chaining function used with ${actionType} was not a function. ${typeof chaining[actionType]}`)
 }
 
+const settings = {}, testing = {};
 
 function reset(){
 
+  Object.keys(settings).forEach(p => delete settings[p]);
+  Object.keys(testing).forEach(p => delete testing[p]);
   Object.keys(actionsBuilder).forEach(p => delete actionsBuilder[p]);
   Object.keys(reducers).forEach(p => delete reducers[p]);
   Object.keys(lookup).forEach(p => delete lookup[p]);
@@ -64,7 +71,9 @@ function mergeReducers(otherReducers){
 
 
           actionsBuilder[reducerName] = actionsBuilder[reducerName] || {};
-          actionsBuilder[reducerName][actionName] = ()=>{ actionsBuilder[reducerName][actionName]() };
+          actionsBuilder[reducerName][actionName] = function (payload){
+            actionsBuilder[reducerName][actionName](payload)
+          };
     })
   }
 
@@ -72,7 +81,7 @@ function mergeReducers(otherReducers){
 
    autoWasCalled = true;
    reset();
-  buildActionLayout(fileNameArray)
+  buildActionLayout(fileNameArray); if(testing.preOnly) return;
   fileNameArray.forEach(function(key){
 
   // get action name
@@ -151,7 +160,7 @@ function mergeReducers(otherReducers){
               //    if(  stage === "pending" || stage === "fulfilled" || stage === "rejected" ){
                 if ("function" === typeof lookup[reducerName][avabileAction][stage]) {
                   newState = lookup[reducerName][avabileAction][stage](data, action.reqPayload, payload);
-                  if("function" === typeof lookup[reducerName][avabileAction][stage].chain){ 
+                  if("function" === typeof lookup[reducerName][avabileAction][stage].chain){
                       chaining[action.type] = lookup[reducerName][avabileAction][stage].chain
                   }
                 } else {
@@ -168,7 +177,7 @@ function mergeReducers(otherReducers){
            }
         } else {
           newState = lookup[reducerName][avabileAction](data, payload);
-          
+
           if("function" === typeof lookup[reducerName][avabileAction].chain){
               chaining[action.type] = lookup[reducerName][avabileAction].chain
           }
@@ -186,12 +195,12 @@ function mergeReducers(otherReducers){
       if(newAsyncVal && "object" === typeof newState ){
         // I am a redux-auto proto
         const _newProto_ = {async}
-        
+
         if(newState.__proto__.hasOwnProperty("async"))
           _newProto_.__proto__ = newState.__proto__.__proto__;
          else
           _newProto_.__proto__ = newState.__proto__;
-        
+
         newState.__proto__ = _newProto_;
       }
       return newState
@@ -283,6 +292,14 @@ function mergeReducers(otherReducers){
 
     return next => action => next(action)
  }
+}
+
+auto.settings = function settings(options){
+  Object.assign(settings,options)
+}
+
+auto.testing = function testing(options){
+  Object.assign(testing,options)
 }
 
 export default actionsBuilder;

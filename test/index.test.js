@@ -9,7 +9,7 @@ import faker from 'faker'
 import { createStore, applyMiddleware, combineReducers } from 'redux'
 
 import   webpackModules   from './webpackModules';
-import actions, { auto, reducers, mergeReducers, reset } from '../index';
+import actions, { auto, reducers, mergeReducers, reset, after } from '../index';
 
 let middleware,store;
 
@@ -34,6 +34,7 @@ describe('Setup', () => {
 //=====================================================
 //====================================== initialization
 //=====================================================
+
 
 describe('initialization', () => {
 
@@ -64,6 +65,39 @@ describe('initialization', () => {
         Object.keys(reducers).forEach(propName=>reducers[propName]());
       }).toThrow(new RegExp("You are trying to get reducers before calling 'auto'. Trying moving applyMiddleware BEFORE combineReducers"));
     })
+
+//+++++++++++ should have place holder action function
+//++++++++++++++++++ for reducers to ref at build time
+
+    it('should have a testing function', () => {
+
+        auto.testing({foo:"bar"})
+    })
+
+//+++++++++++ should have place holder action function
+//++++++++++++++++++ for reducers to ref at build time
+
+    it('should have a settings function', () => {
+
+        auto.settings({foo:"bar"})
+    })
+
+//+++++++++++ should have place holder action function
+//++++++++++++++++++ for reducers to ref at build time
+
+    it.skip('should have place holder action function for reducers to ref at build time', (done) => {
+
+        webpackModules.set(propName,"index","default",(data=[]) => data );
+        webpackModules.set(propName,actionName,"default",data => data );
+
+        auto.testing({preOnly:true})
+        auto(webpackModules, webpackModules.keys(),true)
+
+        const pointerToAction = actions[propName][actionName];
+                                actions[propName][actionName] = ()=>done();
+              pointerToAction();
+    })
+
 
 //++++++++++++++++++++++++ should merge other reducers
 //++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -703,9 +737,9 @@ describe('action middlware', () => {
 
     it('should chain actions for default function', (done) => {
 
-    
+
         webpackModules.set(propName,"index","default",(data={})=> data )
-        
+
         const actionFunction = data => data;
               actionFunction.chain = done;
 
@@ -724,14 +758,14 @@ describe('action middlware', () => {
 
         webpackModules.set(propName,"index","default",(data={})=> data )
         webpackModules.set(propName,actionName,"default",(data)=>data)
-        
+
         webpackModules.set(propName,actionName,"PENDING",actionFunction)
-        
+
         webpackModules.set(propName,actionName,"action",()=> Promise.resolve() )
 
         RefrashStore();
         actions[propName][actionName]();
-        
+
     })
 
 //++++++++++ should chain actions for fulfilled function
@@ -744,14 +778,14 @@ describe('action middlware', () => {
 
         webpackModules.set(propName,"index","default",(data={})=> data )
         webpackModules.set(propName,actionName,"default", data => data )
-        
+
         webpackModules.set(propName,actionName,"fulfilled",actionFunction)
-        
+
         webpackModules.set(propName,actionName,"action",()=> Promise.resolve() )
 
         RefrashStore();
         actions[propName][actionName]();
-        
+
     })
 
 //+++++++++ should chain actions for rejected function
@@ -764,14 +798,14 @@ describe('action middlware', () => {
 
         webpackModules.set(propName,"index","default",(data={})=> data )
         webpackModules.set(propName,actionName,"default", data => data )
-        
+
         webpackModules.set(propName,actionName,"rejected",actionFunction)
-        
+
         webpackModules.set(propName,actionName,"action",()=> Promise.reject({}) )
 
         RefrashStore();
         actions[propName][actionName]();
-        
+
     })
 
 //++++ should chain actions for async default function
@@ -788,23 +822,23 @@ describe('action middlware', () => {
 
         RefrashStore();
         actions[propName][actionName]();
-        
+
     })
 
 //++ should throw if chained actions is not a function
 //++++++++++++++++++++++++++++++++++++++++++++++++++++
 /*
     it('should throw if chained actions is not a function', () => {
-    
+
         const actionFunction = data => data
               actionFunction.chain = "";
 
         webpackModules.set(propName,"index","default",(data={})=> data )
         webpackModules.set(propName,actionName,"default", actionFunction )
-      
+
         RefrashStore();
         expect(actions[propName][actionName]).toThrow(new RegExp(`Chaining function used with ${actions[propName][actionName]} was not a function. string`));
-        
+
     })
 */
 })

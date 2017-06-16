@@ -25,7 +25,7 @@ const MainUi = (props) => {
 
   return (
     <div>
-    <a href="https://github.com/codemeasandwich/redux-auto" style={{display:"none"}} >
+    <a href="https://github.com/codemeasandwich/redux-auto" >
         <img style={{ padding: 30 }} src="https://s3-eu-west-1.amazonaws.com/redux-auto/reduxautologo.png" alt="redux-auto" />
     </a>
 

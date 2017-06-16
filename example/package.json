@@ -6,6 +6,7 @@
   "scripts": {
     "start": "webpack-dev-server",
     "prod": "npm test && webpack --env=prod --progress --profile --colors",
+    "build":            "webpack --env=prod --progress --profile --colors",
     "test": "jest --no-cache",
     "test:watch": "jest -- --watch"
   },
