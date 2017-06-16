@@ -698,6 +698,115 @@ describe('action middlware', () => {
         actions[propName][actionName]();
     })
 
+//++++++++++ should chain actions for default function
+//++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    it('should chain actions for default function', (done) => {
+
+    
+        webpackModules.set(propName,"index","default",(data={})=> data )
+        
+        const actionFunction = data => data;
+              actionFunction.chain = done;
+
+        webpackModules.set(propName,actionName,"default",actionFunction)
+        RefrashStore();
+        actions[propName][actionName]();
+    })
+
+//++++++++++ should chain actions for PENDING function
+//++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    it('should chain actions for PENDING function', (done) => {
+
+        const actionFunction = function (data, payload){ return data }
+              actionFunction.chain = done;
+
+        webpackModules.set(propName,"index","default",(data={})=> data )
+        webpackModules.set(propName,actionName,"default",(data)=>data)
+        
+        webpackModules.set(propName,actionName,"PENDING",actionFunction)
+        
+        webpackModules.set(propName,actionName,"action",()=> Promise.resolve() )
+
+        RefrashStore();
+        actions[propName][actionName]();
+        
+    })
+
+//++++++++++ should chain actions for fulfilled function
+//++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    it('should chain actions for fulfilled function', (done) => {
+
+        const actionFunction =  data => data;
+              actionFunction.chain = done;
+
+        webpackModules.set(propName,"index","default",(data={})=> data )
+        webpackModules.set(propName,actionName,"default", data => data )
+        
+        webpackModules.set(propName,actionName,"fulfilled",actionFunction)
+        
+        webpackModules.set(propName,actionName,"action",()=> Promise.resolve() )
+
+        RefrashStore();
+        actions[propName][actionName]();
+        
+    })
+
+//+++++++++ should chain actions for rejected function
+//++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    it('should chain actions for rejected function', (done) => {
+
+        const actionFunction =  data => data;
+              actionFunction.chain = done;
+
+        webpackModules.set(propName,"index","default",(data={})=> data )
+        webpackModules.set(propName,actionName,"default", data => data )
+        
+        webpackModules.set(propName,actionName,"rejected",actionFunction)
+        
+        webpackModules.set(propName,actionName,"action",()=> Promise.reject({}) )
+
+        RefrashStore();
+        actions[propName][actionName]();
+        
+    })
+
+//++++ should chain actions for async default function
+//++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    it('should chain actions for async default function', (done) => {
+
+        const actionFunction = data => data;
+              actionFunction.chain = done;
+
+        webpackModules.set(propName,"index","default",(data={})=> data )
+        webpackModules.set(propName,actionName,"default",actionFunction)
+        webpackModules.set(propName,actionName,"action",()=> Promise.resolve() )
+
+        RefrashStore();
+        actions[propName][actionName]();
+        
+    })
+
+//++ should throw if chained actions is not a function
+//++++++++++++++++++++++++++++++++++++++++++++++++++++
+/*
+    it('should throw if chained actions is not a function', () => {
+    
+        const actionFunction = data => data
+              actionFunction.chain = "";
+
+        webpackModules.set(propName,"index","default",(data={})=> data )
+        webpackModules.set(propName,actionName,"default", actionFunction )
+      
+        RefrashStore();
+        expect(actions[propName][actionName]).toThrow(new RegExp(`Chaining function used with ${actions[propName][actionName]} was not a function. string`));
+        
+    })
+*/
 })
 
 

@@ -6,17 +6,17 @@
   ],
   "env": {
       "test": {
-        "presets": ["es2015","react"]
+        "presets": ["es2015","react"],      
+        "plugins": [
+          [
+            "module-resolver",
+            {
+              "alias": {
+                "redux-auto":"./../index.js"
+              }
+            }
+          ]
+        ]
       }
-  },
-  "plugins": [
-    [
-      "module-resolver",
-      {
-        "alias": {
-          "redux-auto":"./../index.js"
-        }
-      }
-    ]
-  ]
+  }
 }

@@ -16,12 +16,12 @@ const reducersAfterCombineReducersErrorMessage = "You need to pass an object of 
 let autoWasCalled = false, reducers = { auto_function_not_call_before_combineReducers: ()=>{throw new Error(reducersBeforeAutoErrorMessage)} }
 
 function chaining(actionType){
-  if(undefined === chaining[actionType])
-    return
-  if("function" === typeof chaining[actionType]){debugger;chaining[actionType]()}
-
-  else
-  throw new Error(`Chaining function used with ${actionType} was not a function. ${typeof chaining[actionType]}`)
+  // console.log(actionType, typeof chaining[actionType])
+  //if(undefined === chaining[actionType])
+  //  return; 
+  if("function" === typeof chaining[actionType])
+    chaining[actionType]();
+  // else throw new Error(`Chaining function used with ${actionType} was not a function. ${typeof chaining[actionType]}`)
 }
 
 
@@ -55,11 +55,11 @@ function mergeReducers(otherReducers){
       // get reducer name
       const reducerName = key.match(/(.*)[\/\\]/)[1].substring(2);//||null;
 
-      if(actionName.includes(".")) throw new Error(`file ${actionName} in ${reducerName} contains a DOT in its name`)
-      if(reducerName.includes(".")) throw new Error(`the folder ${reducerName} contains a DOT in its name`)
+      //if(actionName.includes(".")) throw new Error(`file ${actionName} in ${reducerName} contains a DOT in its name`)
+      //if(reducerName.includes(".")) throw new Error(`the folder ${reducerName} contains a DOT in its name`)
 
       // get action name starts with _ skip it
-      if(actionName.startsWith("_") || null === reducerName)
+      if(actionName.startsWith("_") || null === reducerName || "index" === actionName)
           return;
 
 
@@ -80,8 +80,10 @@ function mergeReducers(otherReducers){
   // get reducer name
   const reducerName = key.match(/(.*)[\/\\]/)[1].substring(2);//||null;
 
-  if(actionName.includes(".")) throw new Error(`file ${actionName} in ${reducerName} contains a DOT in its name`)
-  if(reducerName.includes(".")) throw new Error(`the folder ${reducerName} contains a DOT in its name`)
+  if(actionName.includes("."))
+      throw new Error(`file ${actionName} in ${reducerName} contains a DOT in its name`)
+  if(reducerName.includes("."))
+      throw new Error(`the folder ${reducerName} contains a DOT in its name`)
 
   // get action name starts with _ skip it
   if(actionName.startsWith("_") || null === reducerName)
@@ -149,7 +151,7 @@ function mergeReducers(otherReducers){
               //    if(  stage === "pending" || stage === "fulfilled" || stage === "rejected" ){
                 if ("function" === typeof lookup[reducerName][avabileAction][stage]) {
                   newState = lookup[reducerName][avabileAction][stage](data, action.reqPayload, payload);
-                  if("function" === typeof lookup[reducerName][avabileAction][stage].chain){ debugger;
+                  if("function" === typeof lookup[reducerName][avabileAction][stage].chain){ 
                       chaining[action.type] = lookup[reducerName][avabileAction][stage].chain
                   }
                 } else {
@@ -166,8 +168,9 @@ function mergeReducers(otherReducers){
            }
         } else {
           newState = lookup[reducerName][avabileAction](data, payload);
+          
           if("function" === typeof lookup[reducerName][avabileAction].chain){
-              chaining.after[action.type] = lookup[reducerName][avabileAction].chain
+              chaining[action.type] = lookup[reducerName][avabileAction].chain
           }
         }
       } else {// if("index" in lookup[reducerName]){
@@ -182,12 +185,13 @@ function mergeReducers(otherReducers){
 
       if(newAsyncVal && "object" === typeof newState ){
         // I am a redux-auto proto
-        let _p_ = newState.__proto__;
-        if(newState.__proto__.hasOwnProperty("async")){
-          _p_ = newState.__proto__.__proto__;
-        }
         const _newProto_ = {async}
-        _newProto_.__proto__ = _p_
+        
+        if(newState.__proto__.hasOwnProperty("async"))
+          _newProto_.__proto__ = newState.__proto__.__proto__;
+         else
+          _newProto_.__proto__ = newState.__proto__;
+        
         newState.__proto__ = _newProto_;
       }
       return newState
@@ -199,7 +203,7 @@ function mergeReducers(otherReducers){
   if(actionName !== "index"){
 
     const actionPreProcessor = modules(key).action;
-    actionsBuilder[reducerName] = actionsBuilder[reducerName] || {};
+    // actionsBuilder[reducerName] = actionsBuilder[reducerName] || {};
 
     actionsBuilder[reducerName][actionName] = (payload,getState) => {
 
