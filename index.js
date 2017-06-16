@@ -2,6 +2,19 @@
 //========================================== redux-auto
 //======= https://github.com/codemeasandwich/redux-auto
 */
+
+
+function isFunction(value){
+//return ({}).toString.call(value) === '[object Function]';
+  return value instanceof Function;
+}
+function isObject(value){
+//return !! value && value.constructor === Object;
+  return value instanceof Object;
+}
+
+const isArray = Array.isArray;
+
 function ActionIDGen (reducerName, actionName, stage){
   if (3 === arguments.length)
     return reducerName.toUpperCase() + "/" + actionName.toUpperCase() + "." + stage.toUpperCase();
@@ -23,8 +36,7 @@ function chaining(actionType){
   // console.log(actionType, typeof chaining[actionType])
   //if(undefined === chaining[actionType])
   //  return;
-  if("function" === typeof chaining[actionType])
-    chaining[actionType]();
+  chaining[actionType] && chaining[actionType]();
   // else throw new Error(`Chaining function used with ${actionType} was not a function. ${typeof chaining[actionType]}`)
 }
 
@@ -47,7 +59,7 @@ function mergeReducers(otherReducers){
   if(!autoWasCalled)
     throw new Error(reducersBeforeAutoErrorMessage)
 
-  if("function" === typeof otherReducers)
+  if(isFunction(otherReducers))
     throw new Error(reducersAfterCombineReducersErrorMessage)
 
     return Object.assign({},otherReducers, reducers);
@@ -66,7 +78,7 @@ function mergeReducers(otherReducers){
       //if(reducerName.includes(".")) throw new Error(`the folder ${reducerName} contains a DOT in its name`)
 
       // get action name starts with _ skip it
-      if(actionName.startsWith("_") || null === reducerName || "index" === actionName)
+      if("_" === actionName[0] || null === reducerName || "index" === actionName)
           return;
 
 
@@ -93,7 +105,7 @@ function mergeReducers(otherReducers){
       throw new Error(`the folder ${reducerName} contains a DOT in its name`)
 
   // get action name starts with _ skip it
-  if(actionName.startsWith("_") || null === reducerName)
+  if("_" === actionName[0] || null === reducerName)
       return;
 
   lookup[reducerName] = lookup[reducerName] || {};
@@ -128,7 +140,8 @@ function mergeReducers(otherReducers){
 
       // redux-auto ALLOWS has an object payload (other like '@@redux/INIT' will not)
       // before should return a payload object
-      if("object" === typeof action.payload && "object" !== typeof payload)
+      //if("object" === typeof action.payload && "object" !== typeof payload)//
+      if( isObject(action.payload) && ! isObject(payload))
       throw new Error(`${reducerName}-before returned a "${typeof payload}" should be a payload object`)
 
       let newState = data;
@@ -145,25 +158,25 @@ function mergeReducers(otherReducers){
           async = (data && data.__proto__.async)?data.__proto__.async : {};
           async = Object.assign({}, async);
 
-          if(stage === "clear" ){
+          if( "clear" === stage ){
             async[avabileAction] = undefined;
           } else {
 
                 let clearFn;
-                if(stage === "rejected" ){
+                if( "rejected" === stage ){
                   clearFn = payload.clear;
                   delete payload.clear;
                 }
 
               //    if(  stage === "pending" || stage === "fulfilled" || stage === "rejected" ){
-                if ("function" === typeof lookup[reducerName][avabileAction][stage]) {
+                if (isFunction(lookup[reducerName][avabileAction][stage])){//("function" === typeof lookup[reducerName][avabileAction][stage]) {
                   newState = lookup[reducerName][avabileAction][stage](data, action.reqPayload, payload);
-                  if("function" === typeof lookup[reducerName][avabileAction][stage].chain){
+                  if(isFunction(lookup[reducerName][avabileAction][stage].chain)){
                       chaining[action.type] = lookup[reducerName][avabileAction][stage].chain
                   }
                 } else {
                   newState = lookup[reducerName][avabileAction](data, action.reqPayload, actionFragments[1], payload);
-                  if("function" === typeof lookup[reducerName][avabileAction].chain){
+                  if(isFunction(lookup[reducerName][avabileAction].chain)){
                       chaining[action.type] = lookup[reducerName][avabileAction].chain
                   }
                 }
@@ -176,7 +189,7 @@ function mergeReducers(otherReducers){
         } else {
           newState = lookup[reducerName][avabileAction](data, payload);
 
-          if("function" === typeof lookup[reducerName][avabileAction].chain){
+          if(isFunction(lookup[reducerName][avabileAction].chain)){
               chaining[action.type] = lookup[reducerName][avabileAction].chain
           }
         }
@@ -190,7 +203,7 @@ function mergeReducers(otherReducers){
       // check if newState's prototype is the shared Object?
       //console.log (action.type, newState, ({}).__proto__ === newState.__proto__)
 
-      if(newAsyncVal && "object" === typeof newState ){
+      if(newAsyncVal && (isObject(newState) || isArray(newState))){
         // I am a redux-auto proto
         const _newProto_ = {async}
 
@@ -207,7 +220,7 @@ function mergeReducers(otherReducers){
   } // END !(reducerName in reducers)
 
   // !! index reduers DONT get to overload the action.. sorry :) !!
-  if(actionName !== "index"){
+  if("index" !== actionName){
 
     const actionPreProcessor = modules(key).action;
     // actionsBuilder[reducerName] = actionsBuilder[reducerName] || {};
@@ -235,7 +248,7 @@ function mergeReducers(otherReducers){
           // replace the mapping object pointer the wrappingFn
           actionsBuilder[reducerName][actionName] = function(payload = {}) {
 
-          if(arguments.length > 0 && undefined === arguments[0] || "object" !== typeof payload){
+          if(arguments.length > 0 && undefined === arguments[0] || ! isObject(payload)){
             throw new Error(`${typeof arguments[0]} was passed as payload to ${reducerName}.${actionName}. This need to be an object. Check you have not misspelled of the variable`);
          }
 
@@ -243,8 +256,8 @@ function mergeReducers(otherReducers){
 
             const actionOutput = actionDataFn(payload,getState)
 
-            if("object" === typeof actionOutput.payload){
-              if(actionOutput.payload.then instanceof Function){
+            if(isObject(actionOutput.payload)){
+              if(isFunction(actionOutput.payload.then)){
                 //if( ! Object.isFrozen(actionDataFn)){
                    wrappingFn.pending   = ActionIDGen(reducerName, actionName,"pending");//actionOutput.type+"/PENDING"
                    wrappingFn.fulfilled = ActionIDGen(reducerName, actionName,"fulfilled");//actionOutput.type+"/FULFILLED"
@@ -283,7 +296,7 @@ function mergeReducers(otherReducers){
 
         // if there is an initialization action, fire it!!
         const init = actionsBuilder[reducerName].init || actionsBuilder[reducerName].INIT
-        if ("function" === typeof init) {
+        if (isFunction(init)) {
           init();
         }
    })
