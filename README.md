@@ -11,19 +11,20 @@
 [![Known Vulnerabilities](https://snyk.io/test/npm/redux-auto/badge.svg)](https://snyk.io/test/npm/redux-auto)
 [![bitHound Dependencies](https://www.bithound.io/github/codemeasandwich/redux-auto/badges/dependencies.svg)](https://www.bithound.io/github/codemeasandwich/redux-auto/master/dependencies/npm)
 
-  * [why](#why)
-    + [plug & Play](#plug---play)
+  * [Why](#why)
+    + [plug & Play](#plug--play)
     + [asynchronous](#asynchronous)
 - [Live Demo](http://redux-auto.s3-website-eu-west-1.amazonaws.com/)
   * [Source](https://github.com/codemeasandwich/redux-auto/tree/master/example)
 - [Overview](#overview-)
 - [setup](#setup)
-  * [Using along side an existing Redux setup.](#using-along-side-an-existing-redux-setup)
-  * [Using along side other Redux middleware.](#using-along-side-other-redux-middleware)
-  * [actions are available in the UI](#actions-are-available-in-the-ui)
-- [action files](#action-files)
-- [lifecycle diagrame](#lifecycle-diagrame)
-- [index files](#index-files)
+  * [Using along side an existing Redux setup](#using-along-side-an-existing-redux-setup)
+  * [Using along side other Redux middleware](#using-along-side-other-redux-middleware)
+  * [Actions are available in the UI](#actions-are-available-in-the-ui)
+- [Action files](#action-files)
+  * [Chaining action together](#chaining-action-together)
+- [Lifecycle diagrame](#lifecycle-diagrame)
+- [Index files](#index-files)
 
 ## why
 
@@ -198,16 +199,14 @@ export function action (payload,apps){
 
 You chain actions back-to-back by setting a chain function on the exported function.
 
-There are 2 ways to chain actions together.
-
-**1:** Attach a function to the "chain" property
+Attach a function as the "chain" property of the function
 
 **Example:**
 /store/user/getInfo
 ```JS
 export function fulfilled (user, payload, userFromServer){
   return userFromServer;
-} fulfilled.chain = () => actions.nav.move({page:"home"})
+} fulfilled.chain = (user, payload, userFromServer) => actions.nav.move({page:"home"})
 
 export function rejected (user, payload, userFromServer){
   return userFromServer;
@@ -218,25 +217,12 @@ export function action (payload){
 	return fetch('/api/foo/bar/user/'+payload.userId)
 }
 ```
-Calling "**actions.user.login({userId:1})**" will automatically call  **actions.nav.move** OR **actions.user.reset** *with out arguments
+
+If you pass you our function. It will be passed all the arguments, the same a the host function. Else you can pass thought a function to be called without any arguments
+ 
+So calling "**actions.user.login({userId:1})**" will automatically call  **actions.nav.move** with the host arguments OR **actions.user.reset** *with out arguments. 
 
 
-**2:** Call the action from the index action - *(anti-pattern)*
-
-**Example:**
-/store/nav/index
-```JS
-
-import actions from 'redux-auto'
-
-export default function nav(nav = defaultNavSetting, action) {
-if(action.type == actions.user.login.fulfilled){
-actions.nav.move({page:"home"})
-}
-  return nav;
-}
-```
-**!! WARNING !!** Starting another dispatch before your reducer is finished an anti-pattern, because the state you received at the beginning of your reducer will not be the current application state anymore when your reducer finishes.
 
 ## lifecycle diagrame
 

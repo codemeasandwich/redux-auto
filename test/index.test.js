@@ -15,22 +15,11 @@ let middleware,store;
 
 function RefrashStore(){
   // build 'auto' based on target files via Webpack
-  middleware = applyMiddleware( auto(webpackModules, webpackModules.keys(),true));
+  auto.reset();
+  middleware = applyMiddleware( auto(webpackModules, webpackModules.keys()));
   store = createStore(combineReducers(reducers), middleware );
 }
 
-//=====================================================
-//=============================================== Setup
-//=====================================================
-/*
-describe('Setup', () => {
-
-    beforeEach(function() {
-      webpackModules.clear();
-    });
-
-    it('should throw an Error when no index is found', () => expect( RefrashStore ).toThrow() )
-}) */
 //=====================================================
 //====================================== initialization
 //=====================================================
@@ -71,14 +60,17 @@ describe('initialization', () => {
 
     it('should have a testing function', () => {
 
-        auto.testing({foo:"bar"})
+      webpackModules.set(propName,"index","default",(posts=[]) => posts );
+      webpackModules.set(propName,actionName,"default",data => data );
+      auto.reset();
+      auto.testing({preOnly:true});
+      auto(webpackModules, webpackModules.keys())
     })
 
 //+++++++++++ should have place holder action function
 //++++++++++++++++++ for reducers to ref at build time
 
     it('should have a settings function', () => {
-
         auto.settings({foo:"bar"})
     })
 
@@ -688,7 +680,6 @@ describe('action middlware', () => {
               break;
           }
           return posts;
-
         })
 
         webpackModules.set(propName,actionName,"action",(payload)=> Promise.reject(new Error(errorMessage)) )
@@ -732,11 +723,11 @@ describe('action middlware', () => {
         actions[propName][actionName]();
     })
 
+describe('chaining action together', () => {
 //++++++++++ should chain actions for default function
 //++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     it('should chain actions for default function', (done) => {
-
 
         webpackModules.set(propName,"index","default",(data={})=> data )
 
@@ -746,8 +737,60 @@ describe('action middlware', () => {
         webpackModules.set(propName,actionName,"default",actionFunction)
         RefrashStore();
         actions[propName][actionName]();
+        
     })
 
+ // expect(action).toHaveProperty('type', actions[propName][actionName].toString());
+    
+//+++++ should pass calling values to chain with async
+//++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    it('should pass calling values to chain with async', (done) => {
+      
+      const defaultData = {}
+
+        webpackModules.set(propName,"index","default",(data=defaultData)=> data )
+        webpackModules.set(propName,actionName,"default",(data)=>data)
+
+        const actionFunction = function (data, payload, error){ return data }
+              actionFunction.chain = (data, payload, error)=>{
+                expect(data).toEqual(defaultData);
+                expect(Object.keys(payload).length).toEqual(0);
+                expect(error).toBeInstanceOf(Error);
+                done()
+              };
+
+        webpackModules.set(propName,actionName,"rejected",actionFunction)
+
+        webpackModules.set(propName,actionName,"action",()=> Promise.reject(new Error("testing: calling values to chain with async")) )
+
+        RefrashStore();
+        actions[propName][actionName]();
+        
+    })
+    
+//++ should allow calling values to be paseed to chain
+//++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    it('should allow calling values to be paseed to chain', (done) => {
+
+        const defaultData = {};
+
+        webpackModules.set(propName,"index","default",(data=defaultData)=> data )
+
+        const actionFunction = data => data;
+              actionFunction.chain = (data,payload)=>{
+                expect(Object.keys(payload).length).toEqual(0);
+                expect(data).toEqual(defaultData);
+                done()
+              };
+
+        webpackModules.set(propName,actionName,"default",actionFunction)
+        RefrashStore();
+        actions[propName][actionName]();
+    })
+
+    
 //++++++++++ should chain actions for PENDING function
 //++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -841,7 +884,8 @@ describe('action middlware', () => {
 
     })
 */
-})
+  }) // END describe('chaining action together'
+}) // END describe('action middlware'
 
 
 //=====================================================
@@ -946,37 +990,3 @@ describe('Using the stores', () => {
 
     })
 })
-
-
-
-
-// redux-middlware
-//    - pass default
-// store
-//   - .test.js
-//   ./ _ ...js
-// index
-//   - no default export
-// action-middle
-//    - null
-//    - string
-//    - undefined
-//    - object
-//    - promuse
-//        - pending
-//        - filfed
-//        - catch
-// init
-// before
-//   - undefined
-//   - payload
-// after
-//   - undefined
-//   - state
-// actions(file)
-//   - no default export
-// + same name across actions
-
-// actions(function)
-// - strings
-// - sub-types via promuses

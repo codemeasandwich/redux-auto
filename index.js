@@ -31,7 +31,6 @@ let autoWasCalled = false, reducers = {
     throw new Error(reducersBeforeAutoErrorMessage);
   }
 }
-
 function chaining(actionType){
   // console.log(actionType, typeof chaining[actionType])
   //if(undefined === chaining[actionType])
@@ -39,13 +38,19 @@ function chaining(actionType){
   chaining[actionType] && chaining[actionType]();
   // else throw new Error(`Chaining function used with ${actionType} was not a function. ${typeof chaining[actionType]}`)
 }
+chaining.set = function(fn,actionType, argsArray){
+  if (undefined === fn) {
+    return
+  }
+  chaining[actionType] = (0 < fn.length) ? fn.apply(null,argsArray) : fn;
+}
 
-const settings = {}, testing = {};
+const settingsOptions = {}, testingOptions = {};
 
 function reset(){
 
-  Object.keys(settings).forEach(p => delete settings[p]);
-  Object.keys(testing).forEach(p => delete testing[p]);
+  Object.keys(settingsOptions).forEach(p => delete settingsOptions[p]);
+  Object.keys(testingOptions).forEach(p => delete testingOptions[p]);
   Object.keys(actionsBuilder).forEach(p => delete actionsBuilder[p]);
   Object.keys(reducers).forEach(p => delete reducers[p]);
   Object.keys(lookup).forEach(p => delete lookup[p]);
@@ -81,7 +86,6 @@ function mergeReducers(otherReducers){
       if("_" === actionName[0] || null === reducerName || "index" === actionName)
           return;
 
-
           actionsBuilder[reducerName] = actionsBuilder[reducerName] || {};
           actionsBuilder[reducerName][actionName] = (...args) => actionsBuilder[reducerName][actionName](...args);
     })
@@ -90,8 +94,12 @@ function mergeReducers(otherReducers){
  function auto (modules, fileNameArray){
 
    autoWasCalled = true;
-   reset();
-  buildActionLayout(fileNameArray); if(testing.preOnly) return;
+   //reset();
+  delete reducers.auto_function_not_call_before_combineReducers;
+  buildActionLayout(fileNameArray);
+  
+  if(testingOptions.preOnly) return;
+  
   fileNameArray.forEach(function(key){
 
   // get action name
@@ -169,29 +177,25 @@ function mergeReducers(otherReducers){
                 }
 
               //    if(  stage === "pending" || stage === "fulfilled" || stage === "rejected" ){
-                if (isFunction(lookup[reducerName][avabileAction][stage])){//("function" === typeof lookup[reducerName][avabileAction][stage]) {
-                  newState = lookup[reducerName][avabileAction][stage](data, action.reqPayload, payload);
-                  if(isFunction(lookup[reducerName][avabileAction][stage].chain)){
-                      chaining[action.type] = lookup[reducerName][avabileAction][stage].chain
-                  }
+                if (isFunction(lookup[reducerName][avabileAction][stage])){
+                  const argsArray = [data, action.reqPayload, payload];
+                  newState = lookup[reducerName][avabileAction][stage](...argsArray);
+                  chaining.set(lookup[reducerName][avabileAction][stage].chain,action.type,argsArray);
                 } else {
-                  newState = lookup[reducerName][avabileAction](data, action.reqPayload, actionFragments[1], payload);
-                  if(isFunction(lookup[reducerName][avabileAction].chain)){
-                      chaining[action.type] = lookup[reducerName][avabileAction].chain
-                  }
-                }
+                  const argsArray = [data, action.reqPayload, actionFragments[1], payload];
+                  newState = lookup[reducerName][avabileAction](...argsArray);
+                  chaining.set(lookup[reducerName][avabileAction].chain,action.type,argsArray)
+                } // END else
 
                 async[avabileAction] = (stage === "pending") ? true : (stage === "fulfilled") ? false : payload;
 
                 if(clearFn)//(async[avabileAction] instanceof Error){
                   async[avabileAction].clear = clearFn
-           }
+           } // END else "clear" !== stage
         } else {
-          newState = lookup[reducerName][avabileAction](data, payload);
-
-          if(isFunction(lookup[reducerName][avabileAction].chain)){
-              chaining[action.type] = lookup[reducerName][avabileAction].chain
-          }
+          const argsArray = [data, payload]
+          newState = lookup[reducerName][avabileAction](...argsArray);
+          chaining.set(lookup[reducerName][avabileAction].chain,action.type,argsArray);
         }
       } else {// if("index" in lookup[reducerName]){
 
@@ -304,13 +308,13 @@ function mergeReducers(otherReducers){
     return next => action => next(action)
  }
 }
-
+auto.reset = reset;
 auto.settings = function settings(options){
-  Object.assign(settings,options)
+  Object.assign(settingsOptions,options)
 }
 
 auto.testing = function testing(options){
-  Object.assign(testing,options)
+  Object.assign(testingOptions,options)
 }
 
 export default actionsBuilder;
