@@ -32,23 +32,16 @@ let autoWasCalled = false, reducers = {
   }
 }
 function chaining(actionType){
-  // console.log(actionType, typeof chaining[actionType])
-  //if(undefined === chaining[actionType])
-  //  return;
   chaining[actionType] && chaining[actionType]();
-  // else throw new Error(`Chaining function used with ${actionType} was not a function. ${typeof chaining[actionType]}`)
 }
 chaining.set = function(fn,actionType, argsArray){
-  if (undefined === fn) {
-    return
-  }
+  if (undefined === fn) return;
   chaining[actionType] = (0 < fn.length) ? fn.apply(null,argsArray) : fn;
 }
 
 const settingsOptions = {}, testingOptions = {};
 
 function reset(){
-
   Object.keys(settingsOptions).forEach(p => delete settingsOptions[p]);
   Object.keys(testingOptions).forEach(p => delete testingOptions[p]);
   Object.keys(actionsBuilder).forEach(p => delete actionsBuilder[p]);
@@ -56,40 +49,40 @@ function reset(){
   Object.keys(lookup).forEach(p => delete lookup[p]);
   Object.keys(lifecycle).forEach(p => delete lifecycle[p]);
   Object.keys(mappingFromReducerActionNameToACTIONID).forEach(p => delete mappingFromReducerActionNameToACTIONID[p]);
-
-}
+} // END reset
 
 function mergeReducers(otherReducers){
-
   if(!autoWasCalled)
     throw new Error(reducersBeforeAutoErrorMessage)
-
   if(isFunction(otherReducers))
     throw new Error(reducersAfterCombineReducersErrorMessage)
+  return Object.assign({},otherReducers, reducers);
+} // END mergeReducers
 
-    return Object.assign({},otherReducers, reducers);
+function names(key) {
+  if (undefined === names[key]) {
+    names[key] = {
+      actionName:key.match(/([^\/]+)(?=\.\w+$)/)[0],
+      reducerName:key.match(/(.*)[\/\\]/)[1].substring(2)
+    }
+  }
+  return names[key]
 }
 
-  function buildActionLayout(fileNameArray){
+function buildActionLayout(fileNameArray){
 
-      fileNameArray.forEach(function(key){
+    fileNameArray.forEach(function(key){
 
-      // get action name
-      const actionName = key.match(/([^\/]+)(?=\.\w+$)/)[0];
-      // get reducer name
-      const reducerName = key.match(/(.*)[\/\\]/)[1].substring(2);//||null;
-
-      //if(actionName.includes(".")) throw new Error(`file ${actionName} in ${reducerName} contains a DOT in its name`)
-      //if(reducerName.includes(".")) throw new Error(`the folder ${reducerName} contains a DOT in its name`)
-
+      const {actionName, reducerName } = names(key);
+  
       // get action name starts with _ skip it
       if("_" === actionName[0] || null === reducerName || "index" === actionName)
           return;
 
-          actionsBuilder[reducerName] = actionsBuilder[reducerName] || {};
-          actionsBuilder[reducerName][actionName] = (...args) => actionsBuilder[reducerName][actionName](...args);
-    })
-  }
+      actionsBuilder[reducerName] = actionsBuilder[reducerName] || {};
+      actionsBuilder[reducerName][actionName] = (...args) => actionsBuilder[reducerName][actionName](...args);
+  })
+} // END buildActionLayout
 
  function auto (modules, fileNameArray){
 
@@ -102,11 +95,8 @@ function mergeReducers(otherReducers){
   
   fileNameArray.forEach(function(key){
 
-  // get action name
-  const actionName = key.match(/([^\/]+)(?=\.\w+$)/)[0];
-  // get reducer name
-  const reducerName = key.match(/(.*)[\/\\]/)[1].substring(2);//||null;
-
+  const { actionName, reducerName } = names(key);
+  
   if(actionName.includes("."))
       throw new Error(`file ${actionName} in ${reducerName} contains a DOT in its name`)
   if(reducerName.includes("."))
@@ -262,15 +252,12 @@ function mergeReducers(otherReducers){
 
             if(isObject(actionOutput.payload)){
               if(isFunction(actionOutput.payload.then)){
-                //if( ! Object.isFrozen(actionDataFn)){
-                   wrappingFn.pending   = ActionIDGen(reducerName, actionName,"pending");//actionOutput.type+"/PENDING"
-                   wrappingFn.fulfilled = ActionIDGen(reducerName, actionName,"fulfilled");//actionOutput.type+"/FULFILLED"
-                   wrappingFn.rejected  = ActionIDGen(reducerName, actionName,"rejected");//actionOutput.type+"/REJECTED"
-                   wrappingFn.clear     = ActionIDGen(reducerName, actionName,"clear");//actionOutput.type+"/REJECTED"
-                //}
+                
+                wrappingFn.pending   = ActionIDGen(reducerName, actionName,"pending");
+                wrappingFn.fulfilled = ActionIDGen(reducerName, actionName,"fulfilled");
+                wrappingFn.rejected  = ActionIDGen(reducerName, actionName,"rejected");
+                wrappingFn.clear     = ActionIDGen(reducerName, actionName,"clear");
 
-                //console.log(Object.isFrozen(actionDataFn),actionDataFn)
-                //pending
                 dispatch({type:wrappingFn.pending, reqPayload:payload, payload:null})
                 chaining(wrappingFn.pending)
                 actionOutput.payload
@@ -297,14 +284,12 @@ function mergeReducers(otherReducers){
           //Object.freeze(actionDataFn)
           //actionDataFn.valueOf  = () => Symbol(ACTIONID); // double equales: (()=>{}) == Symbol *true
         })
-
         // if there is an initialization action, fire it!!
         const init = actionsBuilder[reducerName].init || actionsBuilder[reducerName].INIT
         if (isFunction(init)) {
           init();
         }
    })
-
     return next => action => next(action)
  }
 }
