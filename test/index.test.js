@@ -723,6 +723,44 @@ describe('action middlware', () => {
         actions[propName][actionName]();
     })
 
+//+++++++++++++++++++++++ should only pass the payload
+//+++++++++++++++++++++++ if function have 1 aurgument
+
+    it('should only pass the payload', () => {
+
+        webpackModules.set(propName,"index","default",(posts=[])=> posts )
+        webpackModules.set(propName,actionName,"default", posts => posts);
+
+        webpackModules.set(propName,actionName,"action",function(payload) {
+          expect(arguments.length).toEqual(1);
+          return payload
+        } )
+
+        RefrashStore();
+        actions[propName][actionName]();
+    })
+
+//+++++ should only pass the payload and current state
+//+++++++++++++++++++++++ if function have 2 aurgument
+// Similar to : should call default with a promise passing part of store
+    it('should pass the payload and current state', () => {
+
+          const defaultPosts = [1,2,3]
+
+          webpackModules.set(propName,"index","default",(posts=defaultPosts)=> posts )
+          webpackModules.set(propName,actionName,"default", posts => posts);
+
+          webpackModules.set(propName,actionName,"action",function(payload,posts) {
+            expect(arguments.length).toEqual(2);
+            expect(posts).toBeInstanceOf(Array);
+            expect(posts).toEqual(defaultPosts);
+            return payload
+          } )
+
+          RefrashStore();
+          actions[propName][actionName]();
+    })
+
 describe('chaining action together', () => {
 //++++++++++ should chain actions for default function
 //++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -737,16 +775,16 @@ describe('chaining action together', () => {
         webpackModules.set(propName,actionName,"default",actionFunction)
         RefrashStore();
         actions[propName][actionName]();
-        
+
     })
 
  // expect(action).toHaveProperty('type', actions[propName][actionName].toString());
-    
+
 //+++++ should pass calling values to chain with async
 //++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     it('should pass calling values to chain with async', (done) => {
-      
+
       const defaultData = {}
 
         webpackModules.set(propName,"index","default",(data=defaultData)=> data )
@@ -766,9 +804,9 @@ describe('chaining action together', () => {
 
         RefrashStore();
         actions[propName][actionName]();
-        
+
     })
-    
+
 //++ should allow calling values to be paseed to chain
 //++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -790,7 +828,7 @@ describe('chaining action together', () => {
         actions[propName][actionName]();
     })
 
-    
+
 //++++++++++ should chain actions for PENDING function
 //++++++++++++++++++++++++++++++++++++++++++++++++++++
 
