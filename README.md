@@ -11,21 +11,6 @@
 [![Known Vulnerabilities](https://snyk.io/test/npm/redux-auto/badge.svg)](https://snyk.io/test/npm/redux-auto)
 [![bitHound Dependencies](https://www.bithound.io/github/codemeasandwich/redux-auto/badges/dependencies.svg)](https://www.bithound.io/github/codemeasandwich/redux-auto/master/dependencies/npm)
 
-  * [Why](#why)
-    + [plug & Play](#plug--play)
-    + [asynchronous](#asynchronous)
-- [Live Demo](http://redux-auto.s3-website-eu-west-1.amazonaws.com/)
-  * [Source](https://github.com/codemeasandwich/redux-auto/tree/master/example)
-- [Overview](#overview-)
-- [setup](#setup)
-  * [Using along side an existing Redux setup](#using-along-side-an-existing-redux-setup)
-  * [Using along side other Redux middleware](#using-along-side-other-redux-middleware)
-  * [Actions are available in the UI](#actions-are-available-in-the-ui)
-- [Action files](#action-files)
-  * [Chaining action together](#chaining-action-together)
-- [Lifecycle diagrame](#lifecycle-diagrame)
-- [Index files](#index-files)
-
 ## why
 
 I created this utility to allow you to get up and running with Rudux in a fraction of the time!
@@ -41,6 +26,25 @@ I created this utility to allow you to get up and running with Rudux in a fracti
 
 #### Have an exising project? No worries. Drop it in, to work along side the traditional redux way.
 
+# [Live Demo](http://redux-auto.s3-website-eu-west-1.amazonaws.com/) / [Demo Source](https://github.com/codemeasandwich/redux-auto/tree/master/example)
+
+### If you like it, [★ it on github](https://github.com/codemeasandwich/redux-auto) and share  :beers:
+
+  * [Why](#why)
+    + [plug & Play](#plug--play)
+    + [asynchronous](#asynchronous)
+- [Live Demo](http://redux-auto.s3-website-eu-west-1.amazonaws.com/)
+  * [Source](https://github.com/codemeasandwich/redux-auto/tree/master/example)
+- [Overview](#overview-)
+- [setup](#setup)
+  * [Using along side an existing Redux setup](#using-along-side-an-existing-redux-setup)
+  * [Using along side other Redux middleware](#using-along-side-other-redux-middleware)
+  * [Actions are available in the UI](#actions-are-available-in-the-ui)
+- [Action files](#action-files)
+  * [Chaining action together](#chaining-action-together)
+- [Lifecycle diagrame](#lifecycle-diagrame)
+- [Index files](#index-files)
+
 ### asynchronous
 
 Redux your reducer returns a state object. This is very straight forward, but makes dealing with asynchronous updates quite tricky (there are [more than 60 different libraries](https://github.com/markerikson/redux-ecosystem-links/blob/master/side-effects.md) tackling this problem).
@@ -50,14 +54,6 @@ redux-auto fixed this asynchronous problem simply by allowing you to create an [
 1) No need for other Redux async middleware. e.g. thunk, promise-middleware, saga
 2) Easily allows you to pass a promise into redux and have it managed for you
 3) Allows you to co-locate external service calls with where they will be transformed
-
-
-
-# [Live Demo](http://redux-auto.s3-website-eu-west-1.amazonaws.com/) / [Source](https://github.com/codemeasandwich/redux-auto/tree/master/example)
-
-### If you like it, [★ it on github](https://github.com/codemeasandwich/redux-auto) and share  :beers:
-
-
 
 ## Overview:
 
