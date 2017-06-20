@@ -1027,4 +1027,31 @@ describe('Using the stores', () => {
         }).toThrow(new RegExp("^action with bad payload"));
 
     })
+
+//+++++++ should be able to check if an action.type is
+//++++++++++++++++++++++++++++ within a actions[state]
+
+    it('should be able to check if an action.type is within a actions[state]', done => {
+
+        webpackModules.set(propName,"index","before",(Posts, action)=> {
+
+          if(actions[propName][actionName] == action.type)
+            expect(action.type in actions[propName]).toBeTruthy()
+
+          return action.payload
+        })
+        webpackModules.set(propName,"index","default",(posts=[])=> posts )
+        webpackModules.set(propName,"index","after",(newPosts, action, oldPosts)=> {
+
+          if(actions[propName][actionName] == action.type
+          && action.type in actions[propName]){
+            done();
+          }
+          return newPosts
+        })
+        webpackModules.set(propName,actionName,"default",posts => posts )
+        RefrashStore();
+        actions[propName][actionName]();
+    })
+
 })

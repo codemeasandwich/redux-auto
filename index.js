@@ -22,7 +22,7 @@ function ActionIDGen (reducerName, actionName, stage){
     return reducerName.toUpperCase() + "/" + actionName.toUpperCase();
 }
 
-const actionsBuilder = {},  lookup = {}, lifecycle = {}
+const actionsBuilder = {}, actionsBuilderPROTOTYPES = {}, lookup = {}, lifecycle = {}
 const mappingFromReducerActionNameToACTIONID = {};
 const reducersBeforeAutoErrorMessage = "You are trying to get reducers before calling 'auto'. Trying moving applyMiddleware BEFORE combineReducers";
 const reducersAfterCombineReducersErrorMessage = "You need to pass an object of reducers to 'mergeReducers' BEFORE calling combineReducers. Try createStore( combineReducers( mergeReducers(otherReducers) ) )";
@@ -74,12 +74,12 @@ function buildActionLayout(fileNameArray){
     fileNameArray.forEach(function(key){
 
       const {actionName, reducerName } = names(key);
-  
+
       // get action name starts with _ skip it
       if("_" === actionName[0] || null === reducerName || "index" === actionName)
           return;
-
-      actionsBuilder[reducerName] = actionsBuilder[reducerName] || {};
+      actionsBuilderPROTOTYPES[reducerName] = {} // this is used of, e.g: if(action.type in actions.users) ~ trying to see if an type map to the reducer
+      actionsBuilder[reducerName] = actionsBuilder[reducerName] ||  Object.create(actionsBuilderPROTOTYPES[reducerName]);
       actionsBuilder[reducerName][actionName] = (...args) => actionsBuilder[reducerName][actionName](...args);
   })
 } // END buildActionLayout
@@ -90,13 +90,13 @@ function buildActionLayout(fileNameArray){
    //reset();
   delete reducers.auto_function_not_call_before_combineReducers;
   buildActionLayout(fileNameArray);
-  
+
   if(testingOptions.preOnly) return;
-  
+
   fileNameArray.forEach(function(key){
 
   const { actionName, reducerName } = names(key);
-  
+
   if(actionName.includes("."))
       throw new Error(`file ${actionName} in ${reducerName} contains a DOT in its name`)
   if(reducerName.includes("."))
@@ -252,11 +252,15 @@ function buildActionLayout(fileNameArray){
 
             if(isObject(actionOutput.payload)){
               if(isFunction(actionOutput.payload.then)){
-                
+
                 wrappingFn.pending   = ActionIDGen(reducerName, actionName,"pending");
                 wrappingFn.fulfilled = ActionIDGen(reducerName, actionName,"fulfilled");
                 wrappingFn.rejected  = ActionIDGen(reducerName, actionName,"rejected");
                 wrappingFn.clear     = ActionIDGen(reducerName, actionName,"clear");
+                actionsBuilderPROTOTYPES[reducerName][wrappingFn.pending]   = actionName;
+                actionsBuilderPROTOTYPES[reducerName][wrappingFn.fulfilled] = actionName;
+                actionsBuilderPROTOTYPES[reducerName][wrappingFn.rejected]  = actionName;
+                actionsBuilderPROTOTYPES[reducerName][wrappingFn.clear]     = actionName;
 
                 dispatch({type:wrappingFn.pending, reqPayload:payload, payload:null})
                 chaining(wrappingFn.pending)
@@ -280,7 +284,8 @@ function buildActionLayout(fileNameArray){
             }
           } // END actionsBuilder[reducerName][actionName] = (payload = {}) =>
           const ACTIONID = ActionIDGen(reducerName, actionName);
-          actionsBuilder[reducerName][actionName].toString = () => ACTIONID;
+          actionsBuilder          [reducerName][actionName].toString = () => ACTIONID;
+          actionsBuilderPROTOTYPES[reducerName][ACTIONID]            =      actionName; // a reverse mapping
           //Object.freeze(actionDataFn)
           //actionDataFn.valueOf  = () => Symbol(ACTIONID); // double equales: (()=>{}) == Symbol *true
         })
