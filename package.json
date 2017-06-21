@@ -1,6 +1,6 @@
 {
   "name": "redux-auto",
-  "version": "1.5.3",
+  "version": "1.5.4",
   "description": "automatically generate stories and actions from your folder and file structure",
   "main": "index.js",
   "scripts": {
