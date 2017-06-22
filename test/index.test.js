@@ -1054,4 +1054,37 @@ describe('Using the stores', () => {
         actions[propName][actionName]();
     })
 
+//+ should throw from UI and with out being handled by
+//++++++++++++++++++++++++++++++++++++++++ async catch
+
+    it.skip('should throw from UI and with out being handled by async catch', () => {
+
+        let currentStage;
+
+        webpackModules.set(propName,"index","default",(user={})=> user )
+
+        webpackModules.set(propName,[actionName],"default",(user, payload, stage, result)=> {
+          currentStage = stage;
+          console.log(currentStage)
+          if(stage === "REJECTED")
+            expect(false).toEqual(true);
+
+          return user;
+        } )
+
+        webpackModules.set(propName,[actionName],"action", ()=> Promise.resolve() )
+
+        let unsubscribe;
+
+        const testFn = function() {
+          if("FULFILLED" === currentStage)
+          throw new Error("render problem");
+        }
+        RefrashStore();
+        unsubscribe = store.subscribe(testFn);
+        actions[propName][actionName]();
+        unsubscribe();
+    })
+
+
 })

@@ -265,14 +265,14 @@ function buildActionLayout(fileNameArray){
                 dispatch({type:wrappingFn.pending, reqPayload:payload, payload:null})
                 chaining(wrappingFn.pending)
                 actionOutput.payload
-                .catch(err => { // only handle external error
-                  err.clear = ()=>{dispatch({type:wrappingFn.clear})};
-                  dispatch({type:wrappingFn.rejected, reqPayload:payload, payload:err})
-                  chaining(wrappingFn.rejected)
-                })
                 .then(result => {
                   dispatch({type:wrappingFn.fulfilled, reqPayload:payload, payload:result })
                   chaining(wrappingFn.fulfilled)
+                },
+                err => { // only handle external error
+                  err.clear = ()=>{dispatch({type:wrappingFn.clear})};
+                  dispatch({type:wrappingFn.rejected, reqPayload:payload, payload:err})
+                  chaining(wrappingFn.rejected)
                 })
               } else {
                 dispatch(actionOutput);

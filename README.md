@@ -42,11 +42,10 @@ I created this utility to allow you to get up and running with Rudux in a fracti
   * [Actions are available in the UI](#actions-are-available-in-the-ui)
 - [Action files](#action-files)
   * [Chaining action together](#chaining-action-together)
-- [Lifecycle diagrame](#lifecycle-diagrame)
 - [Index files](#index-files)
   * [before](#before)
   * [logic](#default)
-  * [after](ter)
+  * [after](#after)
 - [handling async actions in your ui](#handling-async-actions-in-your-ui)
 
 ### asynchronous
@@ -55,7 +54,7 @@ Redux your reducer returns a state object. This is very straight forward, but ma
 
 redux-auto fixed this asynchronous problem simply by allowing you to create an ["action" function that returns a promise](#action-files). To accompany your "default" function action logic.
 
-> [Simple example](https://github.com/codemeasandwich/redux-auto/blob/master/example/store/user/init.js)
+> [asynchronous: example](https://github.com/codemeasandwich/redux-auto/blob/master/example/store/user/init.js)
 
 1) No need for other Redux async middleware. e.g. thunk, promise-middleware, saga
 2) Easily allows you to pass a promise into redux and have it managed for you
@@ -72,16 +71,17 @@ Steps:
 	* This is where the data, logic & flow control of the application lives. This can be named whatever, just point to it with webpacks - require.context
 2) In this folder you will create folders to represent each attribute on the store
 	* For example. the "user" folder will create an attribute of 'user'
-	* the JS files within the folder are **actions** that can be fired to change the share for user.
+	* the JS files within the folder are **actions** that can be fired to change the shape for user.
 3) Create an index.js file to set default values
-	* **export default** is catch all reducer function *(if an action cant be found)*
-	* export "before" & "after" function. Give lifecyclie functions
-4) Create a js file with the name of the action you want it mapped to
+	* **[export default](#default)** is catch all reducer function *(if an action cant be found)*
+	* export "[before](#before)" & "[after](#after)" are lifecycle functions
+4) Create a js file with the name of the [action](#action-files) you want it mapped to
 	* **export default** is the reducer function
 	* export "action" function. Is an **action-middleware** that will allow you to create promises
 5) You can create an init.js that is automatically run once after store created
 	* using this to initialize from an API
 
+Example layout:
 ```
 └── store/ (1)
     └──user/ (2)
@@ -93,7 +93,7 @@ Steps:
 
 ## setup
 
-inside you enter file
+Inside you enter file
 
 ```JS
 ...
@@ -110,8 +110,6 @@ const store = createStore(combineReducers(reducers), middleware );
 ```
 
 ### Using along side an existing Redux setup.
-
-inside you enter file
 
 ```JS
 ...
@@ -142,7 +140,7 @@ const store = createStore(combineReducers(reducers), middleware );
 
 ### actions are available in the UI
 
-Example:
+Just import "redux-auto" and the action are automatically available by default
 
 ```JS
 import actions from 'redux-auto'
@@ -153,8 +151,8 @@ action.apps.chageAppName({appId:123})
 
 ## action files
 
-the action file live within you attribute folder and become the exposed actions for the UI
-the default export should be a funciton that will take 1) your piece of the state 2) the payload data
+The action file lives within you attribute folder and become the exposed actions.
+The default export should be a funciton that will take 1) your piece of the state 2) the payload data
 
 
 Example: of an action to update the logged-in users name
@@ -170,6 +168,8 @@ export default function (user, payload) {
 ```
 
 ★ Sometime we want to talk to the server. This is done by action-middleware
+
+This is done by exporting a function named "action" that returns a promise. The default function will now receive a 3rd argument "state".
 
 Example: saving the uses name to the server
 
@@ -248,14 +248,6 @@ If you pass you our function. It will be passed all the arguments, the same a th
 
 So calling "**actions.user.login({userId:1})**" will automatically call  **actions.nav.move** with the host arguments OR **actions.user.reset** *with out arguments.
 
-
-
-## lifecycle diagrame
-
-![action lifecycle][lifecycle]
-
-
-
 ## index files
 
 **"index"** files need for each attribute folder you make.
@@ -289,28 +281,28 @@ export default function user(user = {name:"?"}, action) {
 
 ```
 
-**⚠** This function will be fired on all actions, **except** for actions that handled by a specific action file in this reducer folder.
+⚠ This function will be fired on all actions, **except** for actions that handled by a specific action file in this reducer folder.
 
 Let understand this with an example:
 
 **Files:**
 ```
-└── store/
-    ├──user/
-    │  └── index.js
-    │  └── changeName.js
-    └──posts/
-       └── index.js
-       └── delete.js
+store/
+ ├──user/
+ │  └── index.js
+ │  └── changeName.js
+ └──posts/
+    └── index.js
+    └── delete.js
 ```
 **code:**
 
 ```JS
 import actions from 'redux-auto'
 ...
-actions.user.change({name:"brian"})
+actions.user.changeName({name:"brian"})
 ```
-the default functions for **store/user/change.js** & **store/post/index.js** will be fired.
+the default functions for **store/user/changeName.js** & **store/post/index.js** will be fired.
 
 **store/user/index.js was NOT** called because there is specific action file a to handle it for user.
 
@@ -374,7 +366,7 @@ state.user.async.save // = Error("some problem")
 // e.g. state.user.async.save.clear()
 
 ```
-> [simple example](https://github.com/codemeasandwich/redux-auto/blob/master/example/ui/index.jsx)
+> [handling async actions in your ui:- example](https://github.com/codemeasandwich/redux-auto/blob/master/example/ui/index.jsx)
 
 
 [lifecycle]:https://docs.google.com/uc?id=0B39u552cxASjU2M5TVZkRGlzZkE
