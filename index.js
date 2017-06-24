@@ -292,7 +292,10 @@ function buildActionLayout(fileNameArray){
         // if there is an initialization action, fire it!!
         const init = actionsBuilder[reducerName].init || actionsBuilder[reducerName].INIT
         if (isFunction(init)) {
-          init();
+          if (init.length > 1 )
+            init({},getState()[reducerName])
+          else
+            init({});
         }
    })
     return next => action => next(action)
