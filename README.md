@@ -10,6 +10,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/codemeasandwich/redux-auto/badge.svg?branch=master)](https://coveralls.io/github/codemeasandwich/redux-auto?branch=master)
 [![Known Vulnerabilities](https://snyk.io/test/npm/redux-auto/badge.svg)](https://snyk.io/test/npm/redux-auto)
 [![bitHound Dependencies](https://www.bithound.io/github/codemeasandwich/redux-auto/badges/dependencies.svg)](https://www.bithound.io/github/codemeasandwich/redux-auto/master/dependencies/npm)
+[![stackoverflow](https://img.shields.io/badge/stackoutflow-redux--auto-orange.svg)](https://stackoverflow.com/questions/ask?tags=redux-auto)
 
 ## why
 
