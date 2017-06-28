@@ -176,7 +176,7 @@ Example: saving the uses name to the server
 ```JS
 // /store/user/changeUserName.js
 
-export default function (user, payload, state) {
+export default function (user, payload, stage) {
 switch(stage){
     case 'FULFILLED':
      // ...
