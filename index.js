@@ -286,7 +286,10 @@ function buildActionLayout(fileNameArray){
                                        else
                                           handleErrors(new Error(`${webresult.status} - ${webresult.url}`))
                                      } else {
-                                       dispatch({type:wrappingFn.fulfilled, reqPayload:payload, payload:jsonresult })
+                                       if(1 === Object.keys(jsonresult).length && "object" === typeof jsonresult.data)
+                                          dispatch({type:wrappingFn.fulfilled, reqPayload:payload, payload:jsonresult.data })
+                                       else
+                                          dispatch({type:wrappingFn.fulfilled, reqPayload:payload, payload:jsonresult })
                                        chaining(wrappingFn.fulfilled)
                                      }
                                   })

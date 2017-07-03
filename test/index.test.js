@@ -800,7 +800,7 @@ describe('handling the result of fetch', () => {
                   fulfilledFunction.chain = done;
             webpackModules.set(propName,actionName,"fulfilled",fulfilledFunction)
 
-            webpackModules.set(propName,actionName,"action",()=> Promise.resolve({json:()=>Promise.resolve({})}) )
+            webpackModules.set(propName,actionName,"action",()=> Promise.resolve({json:()=>Promise.resolve({data:{}})}) )
 
             RefrashStore();
             actions[propName][actionName]();
