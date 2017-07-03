@@ -17,9 +17,9 @@ const isArray = Array.isArray;
 
 function ActionIDGen (reducerName, actionName, stage){
   if (3 === arguments.length)
-    return reducerName.toUpperCase() + "/" + actionName.toUpperCase() + "." + stage.toUpperCase();
+    return "@@redux-auto/"+reducerName.toUpperCase() + "/" + actionName.toUpperCase() + "." + stage.toUpperCase();
   else
-    return reducerName.toUpperCase() + "/" + actionName.toUpperCase();
+    return "@@redux-auto/"+reducerName.toUpperCase() + "/" + actionName.toUpperCase();
 }
 
 const actionsBuilder = {}, actionsBuilderPROTOTYPES = {}, lookup = {}, lifecycle = {}
