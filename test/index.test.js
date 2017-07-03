@@ -761,6 +761,83 @@ describe('action middlware', () => {
           actions[propName][actionName]();
     })
 
+describe('handling the result of fetch', () => {
+
+      it('should handle a good request', (done) => {
+
+          webpackModules.set(propName,"index","default",(data={})=> data )
+          webpackModules.set(propName,actionName,"default", data => data )
+
+          webpackModules.set(propName,actionName,"FULFILLED",done)
+
+          webpackModules.set(propName,actionName,"action",()=> Promise.resolve({json:()=>Promise.resolve({})}) )
+
+          RefrashStore();
+          actions[propName][actionName]();
+
+      })
+
+      it('should handle a bad request', (done) => {
+
+          webpackModules.set(propName,"index","default",(data={})=> data )
+          webpackModules.set(propName,actionName,"default", data => data )
+
+          webpackModules.set(propName,actionName,"rejected",done)
+
+          webpackModules.set(propName,actionName,"action",()=> Promise.resolve({ok:false,json:()=>Promise.resolve({})}) )
+
+          RefrashStore();
+          actions[propName][actionName]();
+
+      })
+
+      it('should handle a good GrafeQl request', (done) => {
+
+            webpackModules.set(propName,"index","default",(data={})=> data )
+            webpackModules.set(propName,actionName,"default", data => data )
+
+            const fulfilledFunction = data => data;
+                  fulfilledFunction.chain = done;
+            webpackModules.set(propName,actionName,"fulfilled",fulfilledFunction)
+
+            webpackModules.set(propName,actionName,"action",()=> Promise.resolve({json:()=>Promise.resolve({})}) )
+
+            RefrashStore();
+            actions[propName][actionName]();
+
+      })
+
+      it('should handle a bad GrafeQl request', (done) => {
+
+            webpackModules.set(propName,"index","default",(data={})=> data )
+            webpackModules.set(propName,actionName,"default", data => data )
+
+            webpackModules.set(propName,actionName,"rejected",done)
+
+            webpackModules.set(propName,actionName,"action",()=> Promise.resolve({ok:false,json:()=>Promise.resolve({errors:[{message:"error1"}]})}) )
+
+            RefrashStore();
+            actions[propName][actionName]();
+
+      })
+
+      it('should handle muilt bad GrafeQl requests', (done) => {
+
+            webpackModules.set(propName,"index","default",(data={})=> data )
+            webpackModules.set(propName,actionName,"default", data => data )
+
+            const rejectedFunction = data => data;
+                  rejectedFunction.chain = done;
+            webpackModules.set(propName,actionName,"rejected",rejectedFunction)
+
+            webpackModules.set(propName,actionName,"action",()=> Promise.resolve({ok:false,json:()=>Promise.resolve({errors:[{message:"error1"},{message:"error2"}]})}) )
+
+            RefrashStore();
+            actions[propName][actionName]();
+
+      })
+})
+
 describe('chaining action together', () => {
 //++++++++++ should chain actions for default function
 //++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -798,7 +875,7 @@ describe('chaining action together', () => {
                 done()
               };
 
-        webpackModules.set(propName,actionName,"rejected",actionFunction)
+        webpackModules.set(propName,actionName,"REJECTED",actionFunction)
 
         webpackModules.set(propName,actionName,"action",()=> Promise.reject(new Error("testing: calling values to chain with async")) )
 
@@ -840,7 +917,7 @@ describe('chaining action together', () => {
         webpackModules.set(propName,"index","default",(data={})=> data )
         webpackModules.set(propName,actionName,"default",(data)=>data)
 
-        webpackModules.set(propName,actionName,"PENDING",actionFunction)
+        webpackModules.set(propName,actionName,"pending",actionFunction)
 
         webpackModules.set(propName,actionName,"action",()=> Promise.resolve() )
 
@@ -860,7 +937,7 @@ describe('chaining action together', () => {
         webpackModules.set(propName,"index","default",(data={})=> data )
         webpackModules.set(propName,actionName,"default", data => data )
 
-        webpackModules.set(propName,actionName,"fulfilled",actionFunction)
+        webpackModules.set(propName,actionName,"FULFILLED",actionFunction)
 
         webpackModules.set(propName,actionName,"action",()=> Promise.resolve() )
 

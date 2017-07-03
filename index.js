@@ -264,16 +264,38 @@ function buildActionLayout(fileNameArray){
 
                 dispatch({type:wrappingFn.pending, reqPayload:payload, payload:null})
                 chaining(wrappingFn.pending)
-                actionOutput.payload
-                .then(result => {
-                  dispatch({type:wrappingFn.fulfilled, reqPayload:payload, payload:result })
-                  chaining(wrappingFn.fulfilled)
-                },
-                err => { // only handle external error
+
+                const handleErrors = err => { // only handle external error
                   err.clear = ()=>{dispatch({type:wrappingFn.clear})};
                   dispatch({type:wrappingFn.rejected, reqPayload:payload, payload:err})
                   chaining(wrappingFn.rejected)
-                })
+                }
+
+                actionOutput.payload
+                .then(result => {
+
+                  // we are handling a fetch
+                  if(result && "function" === typeof result.json){
+                    const webresult = result;
+                    result = result.json()
+                                   .then( jsonresult => {
+                                     if(false === webresult.ok){
+                                      // GrafeQL will have 1 prop called "errors"
+                                       if(1 === Object.keys(jsonresult).length && Array.isArray(jsonresult.errors))
+                                          handleErrors(new Error(jsonresult.errors.map(error => error.message).join()))
+                                       else
+                                          handleErrors(new Error(`${webresult.status} - ${webresult.url}`))
+                                     } else {
+                                       dispatch({type:wrappingFn.fulfilled, reqPayload:payload, payload:jsonresult })
+                                       chaining(wrappingFn.fulfilled)
+                                     }
+                                  })
+                                  .catch(handleErrors);
+                    return;
+                  } // END if("function" === typeof result.json)
+                  dispatch({type:wrappingFn.fulfilled, reqPayload:payload, payload:result })
+                  chaining(wrappingFn.fulfilled)
+                },handleErrors)
               } else {
                 dispatch(actionOutput);
                 chaining(actionOutput.type)
