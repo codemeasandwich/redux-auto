@@ -6,10 +6,10 @@
 ##### Removing the boilerplate code in setting up a store & actions
 
 [![npm version](https://badge.fury.io/js/redux-auto.svg)](https://badge.fury.io/js/redux-auto)
+[![npm downloads](https://img.shields.io/npm/dt/redux-auto.svg)](https://www.npmjs.com/package/redux-auto)
 [![Build Status](https://travis-ci.org/codemeasandwich/redux-auto.svg?branch=master)](https://travis-ci.org/codemeasandwich/redux-auto)
 [![Coverage Status](https://coveralls.io/repos/github/codemeasandwich/redux-auto/badge.svg?branch=master)](https://coveralls.io/github/codemeasandwich/redux-auto?branch=master)
 [![Known Vulnerabilities](https://snyk.io/test/npm/redux-auto/badge.svg)](https://snyk.io/test/npm/redux-auto)
-[![bitHound Dependencies](https://www.bithound.io/github/codemeasandwich/redux-auto/badges/dependencies.svg)](https://www.bithound.io/github/codemeasandwich/redux-auto/master/dependencies/npm)
 
 ## why
 
@@ -176,7 +176,7 @@ Example: saving the uses name to the server
 ```JS
 // /store/user/changeUserName.js
 
-export default function (user, payload, state) {
+export default function (user, payload, stage) {
 switch(stage){
     case 'FULFILLED':
      // ...
