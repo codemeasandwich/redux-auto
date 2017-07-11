@@ -255,7 +255,10 @@ describe('initialization', () => {
 
       })
 
-      webpackModules.set(propName,"init","action", ()=> Promise.resolve({posts:[1,2,3,4,5]}) )
+      webpackModules.set(propName,"init","action", function(payload,state){
+        expect(Array.isArray(state)).toBe(true)
+        return Promise.resolve({posts:[1,2,3,4,5]})
+    } )
       RefrashStore();
       // should be automatically called
     })

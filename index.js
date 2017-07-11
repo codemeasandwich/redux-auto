@@ -9,8 +9,9 @@ function isFunction(value){
   return value instanceof Function;
 }
 function isObject(value){
-  return !! value && value.constructor === Object;
-  //return value instanceof Object;
+  // TODO: find out why this is braking the tests
+  //return !! value && value.constructor === Object;
+  return value instanceof Object && !isArray(value);
 }
 
 const isArray = Array.isArray;
@@ -197,17 +198,21 @@ function buildActionLayout(fileNameArray){
       // check if newState's prototype is the shared Object?
       //console.log (action.type, newState, ({}).__proto__ === newState.__proto__)
 
-      if(newAsyncVal && (isObject(newState) || isArray(newState))){
-        // I am a redux-auto proto
-        const _newProto_ = {async}
+      if(newAsyncVal){
+        if(isObject(newState)){
 
-        if(newState.__proto__.hasOwnProperty("async"))
-          _newProto_.__proto__ = newState.__proto__.__proto__;
-         else
-          _newProto_.__proto__ = newState.__proto__;
+          const newStateWithAsync = Object.create({async});
+          return Object.assign(newStateWithAsync,newState); // clone object
 
-        newState.__proto__ = _newProto_;
-      }
+        }else if(isArray(newState)){
+          // I am a redux-auto proto
+          const _newProto_ = Object.create(Array.prototype)
+          _newProto_.async = async;
+          newState = newState.slice(0); // clone array
+
+          newState.__proto__ = _newProto_;
+        } // END isArray
+      } // END if(newAsyncVal)
       return newState
 
     } // END reducers[reducerName] = (data, action) => {
