@@ -9,8 +9,8 @@ function isFunction(value){
   return value instanceof Function;
 }
 function isObject(value){
-//return !! value && value.constructor === Object;
-  return value instanceof Object;
+  return !! value && value.constructor === Object;
+  //return value instanceof Object;
 }
 
 const isArray = Array.isArray;
