@@ -17,9 +17,9 @@ const isArray = Array.isArray;
 
 function ActionIDGen (reducerName, actionName, stage){
   if (3 === arguments.length)
-    return reducerName.toUpperCase() + "/" + actionName.toUpperCase() + "." + stage.toUpperCase();
+    return "@@redux-auto/"+reducerName.toUpperCase() + "/" + actionName.toUpperCase() + "." + stage.toUpperCase();
   else
-    return reducerName.toUpperCase() + "/" + actionName.toUpperCase();
+    return "@@redux-auto/"+reducerName.toUpperCase() + "/" + actionName.toUpperCase();
 }
 
 const actionsBuilder = {}, actionsBuilderPROTOTYPES = {}, lookup = {}, lifecycle = {}
@@ -317,7 +317,10 @@ function buildActionLayout(fileNameArray){
         // if there is an initialization action, fire it!!
         const init = actionsBuilder[reducerName].init || actionsBuilder[reducerName].INIT
         if (isFunction(init)) {
-          init();
+          if (init.length > 1 )
+            init({},getState()[reducerName])
+          else
+            init({});
         }
    })
     return next => action => next(action)
