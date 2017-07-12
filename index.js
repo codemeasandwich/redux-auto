@@ -82,6 +82,7 @@ function buildActionLayout(fileNameArray){
       actionsBuilderPROTOTYPES[reducerName] = {} // this is used of, e.g: if(action.type in actions.users) ~ trying to see if an type map to the reducer
       actionsBuilder[reducerName] = actionsBuilder[reducerName] ||  Object.create(actionsBuilderPROTOTYPES[reducerName]);
       actionsBuilder[reducerName][actionName] = (...args) => actionsBuilder[reducerName][actionName](...args);
+      actionsBuilder[reducerName][actionName].clear = (...args) => actionsBuilder[reducerName][actionName].clear(...args);
   })
 } // END buildActionLayout
 
@@ -200,9 +201,9 @@ function buildActionLayout(fileNameArray){
 
       if(newAsyncVal){
         if(isObject(newState)){
-
+          //const newStateWithAsync = Object.create(Object.assign(Object.create(newState.__proto__),{async}));
           const newStateWithAsync = Object.create({async});
-          return Object.assign(newStateWithAsync,newState); // clone object
+          newState = Object.assign(newStateWithAsync,newState); // clone object
 
         }else if(isArray(newState)){
           // I am a redux-auto proto
@@ -261,17 +262,19 @@ function buildActionLayout(fileNameArray){
                 wrappingFn.pending   = ActionIDGen(reducerName, actionName,"pending");
                 wrappingFn.fulfilled = ActionIDGen(reducerName, actionName,"fulfilled");
                 wrappingFn.rejected  = ActionIDGen(reducerName, actionName,"rejected");
-                wrappingFn.clear     = ActionIDGen(reducerName, actionName,"clear");
+                const clearType      = ActionIDGen(reducerName, actionName,"clear");
+                wrappingFn.clear     = ()=> dispatch({type:clearType})
+                wrappingFn.clear.toString = ()=> clearType
                 actionsBuilderPROTOTYPES[reducerName][wrappingFn.pending]   = actionName;
                 actionsBuilderPROTOTYPES[reducerName][wrappingFn.fulfilled] = actionName;
                 actionsBuilderPROTOTYPES[reducerName][wrappingFn.rejected]  = actionName;
-                actionsBuilderPROTOTYPES[reducerName][wrappingFn.clear]     = actionName;
+                actionsBuilderPROTOTYPES[reducerName][clearType]            = actionName;
 
                 dispatch({type:wrappingFn.pending, reqPayload:payload, payload:null})
                 chaining(wrappingFn.pending)
 
                 const handleErrors = err => { // only handle external error
-                  err.clear = ()=>{dispatch({type:wrappingFn.clear})};
+                  err.clear = ()=>{dispatch({type:clearType})};
                   dispatch({type:wrappingFn.rejected, reqPayload:payload, payload:err})
                   chaining(wrappingFn.rejected)
                 }
