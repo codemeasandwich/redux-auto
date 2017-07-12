@@ -33,7 +33,7 @@ const MainUi = (props) => {
     <label htmlFor="label-input">Name:</label>
     <input type="text"
              id="label-input"
-             onChange={ event => actions.user.changeName({name:event.target.value}) }
+             onInput={ event => actions.user.changeName({name:event.target.value}) }
              value={props.user.name}/>  = { (props.user.async.init)?"checking..?": <span style={{textShadow: "2px 2px 2px gray"}}>{props.user.name}</span> }
 
 
