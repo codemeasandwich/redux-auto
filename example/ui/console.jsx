@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component } from 'preact';
 
 const consoleFn = window.console.log;
 const messages = [];

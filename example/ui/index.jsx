@@ -1,17 +1,17 @@
-import React  from "react"
+import React  from "preact"
 import actions from 'redux-auto'
-import { connect } from 'react-redux'
+import { connect } from 'preact-redux'
 import ConsoleElem from "./console.jsx"
 import BadgesElem from "./badges.jsx"
 
 function Posts(props){
-
+// preact - expends values when passings as children. THIS LOOSE THE PROTO :(
 const posts = props.children;
 
-  if( posts.async.init instanceof Error )
-    return <div style={{color:"red"}}> Error: { posts.async.init.message } <button onClick={posts.async.init.clear}> clear </button></div>
+  if( props.status instanceof Error )
+    return <div style={{color:"red"}}> Error: { props.status.message } <button onClick={props.status.clear}> clear </button></div>
 
-  if(posts.async.init)
+  if(props.status.init)
     return <div> loading posts... </div>
 
    return <ul> { posts.map( ({title, id}) => (
@@ -38,7 +38,9 @@ const MainUi = (props) => {
 
 
 
-             <Posts>{props.posts}</Posts>
+             <Posts status={props.posts.async.init}>{
+                props.posts
+             }</Posts>
 
              <ConsoleElem/>
     </div>

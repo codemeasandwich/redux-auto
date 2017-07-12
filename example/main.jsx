@@ -1,8 +1,8 @@
-import React from 'react'
-import { render } from 'react-dom'
+import React from 'preact'
+import { render } from 'preact'
 import { createStore, applyMiddleware, combineReducers } from 'redux'
 import { auto, reducers } from 'redux-auto';
-import { Provider } from 'react-redux'
+import { Provider } from 'preact-redux'
 
 import Ui from './ui/index.jsx';
 
