@@ -19,7 +19,7 @@ class ConsoleElem extends Component {
     window.console.log = function(){
     consoleFn.apply(null,arguments)
         const date = new Date();
-        const message = Array.prototype.slice.call(arguments).join(' ')
+        const message = Array.prototype.slice.call(arguments).map( arg => ("object" === typeof arg)?JSON.stringify(arg):arg ).join(' ')
         messages.unshift({message, time:padNum(date.getHours())
         +":"+
         padNum(date.getMinutes())
@@ -33,7 +33,7 @@ class ConsoleElem extends Component {
   }
 
   render() {
-  
+
   const consoleStyle = {
       overflow:"hidden",
       padding:10,
@@ -41,14 +41,14 @@ class ConsoleElem extends Component {
       height:"25vh",
       backgroundColor:"black",
       position: "absolute",
-      bottom: 10, 
+      bottom: 10,
       marginLeft: "auto",
       marginRight: "auto",
       left: 0,
       right: 0,
       borderRadius: 5
   }
-  
+
     return <div style={consoleStyle}>
             {
                 messages.map( lineElem )
@@ -58,6 +58,3 @@ class ConsoleElem extends Component {
 }
 
 export default ConsoleElem;
-
-
-
