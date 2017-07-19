@@ -1,6 +1,7 @@
 var path = require("path");
 var HtmlWebpackPlugin = require('html-webpack-plugin');
 var webpack = require('webpack');
+var SriPlugin = require( 'webpack-subresource-integrity');
 
 module.exports = {
   entry: "./main.jsx",
@@ -12,10 +13,12 @@ module.exports = {
     chunkFilename: "[id].[name]-[hash].min.js"
   },
 
-  plugins: [ new HtmlWebpackPlugin({
-        title: 'redux-auto: example'
+  plugins: [
+      new HtmlWebpackPlugin({
+        title: 'redux-auto: example', showErrors:true
       }),
-      new webpack.optimize.UglifyJsPlugin({sourceMap:true}) ],
+      new webpack.optimize.UglifyJsPlugin({sourceMap:true}),
+      new SriPlugin({ hashFuncNames: ['sha256'] }) ],
   resolve:{
     alias:{
       'redux-auto':__dirname+'/../index.js',
