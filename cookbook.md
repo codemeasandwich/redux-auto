@@ -4,34 +4,38 @@
 
 ### using with redux-forms
 
-import { createStore, applyMiddleware, combineReducers } from 'redux';
-import { reducer as forms } from 'redux-form';
+    import { createStore, applyMiddleware, combineReducers } from 'redux';
+    import { reducer as forms } from 'redux-form';
 
-import { auto, mergeReducers } from 'redux-auto';
+    import { auto, mergeReducers } from 'redux-auto';
 
-const webpackModules = require.context("./store", true, /\.js$/);
+    const webpackModules = require.context("./store", true, /\.js$/);
 
-let middleware = applyMiddleware(auto(webpackModules, webpackModules.keys()));
+    let middleware = applyMiddleware(auto(webpackModules, webpackModules.keys()));
 
-export default createStore( combineReducers(mergeReducers({forms})), middleware );
+    export default createStore( combineReducers(mergeReducers({forms})), middleware );
 
 **bonus tip ✍** using with react-redux
 
+    class UserForm extends React.Component {
+    // ...
+    }
 
-ActivePeriod = reduxForm({ form: 'Schedule/ActivePeriod'})(ActivePeriod)
-export default  ActivePeriod
-const map_to_props = () => {
+    UserForm = reduxForm({ form: 'Profile/UserForm'})(UserForm)
 
-  return {  };
-};
+    const map_to_props = (store) => {
+      return { ... };
+    };
 
-export default connect(map_to_props)(ActivePeriod);
+    export default connect(map_to_props)(UserForm);
 
-### using with redux devtools
-// ...
-if(window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__)
-middleware = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__(middleware);
-// ...
+### using with redux [devtools]
+from your redux setup file
+
+    // ...
+    if(window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__)
+    middleware = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__(middleware);
+    // ...
 
 ## working with async and server calls
 
@@ -73,8 +77,16 @@ The above code is
 
 **bonus tip ✍**
 
-    export function fulfilled (announcement, payload, {groups, lines_and_stations, devices}){
-      return announcement;
-    } fulfilled.chain = actions.announcements.send_text_announcement.clear
+You can perform actions after each other by using chain.
+For example. Redirecting the user back to the home after login.
 
+    export function fulfilled (access, payload, {status, profile}){
+      return access;
+    } fulfilled.chain = actions.nav.home
+
+
+
+
+
+  [devtools]: https://github.com/gaearon/redux-devtools
   [map]: https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Array/map
