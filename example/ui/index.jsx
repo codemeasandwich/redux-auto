@@ -8,10 +8,10 @@ function Posts(props){
 // preact - expends values when passings as children. THIS LOOSE THE PROTO :(
 const posts = props.children;
 
-  if( props.status instanceof Error )
-    return <div style={{color:"red"}}> Error: { props.status.message } <button onClick={props.status.clear}> clear </button></div>
+  if( props.loading instanceof Error )
+    return <div style={{color:"red"}}> Error: { props.loading.message } <button onClick={props.loading.clear}> clear </button></div>
 
-  if(props.status.init)
+  if(props.loading)
     return <div> loading posts... </div>
 
    return <ul> { posts.map( ({title, id}) => (
@@ -22,7 +22,7 @@ const posts = props.children;
 }
 
 const MainUi = (props) => {
-
+  const { user, posts } = props
   return (
     <div>
     <a href="https://github.com/codemeasandwich/redux-auto" >
@@ -34,12 +34,12 @@ const MainUi = (props) => {
     <input type="text"
              id="label-input"
              onInput={ event => actions.user.changeName({name:event.target.value}) }
-             value={props.user.name}/>  = { (props.user.async.init)?"checking..?": <span style={{textShadow: "2px 2px 2px gray"}}>{props.user.name}</span> }
+             value={user.name}/>  = { (user.loading.init)?"checking..?": <span style={{textShadow: "2px 2px 2px gray"}}>{user.name}</span> }
 
 
 
-             <Posts status={props.posts.async.init}>{
-                props.posts
+             <Posts loading={posts.loading.init}>{
+                posts
              }</Posts>
 
              <ConsoleElem/>

@@ -202,13 +202,14 @@ function buildActionLayout(fileNameArray){
       if(newAsyncVal){
         if(isObject(newState)){
           //const newStateWithAsync = Object.create(Object.assign(Object.create(newState.__proto__),{async}));
-          const newStateWithAsync = Object.create({async});
+          const newStateWithAsync = Object.create({async:async,loading:async});
           newState = Object.assign(newStateWithAsync,newState); // clone object
 
         }else if(isArray(newState)){
           // I am a redux-auto proto
           const _newProto_ = Object.create(Array.prototype)
           _newProto_.async = async;
+          _newProto_.loading = async;
           newState = newState.slice(0); // clone array
 
           newState.__proto__ = _newProto_;
