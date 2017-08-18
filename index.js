@@ -200,16 +200,25 @@ function buildActionLayout(fileNameArray){
       //console.log (action.type, newState, ({}).__proto__ === newState.__proto__)
 
       if(newAsyncVal){
+
+
         if(isObject(newState)){
+
+          const _newProto_ = {}
+          Object.defineProperty(_newProto_,"async",  {enumerable:false, value: async})
+          Object.defineProperty(_newProto_,"loading",{enumerable:false, value: async})
+
           //const newStateWithAsync = Object.create(Object.assign(Object.create(newState.__proto__),{async}));
-          const newStateWithAsync = Object.create({async:async,loading:async});
+          const newStateWithAsync = Object.create(_newProto_);
           newState = Object.assign(newStateWithAsync,newState); // clone object
 
         }else if(isArray(newState)){
           // I am a redux-auto proto
           const _newProto_ = Object.create(Array.prototype)
-          _newProto_.async = async;
-          _newProto_.loading = async;
+
+          Object.defineProperty(_newProto_,"async",  {enumerable:false, value: async})
+          Object.defineProperty(_newProto_,"loading",{enumerable:false, value: async})
+
           newState = newState.slice(0); // clone array
 
           newState.__proto__ = _newProto_;
@@ -326,9 +335,6 @@ function buildActionLayout(fileNameArray){
         // if there is an initialization action, fire it!!
         const init = actionsBuilder[reducerName].init || actionsBuilder[reducerName].INIT
         if (isFunction(init)) {
-          if (init.length > 1 )
-            init({},getState()[reducerName])
-          else
             init({});
         }
    })

@@ -1145,7 +1145,7 @@ describe('Using the stores', () => {
 
         webpackModules.set(propName,[actionName],"default",(user, payload, stage, result)=> {
           currentStage = stage;
-          console.log(currentStage)
+          //console.log(currentStage)
           if(stage === "REJECTED")
             expect(false).toEqual(true);
 
@@ -1166,5 +1166,85 @@ describe('Using the stores', () => {
         unsubscribe();
     })
 
+//++++ should hide "async/loading" from the store prop
+//+++++++++++++++++++++++++++++++++++++++++++ (Object)
+
+    it('should hide "async/loading" from the store prop(Object)', (done) => {
+
+        let currentStage;
+
+        const defaultUser = {name:"?"}
+
+        webpackModules.set(propName,"index","default",( user = defaultUser )=> user )
+
+        webpackModules.set(propName,[actionName],"default",(user, payload, stage, name)=> Object.assign({},user,{name}) )
+
+        webpackModules.set(propName,[actionName],"action", ()=> Promise.resolve("joe") )
+
+        let unsubscribe;
+
+        const testFn = function() {
+
+          const user = store.getState()[propName]
+
+          for(const val in user){
+            // will have name
+            expect(defaultUser.hasOwnProperty(val)).toEqual(true);
+            // but NOT async or async
+          }
+
+          if(user && "joe" === user.name){
+            expect('name'in user).toEqual(true);
+            expect('async'in user).toEqual(true);
+            expect('loading'in user).toEqual(true);
+            unsubscribe();
+            done();
+          }
+        }
+
+        RefrashStore();
+        unsubscribe = store.subscribe(testFn);
+        actions[propName][actionName]();
+    })
+
+//++++ should hide "async/loading" from the store prop
+//++++++++++++++++++++++++++++++++++++++++++++ (Array)
+
+    it('should hide "async/loading" from the store prop(Array)', (done) => {
+
+        let currentStage;
+
+        const defaultList = [1,2,3]
+
+        webpackModules.set(propName,"index","default",( list = defaultList )=> list )
+        webpackModules.set(propName,[actionName],"default",(list, payload, stage, name)=> [...list,0] )
+        webpackModules.set(propName,[actionName],"action", ()=> Promise.resolve() )
+
+        let unsubscribe;
+
+        const testFn = function() {
+
+          const list = store.getState()[propName]
+
+          for(const val in list){
+            // will be a number
+            expect(isNaN(val)).toEqual(false);
+            // but NOT async or async
+          }
+
+          if(list && list.length === 5){
+            expect('length'in list).toEqual(true);
+            expect('map'in list).toEqual(true);
+            expect('async'in list).toEqual(true);
+            expect('loading'in list).toEqual(true);
+            unsubscribe();
+            done();
+          }
+        }
+
+        RefrashStore();
+        unsubscribe = store.subscribe(testFn);
+        actions[propName][actionName]();
+    })
 
 })
