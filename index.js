@@ -23,7 +23,7 @@ function ActionIDGen (reducerName, actionName, stage){
     return "@@redux-auto/"+reducerName.toUpperCase() + "/" + actionName.toUpperCase();
 }
 
-const actionsBuilder = {}, actionsBuilderPROTOTYPES = {}, lookup = {}, lifecycle = {}
+const actionsBuilder = {}, actionsBuilderPROTOTYPES = {}, lookup = {}, lifecycle = {}, isAsync={}
 const mappingFromReducerActionNameToACTIONID = {};
 const reducersBeforeAutoErrorMessage = "You are trying to get reducers before calling 'auto'. Trying moving applyMiddleware BEFORE combineReducers";
 const reducersAfterCombineReducersErrorMessage = "You need to pass an object of reducers to 'mergeReducers' BEFORE calling combineReducers. Try createStore( combineReducers( mergeReducers(otherReducers) ) )";
@@ -73,7 +73,6 @@ function names(key) {
 function buildActionLayout(fileNameArray){
 
     fileNameArray.forEach(function(key){
-
       const {actionName, reducerName } = names(key);
 
       // get action name starts with _ skip it
@@ -113,6 +112,8 @@ function buildActionLayout(fileNameArray){
   lookup[reducerName][actionName].pending   = modules(key).pending   || modules(key).PENDING;
   lookup[reducerName][actionName].fulfilled = modules(key).fulfilled || modules(key).FULFILLED;
   lookup[reducerName][actionName].rejected  = modules(key).rejected  || modules(key).REJECTED;
+
+  isAsync[reducerName] = isAsync[reducerName]||!!modules(key).action
 
   lifecycle[reducerName] = lifecycle[reducerName] || { // defaults
     before : function defaultBefore(   oldstate, action)           { return action.payload },
@@ -199,7 +200,7 @@ function buildActionLayout(fileNameArray){
       // check if newState's prototype is the shared Object?
       //console.log (action.type, newState, ({}).__proto__ === newState.__proto__)
 
-      if(newAsyncVal){
+      if(newAsyncVal || isAsync[reducerName]){
 
 
         if(isObject(newState)){

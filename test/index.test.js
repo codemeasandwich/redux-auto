@@ -1,3 +1,4 @@
+//console.warn = jest.genMockFunction();
 
 jest.unmock('../index');
 jest.unmock('./webpackModules');
@@ -477,6 +478,7 @@ describe('life cycle', () => {
             expect(({}).async).toBeUndefined();
             expect(user.async[actionName]).toBe(error);
             expect(typeof user.async[actionName].clear).toBe("function");
+        //    console.log(user.async[actionName].clear.toString())
             user.async[actionName].clear();
           } else {
             expect(user.async[actionName].clear).toBeUndefined()
