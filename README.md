@@ -49,6 +49,7 @@ I created this utility to allow you to get up and running with Rudux in a fracti
   * [logic](#default)
   * [after](#after)
 - [handling async actions in your ui](#handling-async-actions-in-your-ui)
+- [smart actions](#smart-actions)
 
 ### asynchronous
 
@@ -369,6 +370,25 @@ state.user.async.save // = Error("some problem")
 
 ```
 > [handling async actions in your ui:- example](https://github.com/codemeasandwich/redux-auto/blob/master/example/ui/index.jsx)
+
+## smart actions
+
+**smart actions** is a flag that handly `actions` function more intelligently.
+
+Currently facilitates [graphql](http://graphql.org/) and [fetch](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API) responses returned by action's promises.
+
+*to enable:*
+
+```JS
+
+import { auto } from 'redux-auto';
+
+auto.settings({smartActions:true})
+
+```
+
+This will now parce fetch and graphQL errors into your `rejected` function.
+As well as parsing the json if available
 
 
 [lifecycle]:https://docs.google.com/uc?id=0B39u552cxASjU2M5TVZkRGlzZkE

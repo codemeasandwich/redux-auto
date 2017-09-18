@@ -3,6 +3,7 @@
 //======= https://github.com/codemeasandwich/redux-auto
 */
 
+import smartAction from './middleware/smartActions';
 
 function isFunction(value){
 //return ({}).toString.call(value) === '[object Function]';
@@ -286,6 +287,7 @@ function buildActionLayout(fileNameArray){
 
                 const handleErrors = err => { // only handle external error
                   err.clear = ()=>{dispatch({type:clearType})};
+                //  console.info({type:wrappingFn.rejected, reqPayload:payload, payload:err})
                   dispatch({type:wrappingFn.rejected, reqPayload:payload, payload:err})
                   chaining(wrappingFn.rejected)
                 }
@@ -293,28 +295,25 @@ function buildActionLayout(fileNameArray){
                 actionOutput.payload
                 .then(result => {
 
-                  // we are handling a fetch
-                  if(result && "function" === typeof result.json){
-                    const webresult = result;
-                    result = result.json()
-                                   .then( jsonresult => {
-                                     if(false === webresult.ok){
-                                      // GrafeQL will have 1 prop called "errors"
-                                       if(1 === Object.keys(jsonresult).length && Array.isArray(jsonresult.errors))
-                                          handleErrors(new Error(jsonresult.errors.map(error => error.message).join()))
-                                       else
-                                          handleErrors(new Error(`${webresult.status} - ${webresult.url}`))
-                                     } else {
-                                       if(1 === Object.keys(jsonresult).length && "object" === typeof jsonresult.data)
-                                          dispatch({type:wrappingFn.fulfilled, reqPayload:payload, payload:jsonresult.data })
-                                       else
-                                          dispatch({type:wrappingFn.fulfilled, reqPayload:payload, payload:jsonresult })
-                                       chaining(wrappingFn.fulfilled)
-                                     }
-                                  })
-                                  .catch(handleErrors);
-                    return;
-                  } // END if("function" === typeof result.json)
+                    if(true === settingsOptions.smartActions){
+                      const smartActionOutPut = smartAction(result)
+                      if(smartActionOutPut){
+                        smartActionOutPut
+                        .then(grafeQLPayload => {
+                          dispatch({type:wrappingFn.fulfilled, reqPayload:payload, payload:grafeQLPayload })
+                          chaining(wrappingFn.fulfilled)
+                        })
+                        .catch(handleErrors)
+                        return;
+                      }else
+                      if(result.hasOwnProperty("ok")
+                      && ! result.ok){
+                        handleErrors(result);
+                        return;
+                      }
+                    } // END settingsOptions.smartActions
+
+
                   dispatch({type:wrappingFn.fulfilled, reqPayload:payload, payload:result })
                   chaining(wrappingFn.fulfilled)
                 },handleErrors)

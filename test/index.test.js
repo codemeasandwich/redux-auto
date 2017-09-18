@@ -14,9 +14,10 @@ import actions, { auto, reducers, mergeReducers, reset, after } from '../index';
 
 let middleware,store;
 
-function RefrashStore(){
+function RefrashStore(reset = true){
   // build 'auto' based on target files via Webpack
-  auto.reset();
+
+  reset && auto.reset();
   middleware = applyMiddleware( auto(webpackModules, webpackModules.keys()));
   store = createStore(combineReducers(reducers), middleware );
 }
@@ -773,9 +774,18 @@ describe('handling the result of fetch', () => {
           webpackModules.set(propName,"index","default",(data={})=> data )
           webpackModules.set(propName,actionName,"default", data => data )
 
-          webpackModules.set(propName,actionName,"FULFILLED",done)
+          const serverData = {name:faker.name.firstName()}
 
-          webpackModules.set(propName,actionName,"action",()=> Promise.resolve({json:()=>Promise.resolve({})}) )
+          webpackModules.set(propName,actionName,"FULFILLED", (data,payload,reqPayload) => {
+
+            reqPayload.json().then(reqJson => {
+              expect(serverData).toEqual(reqJson);
+              done();
+            });
+            return data;
+          })
+
+          webpackModules.set(propName,actionName,"action",()=> Promise.resolve({json:()=>Promise.resolve(serverData)}) )
 
           RefrashStore();
           actions[propName][actionName]();
@@ -787,46 +797,163 @@ describe('handling the result of fetch', () => {
           webpackModules.set(propName,"index","default",(data={})=> data )
           webpackModules.set(propName,actionName,"default", data => data )
 
-          webpackModules.set(propName,actionName,"rejected",done)
+          webpackModules.set(propName,actionName,"rejected",(data,payload,err) => {
+            expect("Network response was not ok.").toEqual(err.message);
+            done();
+            return data
+          })
 
-          webpackModules.set(propName,actionName,"action",()=> Promise.resolve({ok:false,json:()=>Promise.resolve({})}) )
+          webpackModules.set(propName,actionName,"action",()=> Promise.reject(new Error("Network response was not ok.")) )
 
           RefrashStore();
           actions[propName][actionName]();
 
       })
+})
 
-      it('should handle a good GrafeQl request', (done) => {
+describe('handling the result of GraphQl VIA "smartAction"', () => {
+
+      beforeAll(() => {
+        auto.settings({smartActions:true})
+      });
+
+      it('should handle a good GraphQl request', (done) => {
 
             webpackModules.set(propName,"index","default",(data={})=> data )
             webpackModules.set(propName,actionName,"default", data => data )
 
-            const fulfilledFunction = data => data;
-                  fulfilledFunction.chain = done;
+            const serverData = {name:faker.name.firstName()}
+
+            const fulfilledFunction = (data,payload,reqPayload) => {
+              expect(serverData).toEqual(reqPayload);
+              return data;
+            };
+            fulfilledFunction.chain = done;
+
             webpackModules.set(propName,actionName,"fulfilled",fulfilledFunction)
 
-            webpackModules.set(propName,actionName,"action",()=> Promise.resolve({json:()=>Promise.resolve({data:{}})}) )
+            webpackModules.set(propName,actionName,"action",()=> Promise.resolve({json:()=>Promise.resolve({data:serverData})}) )
 
-            RefrashStore();
+            RefrashStore(false);
             actions[propName][actionName]();
 
       })
 
-      it('should handle a bad GrafeQl request', (done) => {
+      it('should handle a good fetch request with GraphQl enabled', (done) => {
 
-            webpackModules.set(propName,"index","default",(data={})=> data )
-            webpackModules.set(propName,actionName,"default", data => data )
+          webpackModules.set(propName,"index","default",(data={})=> data )
+          webpackModules.set(propName,actionName,"default", data => data )
 
-            webpackModules.set(propName,actionName,"rejected",done)
+          const serverData = {name:faker.name.firstName()}
 
-            webpackModules.set(propName,actionName,"action",()=> Promise.resolve({ok:false,json:()=>Promise.resolve({errors:[{message:"error1"}]})}) )
+          webpackModules.set(propName,actionName,"FULFILLED", (data,payload,reqPayload) => {
+              expect(serverData).toEqual(reqPayload);
+              done();
+            return data;
+          })
 
-            RefrashStore();
+          webpackModules.set(propName,actionName,"action",()=> Promise.resolve({ok:true, json:()=>Promise.resolve(serverData)}) )
+
+          RefrashStore(false);
+          actions[propName][actionName]();
+
+      })
+
+      it('should handle a good Blob request', (done) => {
+
+          webpackModules.set(propName,"index","default",(data={})=> data )
+          webpackModules.set(propName,actionName,"default", data => data )
+
+          const serverData = {name:faker.name.firstName()}
+
+          webpackModules.set(propName,actionName,"FULFILLED", (data,payload,reqPayload) => {
+            done();
+            return data;
+          })
+
+          webpackModules.set(propName,actionName,"action",()=> Promise.resolve({
+            ok:true,
+            //json:()=>Promise.reject(new SyntaxError("Unexpected token ? in JSON at position ###"))
+            json:()=>{throw new SyntaxError("Unexpected token ? in JSON at position ###")}
+          }) )
+
+          RefrashStore(false);
+          actions[propName][actionName]();
+
+      })
+
+      it('should handle a "Failed to fetch"', (done) => {
+
+          webpackModules.set(propName,"index","default",(data={})=> data )
+          webpackModules.set(propName,actionName,"default", data => data )
+
+          webpackModules.set(propName,actionName,"rejected",(data,payload,err) => {
+            expect("Network response was not ok.").toEqual(err.message);
+            done();
+            return data
+          })
+
+          webpackModules.set(propName,actionName,"action",()=> Promise.reject(new Error("Network response was not ok.")) )
+
+          RefrashStore(false);
+          actions[propName][actionName]();
+
+      })
+
+      it('should handle a rejection', (done) => {
+
+          webpackModules.set(propName,"index","default",(data={})=> data )
+          webpackModules.set(propName,actionName,"default", data => data )
+
+
+          const serverResponce = {  bodyUsed:false,
+                                    headers:{},
+                                    ok:false,
+                                    redirected:false,
+                                    status:404,
+                                    statusText:"",
+                                    type:"basic",
+                                    url:"https://some.domain.com/kjhgfd" }
+
+          webpackModules.set(propName,actionName,"rejected",(data,payload,err) => {
+            expect(serverResponce).toEqual(err);
+            done();
+            return data
+          })
+
+          webpackModules.set(propName,actionName,"action",()=> Promise.resolve(serverResponce) )
+
+          RefrashStore(false);
+          actions[propName][actionName]();
+
+      })
+
+      it('should handle a bad GraphQl request', (done) => {
+
+            webpackModules.set(propName,"index","default",(data={})=> data );
+
+            const fulfilledCallback = jest.fn();
+            const errorMessage = "error1"
+            webpackModules.set(propName,actionName,"pending",data=>data)
+            webpackModules.set(propName,actionName,"fulfilled",fulfilledCallback)
+            webpackModules.set(propName,actionName,"rejected", (data,payload,err) =>{
+              expect(fulfilledCallback).toHaveBeenCalledTimes(0);
+              expect(err.message).toEqual(errorMessage);
+              done();
+              return data
+            })
+
+            webpackModules.set(propName,actionName,"action",()=> Promise.resolve({
+              ok:false,
+              json:()=>Promise.resolve({data:{user:null},errors:[{message:errorMessage}]})
+            }) )
+
+            RefrashStore(false);
             actions[propName][actionName]();
 
       })
 
-      it('should handle muilt bad GrafeQl requests', (done) => {
+      it('should handle muilt bad GraphQl requests', (done) => {
 
             webpackModules.set(propName,"index","default",(data={})=> data )
             webpackModules.set(propName,actionName,"default", data => data )
@@ -837,10 +964,25 @@ describe('handling the result of fetch', () => {
 
             webpackModules.set(propName,actionName,"action",()=> Promise.resolve({ok:false,json:()=>Promise.resolve({errors:[{message:"error1"},{message:"error2"}]})}) )
 
-            RefrashStore();
+            RefrashStore(false);
             actions[propName][actionName]();
 
       })
+
+      it('should handle a blank reply', (done) => {
+
+            webpackModules.set(propName,"index","default",(data={})=> data )
+            webpackModules.set(propName,actionName,"default", data => data )
+
+            webpackModules.set(propName,actionName,"fulfilled",data => {done();return data;})
+
+            webpackModules.set(propName,actionName,"action",()=> Promise.resolve({}) )
+
+            RefrashStore(false);
+            actions[propName][actionName]();
+
+      })
+
 })
 
 describe('chaining action together', () => {
