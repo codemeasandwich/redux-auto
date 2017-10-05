@@ -312,7 +312,7 @@ the default functions for **store/user/changeName.js** & **store/post/index.js**
 
 #### after
 
-Fires on every action to tweek the **payload** that will be passed to you logic functions.
+Fires after every action, allowing you to change your piece of the **state**.
 
 ```js
 import actions from 'redux-auto'
@@ -334,14 +334,21 @@ export function after(newUserValues, action, oldUserValues){
 
 redux-auto has a build it mechanism for to flag what stage an action is in.
 
-if the state that you returned from your reduce function is an object or array. redux-auto will transparency attach an async property representing all async actions.
+if the state that you returned from your reduce function is an object or array. redux-auto will transparency attach a "loading" property representing all async actions.
 
-a async flag can have 1 of 4 values
+The "loading" flag can have 1 of 4 values
 
 1) `undefined` : the async action have not been fired yet
 2) `true` : the action have is in progress
 3) `false` : the action have completed successfully
 4) `error` : an error object + a "clear" function to reset the async to `undefined`
+
+* Note: The async action will also have the clear function if at any time you want to reset the "loading" property.
+
+     `actions.user.save()` is the async function and
+
+     `actions.user.save.clear()` will clear the "loading" property.
+
 
 example:
 
@@ -352,21 +359,21 @@ example:
 
 JSON.stringify(state.user) // "{ "name":"tom" }"
 
-state.user.async.save // = undefined
+state.user.loading.save // = undefined
 
 actions.user.save()
 
-state.user.async.save // = true
+state.user.loading.save // = true
 
 // when the request or promuse completed
 
-state.user.async.save // = false
+state.user.loading.save // = false
 
 // if the was a problem. it will be was to the error object
 
-state.user.async.save // = Error("some problem")
-// + with an Error, there will also be "clear" function to set the async back to undefined
-// e.g. state.user.async.save.clear()
+state.user.loading.save // = Error("some problem")
+// + with an Error, there will also be "clear" function to set the "loading" back to undefined
+// e.g. state.user.loading.save.clear()
 
 ```
 > [handling async actions in your ui:- example](https://github.com/codemeasandwich/redux-auto/blob/master/example/ui/index.jsx)
@@ -377,7 +384,7 @@ state.user.async.save // = Error("some problem")
 
 Currently facilitates [graphql](http://graphql.org/) and [fetch](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API) responses returned by action's promises.
 
-*to enable:*
+**To enable:**
 
 ```JS
 
