@@ -195,7 +195,7 @@ switch(stage){
   return user;
 }
 
-export function action (payload,apps){
+export function action (payload,user){
 	return fetch('/api/foo/bar/user/'+payload.userId)
 }
 
@@ -218,7 +218,7 @@ export function rejected (posts, payload, error){
   return posts;
 }
 
-export function action (payload,apps){
+export function action (payload,posts){
 	return fetch('/api/foo/bar/user/'+payload.userId)
 }
 
