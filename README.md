@@ -28,16 +28,16 @@ I created this utility to allow you to get up and running with Rudux in a fracti
 
 #### Have an exising project? No worries. Drop it in, to work along side the traditional redux way.
 
-# [Live Demo](http://bit.ly/2g1m0wn) / [Demo Source](http://bit.ly/2g1zJTW)
+# [Live Demo](https://bit.ly/redux-auto-demo) / [Demo Source](https://bit.ly/redux-auto-example)
 
-### If you like it, [★ it on github](http://bit.ly/2yxsn2v) and share  :beers:
+### If you like it, [★ it on github](https://bit.ly/redux-auto-star) and share  :beers:
 
   * [Why](#why)
     + [plug & Play](#plug--play)
     + [asynchronous](#asynchronous)
-- [Live Demo](http://redux-auto.s3-website-eu-west-1.amazonaws.com/)
-  * [Source](https://github.com/codemeasandwich/redux-auto/tree/master/example)
-- [Overview](#overview-)
+- [Live Demo](https://bit.ly/redux-auto-demo)
+  * [Source](https://bit.ly/redux-auto-example)
+- [Overview](#overview)
 - [setup](#setup)
   * [Using along side an existing Redux setup](#using-along-side-an-existing-redux-setup)
   * [Using along side other Redux middleware](#using-along-side-other-redux-middleware)
@@ -64,7 +64,7 @@ redux-auto fixed this asynchronous problem simply by allowing you to create an [
 3) Allows you to co-locate external service calls with where they will be transformed
 4) Naming the file "**init**.js" will call it once at app start. This is good for loading data from the server at start
 
-## Overview:
+## Overview
 
 **Redux-Auto was create to work with Webpacks.*
 
@@ -330,6 +330,8 @@ export function after(newUserValues, action, oldUserValues){
 
 ```
 
+![App flow][lifecycle]
+
 ## handling async actions in your ui
 
 redux-auto has a build it mechanism for to flag what stage an action is in.
@@ -398,4 +400,4 @@ This will now parce fetch and graphQL errors into your `rejected` function.
 As well as parsing the json if available
 
 
-[lifecycle]:https://docs.google.com/uc?id=0B39u552cxASjU2M5TVZkRGlzZkE
+[lifecycle]:https://s3-eu-west-1.amazonaws.com/redux-auto/flow.png
