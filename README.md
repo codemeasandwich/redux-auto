@@ -6,7 +6,7 @@
 ##### Removing the boilerplate code in setting up a store & actions
 
 [![npm version](https://badge.fury.io/js/redux-auto.svg)](https://badge.fury.io/js/redux-auto)
-[![npm downloads](https://img.shields.io/npm/dt/redux-auto.svg)](https://www.npmjs.com/package/redux-auto)
+[![npm downloads](https://img.shields.io/npm/dt/redux-auto.svg)](http://www.npmtrends.com/redux-auto)
 [![Build Status](https://travis-ci.org/codemeasandwich/redux-auto.svg?branch=master)](https://travis-ci.org/codemeasandwich/redux-auto)
 [![Coverage Status](https://coveralls.io/repos/github/codemeasandwich/redux-auto/badge.svg?branch=master)](https://coveralls.io/github/codemeasandwich/redux-auto?branch=master)
 [![Known Vulnerabilities](https://snyk.io/test/npm/redux-auto/badge.svg)](https://snyk.io/test/npm/redux-auto)
@@ -28,9 +28,9 @@ I created this utility to allow you to get up and running with Rudux in a fracti
 
 #### Have an exising project? No worries. Drop it in, to work along side the traditional redux way.
 
-# [Live Demo](http://redux-auto.s3-website-eu-west-1.amazonaws.com/) / [Demo Source](https://github.com/codemeasandwich/redux-auto/tree/master/example)
+# [Live Demo](http://bit.ly/2g1m0wn) / [Demo Source](http://bit.ly/2g1zJTW)
 
-### If you like it, [★ it on github](https://github.com/codemeasandwich/redux-auto) and share  :beers:
+### If you like it, [★ it on github](http://bit.ly/2yxsn2v) and share  :beers:
 
   * [Why](#why)
     + [plug & Play](#plug--play)
@@ -96,7 +96,7 @@ Example layout:
 
 ## setup
 
-Inside you enter file
+### Inside your setup file
 
 ```JS
 ...
