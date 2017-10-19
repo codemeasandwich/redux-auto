@@ -330,8 +330,6 @@ export function after(newUserValues, action, oldUserValues){
 
 ```
 
-![App flow][lifecycle]
-
 ## handling async actions in your ui
 
 redux-auto has a build it mechanism for to flag what stage an action is in.

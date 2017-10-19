@@ -237,7 +237,6 @@ function buildActionLayout(fileNameArray){
     const actionPreProcessor = modules(key).action;
     // actionsBuilder[reducerName] = actionsBuilder[reducerName] || {};
 
-    actionsImplementation = actionsImplementation || {}
     actionsImplementation[reducerName] = actionsImplementation[reducerName] ||  Object.create(actionsBuilderPROTOTYPES[reducerName]);
 
     actionsImplementation[reducerName][actionName] = (payload,getState) => {
