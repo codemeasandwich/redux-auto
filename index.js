@@ -95,7 +95,7 @@ function buildActionLayout(fileNameArray){
 
   if(testingOptions.preOnly) return;
 
-  fileNameArray.forEach(function(key){
+  const actionsImplementation = fileNameArray.reduce((actionsImplementation, key)=>{
 
   const { actionName, reducerName } = names(key);
 
@@ -106,7 +106,7 @@ function buildActionLayout(fileNameArray){
 
   // get action name starts with _ skip it
   if("_" === actionName[0] || null === reducerName)
-      return;
+      return actionsImplementation;
 
   lookup[reducerName] = lookup[reducerName] || {};
   lookup[reducerName][actionName] = modules(key).default || {};
@@ -237,7 +237,11 @@ function buildActionLayout(fileNameArray){
     const actionPreProcessor = modules(key).action;
     // actionsBuilder[reducerName] = actionsBuilder[reducerName] || {};
 
-    actionsBuilder[reducerName][actionName] = (payload,getState) => {
+    actionsImplementation = actionsImplementation || {}
+    actionsImplementation[reducerName] = actionsImplementation[reducerName] ||  Object.create(actionsBuilderPROTOTYPES[reducerName]);
+
+    actionsImplementation[reducerName][actionName] = (payload,getState) => {
+    //actionsBuilder[reducerName][actionName] = (payload,getState) => {
 
         if(actionPreProcessor){
           if(1 < actionPreProcessor.length){
@@ -248,7 +252,16 @@ function buildActionLayout(fileNameArray){
         return { type: ACTIONID, payload }
     } // END actionsBuilder[reducerName][actionName] = (payload = {}) => {
   } // END if(actionName !== "index")
-});
+  return actionsImplementation
+},{}); //END reduce
+
+//+++++++ replace the place-holders after fully loaded
+//++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Object.assign(actionsBuilder,actionsImplementation);
+
+//+++++++++++++++++++++++++ wrap actions with dispatch
+//++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   return function setDispatch ({ getState, dispatch}) {
 
