@@ -388,6 +388,80 @@ export function after(newUserValues, action, oldUserValues){
 
 ---
 
+## What if I want to dispatch actions one after another?
+
+
++++
+
+## create Side-Effects with
+# "chain"
+
++++
+
+**Example: Open a Post's page while getting this Data**
+
+```JS  
+export function pending (posts, {index}){
+  return { ...posts, selected:index }
+} pending.chain = action.nav.postPage
+
+export function fulfilled (posts, payload, serverData){
+  return serverData }// replace
+
+export function rejected (posts, payload, error){
+  return logging..error.report(error);     }
+
+export function action ({index}){
+    return fetch('/api/posts?index='+index).then( response => response.json() )
+}
+```
+@[11-13]
+@[1-3]
+@[3]
+
++++
+
+### Action short-hand:
+
+```JS
+} pending.chain = action.nav.postPage // action.nav.postPage()
+```
+
+
+### function
+```JS
+} pending.chain =
+      (posts,payload) =>
+              action.nav.postPage({meta:{index:payload.index}})
+```
+
++++
+
+This could also be done in **store/nav/index.js**
+
+```JS  
+export default function (nav = {}, action){
+  if(action.type == actions.posts.get.pending){
+    return { ...nav, page="posts",
+              meta:{index:action.payload.index}
+          }
+  }
+  return nav;
+}
+```
+@[2-6]
+
++++
+
+# index vs chain
+
+<div class="fragment">**index:** will make the change on the SAME cycle</div>
+<div class="fragment">**chain:** will make the change on the NEXT cycle</div>
+
+<div class="fragment">It's upto you!</div>
+
+---
+
 Redux-auto.. today?
 
 

@@ -226,9 +226,9 @@ export function action (payload,posts){
 
 ### chaining action together
 
-You chain actions back-to-back by setting a chain function on the exported function.
+You chain actions back-to-back by setting an "chain" property on the exported function.
 
-Attach a function as the "chain" property of the function
+Attach a function as the "chain" property
 
 **Example:**
 /store/user/getInfo
@@ -240,16 +240,21 @@ export function fulfilled (user, payload, userFromServer){
 export function rejected (user, payload, userFromServer){
   return userFromServer;
 } rejected.chain = actions.user.reset
-...
+
+export function pending (user, payload){
+  return user
+}
 
 export function action (payload){
 	return fetch('/api/foo/bar/user/'+payload.userId)
 }
 ```
 
-If you pass you our function. It will be passed all the arguments, the same a the host function. Else you can pass thought a function to be called without any arguments
+If you pass your our function. Like with the **'fulfilled'** example. It will be passed all the arguments, the same a the host function was.
 
-So calling "**actions.user.login({userId:1})**" will automatically call  **actions.nav.move** with the host arguments OR **actions.user.reset** *with out arguments.
+Else you can pass thought a function. Like with the **'rejected'** example. It be called without any arguments.
+
+So calling "**actions.user.getInfo({userId:1})**" will automatically call  **actions.nav.move** with the host arguments OR **actions.user.reset** *with out arguments.
 
 ## index files
 
@@ -276,7 +281,7 @@ export function before(user, action){
 
 #### default
 
-The is a normal redux reducer function being passed the **previousState** and the **action**.
+This is a normal redux reducer function, being passed the **previousState** and the **action**.
 ```js
 export default function user(user = {name:"?"}, action) {
   return user;
@@ -284,9 +289,9 @@ export default function user(user = {name:"?"}, action) {
 
 ```
 
-⚠ This function will be fired on all actions, **except** for actions that handled by a specific action file in this reducer folder.
+⚠ This function will be fired on all actions, **EXCEPT** for actions that are handled by a specific action file in this reducer folder.
 
-Let understand this with an example:
+Lets understand this with an example:
 
 **Files:**
 ```
