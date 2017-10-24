@@ -509,6 +509,22 @@ describe('action middlware', () => {
 //+++++++++++++++ should call default if not a promise
 //++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+    it('should be able to cancel an action by returning undefined from the action', () => {
+
+      webpackModules.set(propName,"index","default",(posts={},action)=> posts )
+      webpackModules.set(propName,actionName,"default",(posts, payload, stage, result)=>{
+        expect(false).toEqual(true)
+      })
+
+      webpackModules.set(propName,actionName,"action",(payload)=> {} )
+
+      RefrashStore();
+      actions[propName][actionName]();
+    })
+
+//+++++++++++++++ should call default if not a promise
+//++++++++++++++++++++++++++++++++++++++++++++++++++++
+
     it('should call default if not a promise', (done) => {
 
         const fakerName = faker.name.findName();
@@ -1224,11 +1240,11 @@ describe('Using the stores', () => {
 //+++++++++++++should throw an exception if not return
 //++++++++++++++++++++++++++++++++ from action-creater
 
-    it('should throw an exception if not return from action-creater', () => {
+    it('should throw an exception if not returning a Promise from action-creater', () => {
 
         webpackModules.set(propName,"index","default",(posts=[])=> posts )
         webpackModules.set(propName,actionName,"default",()=> expect(false).toEqual(true) )
-        webpackModules.set(propName,actionName,"action",()=> {} )
+        webpackModules.set(propName,actionName,"action",()=> 123 )
 
         RefrashStore();
         expect(() => {
@@ -1236,21 +1252,7 @@ describe('Using the stores', () => {
         }).toThrow(new RegExp("^action with bad payload"));
 
     })
-//++++++++ should throw an exception if undefined from
-//+++++++++++++++++++++++++++++++++++++ action-creater
 
-    it('should throw an exception if undefined from action-creater', () => {
-
-        webpackModules.set(propName,"index","default",(posts=[])=> posts )
-        webpackModules.set(propName,actionName,"default",()=> expect(false).toEqual(true) )
-        webpackModules.set(propName,actionName,"action",()=> undefined )
-
-        RefrashStore();
-        expect(() => {
-          actions[propName][actionName]();
-        }).toThrow(new RegExp("^action with bad payload"));
-
-    })
 
 //+++++++ should be able to check if an action.type is
 //++++++++++++++++++++++++++++ within a actions[state]

@@ -279,8 +279,10 @@ Object.assign(actionsBuilder,actionsImplementation);
             const wrappingFn = actionsBuilder[reducerName][actionName];
 
             const actionOutput = actionDataFn(payload,getState)
-
-            if(isObject(actionOutput.payload)){
+            //should be able to cancel an action by returning undefined from the action
+            if(undefined === actionOutput.payload){
+              return;
+            } else if(isObject(actionOutput.payload)){
               if(isFunction(actionOutput.payload.then)){
 
                 wrappingFn.pending   = ActionIDGen(reducerName, actionName,"pending");

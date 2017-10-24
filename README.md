@@ -44,6 +44,7 @@ I created this utility to allow you to get up and running with Rudux in a fracti
   * [Actions are available in the UI](#actions-are-available-in-the-ui)
 - [Action files](#action-files)
   * [Chaining action together](#chaining-action-together)
+  * [Cancel an action](#cancel-an-action)
 - [Index files](#index-files)
   * [before](#before)
   * [logic](#default)
@@ -255,6 +256,21 @@ If you pass your our function. Like with the **'fulfilled'** example. It will be
 Else you can pass thought a function. Like with the **'rejected'** example. It be called without any arguments.
 
 So calling "**actions.user.getInfo({userId:1})**" will automatically call  **actions.nav.move** with the host arguments OR **actions.user.reset** *with out arguments.
+
+
+### cancel an action
+
+You can cancel an action from with-in the action .js file before it starts by not returning any value
+
+**Example:**
+```JS
+export function action (payload,user){
+  if(payload.id === user.id)
+    return
+  else
+	 return fetch('/api/foo/bar/user/'+payload.userId)
+}
+```
 
 ## index files
 
