@@ -12,7 +12,8 @@ export default function (response){
 
     response.json().then( jsonresult => {
         if(jsonresult.errors){
-              reject( new Error(jsonresult.errors.map(error => error.message).join()))
+            reject( jsonresult.errors )
+              //reject( new Error(jsonresult.errors.map(error => error.message).join()))
          } else {
            if(1 === Object.keys(jsonresult).length && "object" === typeof jsonresult.data)
               resolve( jsonresult.data )

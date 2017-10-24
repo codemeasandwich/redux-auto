@@ -971,14 +971,24 @@ describe('handling the result of GraphQl VIA "smartAction"', () => {
 
       it('should handle muilt bad GraphQl requests', (done) => {
 
+            let errors = [{message:"error1"},{message:"error2"}], callCount = 0;
+
             webpackModules.set(propName,"index","default",(data={})=> data )
             webpackModules.set(propName,actionName,"default", data => data )
 
-            const rejectedFunction = data => data;
-                  rejectedFunction.chain = done;
+            const rejectedFunction = (data,payload,error) => {
+
+              expect(errors[callCount].message).toEqual(error.message);
+              callCount++
+
+              if(errors.length === callCount) done();
+
+              return data
+            };
+                //  rejectedFunction.chain = done;
             webpackModules.set(propName,actionName,"rejected",rejectedFunction)
 
-            webpackModules.set(propName,actionName,"action",()=> Promise.resolve({ok:false,json:()=>Promise.resolve({errors:[{message:"error1"},{message:"error2"}]})}) )
+            webpackModules.set(propName,actionName,"action",()=> Promise.resolve({ok:false,json:()=>Promise.resolve({errors})}) )
 
             RefrashStore(false);
             actions[propName][actionName]();

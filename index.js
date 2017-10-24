@@ -301,7 +301,7 @@ Object.assign(actionsBuilder,actionsImplementation);
 
                 const handleErrors = err => { // only handle external error
                   err.clear = ()=>{dispatch({type:clearType})};
-                //  console.info({type:wrappingFn.rejected, reqPayload:payload, payload:err})
+                  //console.info({type:wrappingFn.rejected, reqPayload:payload, payload:err})
                   dispatch({type:wrappingFn.rejected, reqPayload:payload, payload:err})
                   chaining(wrappingFn.rejected)
                 }
@@ -317,7 +317,9 @@ Object.assign(actionsBuilder,actionsImplementation);
                           dispatch({type:wrappingFn.fulfilled, reqPayload:payload, payload:grafeQLPayload })
                           chaining(wrappingFn.fulfilled)
                         })
-                        .catch(handleErrors)
+                        .catch( errors => {
+                          errors.forEach(error => handleErrors(new Error(error.message)))
+                        })
                         return;
                       }else
                       if(result.hasOwnProperty("ok")
