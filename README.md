@@ -15,18 +15,18 @@
 
 ## why
 
-I created this utility to allow you to get up and running with Rudux in a fraction of the time!
+I created this utility to allow you to get up and running with Redux in a fraction of the time!
 
 ### plug & Play
-* No wiring togetter of actions & reduces
+* No wiring together of actions & reduces
 * No hardcoding actions types
-* No action creater or dispatcher to worry about
-* Easy Asyn for calling APIs
+* No action creator or dispatcher to worry about
+* Easy Async for calling APIs
 * Easy *initialize* for parts of your store
 * Easy install = works as the same as other redux middleware
-* pure JS no external dependencies!
+* Pure JS no external dependencies!
 
-#### Have an exising project? No worries. Drop it in, to work along side the traditional redux way.
+#### Have an existing project? No worries. Drop it in, to work along side the traditional redux way.
 
 # [Live Demo](https://bit.ly/redux-auto-demo) / [Demo Source](https://bit.ly/redux-auto-example)
 
@@ -54,20 +54,20 @@ I created this utility to allow you to get up and running with Rudux in a fracti
 
 ### asynchronous
 
-Redux your reducer returns a state object. This is very straight forward, but makes dealing with asynchronous updates quite tricky (there are [more than 60 different libraries](https://github.com/markerikson/redux-ecosystem-links/blob/master/side-effects.md) tackling this problem).
+In Redux your reducer returns a state object. This is very straight forward, but makes dealing with asynchronous updates quite tricky (there are [more than 60 different libraries](https://github.com/markerikson/redux-ecosystem-links/blob/master/side-effects.md) tackling this problem).
 
-redux-auto fixed this asynchronous problem simply by allowing you to create an ["action" function that returns a promise](#action-files). To accompany your "default" function action logic.
+redux-auto fixes this asynchronous problem simply by allowing you to create an ["action" function that returns a promise](#action-files). To accompany your "default" function action logic.
 
 > [asynchronous: example](https://github.com/codemeasandwich/redux-auto/blob/master/example/store/user/init.js)
 
 1) No need for other Redux async middleware. e.g. thunk, promise-middleware, saga
 2) Easily allows you to pass a promise into redux and have it managed for you
 3) Allows you to co-locate external service calls with where they will be transformed
-4) Naming the file "**init**.js" will call it once at app start. This is good for loading data from the server at start
+4) Naming the file "**init**.js" will have it called once at app start. This is good for loading data from the server to warm up you client cache.
 
 ## Overview
 
-**Redux-Auto was create to work with Webpacks.*
+**Redux-Auto was created to work with Webpacks.*
 
 Steps:
 
@@ -75,14 +75,14 @@ Steps:
 	* This is where the data, logic & flow control of the application lives. This can be named whatever, just point to it with webpacks - require.context
 2) In this folder you will create folders to represent each attribute on the store
 	* For example. the "user" folder will create an attribute of 'user'
-	* the JS files within the folder are **actions** that can be fired to change the shape for user.
+	* the JS files within the folder are **actions** that can be fired to change the shape of user.
 3) Create an index.js file to set default values
-	* **[export default](#default)** is catch all reducer function *(if an action cant be found)*
-	* export "[before](#before)" & "[after](#after)" are lifecycle functions
-4) Create a js file with the name of the [action](#action-files) you want it mapped to
+	* **[export default](#default)** is a catch all reducer function *(if an action cant be found)*
+	* export "[before](#before)" & "[after](#after)" as lifecycle functions
+4) Create js files with the name of the [action](#action-files) you want it mapped to
 	* **export default** is the reducer function
 	* export "action" function. Is an **action-middleware** that will allow you to create promises
-5) You can create an init.js that is automatically run once after store created
+5) You can create an init.js It will be automatically run once after store created
 	* using this to initialize from an API
 
 Example layout:
@@ -144,7 +144,7 @@ const store = createStore(combineReducers(reducers), middleware );
 
 ### actions are available in the UI
 
-Just import "redux-auto" and the action are automatically available by default
+Just import "redux-auto" and the actions are automatically available by default
 
 ```JS
 import actions from 'redux-auto'
@@ -155,8 +155,8 @@ action.apps.chageAppName({appId:123})
 
 ## action files
 
-The action file lives within you attribute folder and become the exposed actions.
-The default export should be a funciton that will take 1) your piece of the state 2) the payload data
+The action file lives within your attribute folder and becomes the exposed action.
+The default export should be a function that will take 1) your piece of the state 2) the payload data
 
 
 Example: of an action to update the logged-in users name
@@ -171,9 +171,9 @@ export default function (user, payload) {
 
 ```
 
-★ Sometime we want to talk to the server. This is done by action-middleware
+★ Sometimes we want to talk to the server. This is done by action-middleware
 
-This is done by exporting a function named "action" that returns a promise. The default function will now receive a 3rd argument "state".
+This is done by exporting a function named "action" that returns a promise. The default function will now receive a 3rd argument "state". With the 2nd argument being the payload used to create the request
 
 Example: saving the uses name to the server
 
@@ -225,7 +225,7 @@ export function action (payload,posts){
 
 ```
 
-### chaining action together
+### chaining actions together
 
 You chain actions back-to-back by setting an "chain" property on the exported function.
 
@@ -251,9 +251,9 @@ export function action (payload){
 }
 ```
 
-If you pass your our function. Like with the **'fulfilled'** example. It will be passed all the arguments, the same a the host function was.
+If you pass your own function. Like with the **'fulfilled'** example. It will be passed all the arguments, the same as the host function was.
 
-Else you can pass thought a function. Like with the **'rejected'** example. It be called without any arguments.
+Else you can pass **thought** an "redux-auto" action function. Like with the **'rejected'** example. It will called without any arguments.
 
 So calling "**actions.user.getInfo({userId:1})**" will automatically call  **actions.nav.move** with the host arguments OR **actions.user.reset** *with out arguments.
 
@@ -274,8 +274,7 @@ export function action (payload,user){
 
 ## index files
 
-**"index"** files need for each attribute folder you make.
-the default export should be a funciton that will
+**"index"** files are need for each attribute folder you make.
 
 This file can exposes three funtions
 1) before
@@ -284,7 +283,7 @@ This file can exposes three funtions
 
 #### before
 
-Fires on every action to tweek the **payload** that will be passed to you logic functions.
+Fires on every action, to tweek the **payload** that will be passed to you logic functions.
 
 ```js
 // add a time stamp to the payload that will be recived by user reduced
@@ -326,9 +325,9 @@ import actions from 'redux-auto'
 ...
 actions.user.changeName({name:"brian"})
 ```
-the default functions for **store/user/changeName.js** & **store/post/index.js** will be fired.
+The default functions for **store/user/changeName.js** & **store/post/index.js** will be fired.
 
-**store/user/index.js was NOT** called because there is specific action file a to handle it for user.
+**store/user/index.js was NOT** called because there is a specific action file a to handle it for user.
 
 
 #### after
@@ -351,18 +350,18 @@ export function after(newUserValues, action, oldUserValues){
 
 ```
 
-## handling async actions in your ui
+## handling async actions in your UI
 
-redux-auto has a build it mechanism for to flag what stage an action is in.
+redux-auto has a built in mechanism to flag what stage an async action is in..
 
-if the state that you returned from your reduce function is an object or array. redux-auto will transparency attach a "loading" property representing all async actions.
+if the state that you returned from your reduce function is an object or array. redux-auto will transparently attach a "loading" property representing all async actions.
 
 The "loading" flag can have 1 of 4 values
 
-1) `undefined` : the async action have not been fired yet
-2) `true` : the action have is in progress
-3) `false` : the action have completed successfully
-4) `error` : an error object + a "clear" function to reset the async to `undefined`
+1) `undefined` : the async action has not been fired yet
+2) `true` : the action is in progress
+3) `false` : the action has completed successfully
+4) `error` : an error occurred and here is the error object + a "clear" function to reset the async to `undefined`
 
 * Note: The async action will also have the clear function if at any time you want to reset the "loading" property.
 
@@ -393,7 +392,7 @@ state.user.loading.save // = false
 // if the was a problem. it will be was to the error object
 
 state.user.loading.save // = Error("some problem")
-// + with an Error, there will also be "clear" function to set the "loading" back to undefined
+// + with an Error, there will also be a "clear" function to set the "loading" back to undefined
 // e.g. state.user.loading.save.clear()
 
 ```
@@ -401,7 +400,7 @@ state.user.loading.save // = Error("some problem")
 
 ## smart actions
 
-**smart actions** is a flag that handly `actions` function more intelligently.
+**smart actions** is an options flag that handly `actions` function more intelligently.
 
 Currently facilitates [graphql](http://graphql.org/) and [fetch](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API) responses returned by action's promises.
 
