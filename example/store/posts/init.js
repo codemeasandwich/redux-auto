@@ -19,7 +19,7 @@ export function rejected (posts, payload, error){
 export function action (payload){
 
     console.log("posts / action >> read API - posts")
-  return fetch('http://jsonplaceholder.typicode.com/posts',{
+  return fetch('https://jsonplaceholder.typicode.com/posts',{
       method: 'GET'
     }).then( data => data.json() )
       .then( arrayOfPosts => arrayOfPosts.slice(0,10) )
