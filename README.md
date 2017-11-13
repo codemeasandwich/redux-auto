@@ -180,7 +180,7 @@ Example: saving the uses name to the server
 ```JS
 // /store/user/changeUserName.js
 
-export default function (user, payload, stage) {
+export default function (user, payload, stage, data) {
 switch(stage){
     case 'FULFILLED':
      // ...
