@@ -3,7 +3,7 @@
 //======= https://github.com/codemeasandwich/redux-auto
 */
 
-import smartAction from './middleware/smartActions';
+import smartAction from './middleware/smartActions.js';
 
 function isFunction(value){
 //return ({}).toString.call(value) === '[object Function]';
@@ -38,7 +38,7 @@ function chaining(actionType){
 }
 chaining.set = function(fn,actionType, argsArray){
   if (undefined === fn) return;
-  chaining[actionType] = (0 < fn.length) ? fn.apply(null,argsArray) : fn;
+  chaining[actionType] = ()=>setTimeout(()=>fn(...argsArray), 0)
 }
 
 const settingsOptions = {}, testingOptions = {};
@@ -274,7 +274,7 @@ Object.assign(actionsBuilder,actionsImplementation);
 
           if(arguments.length > 0 && undefined === arguments[0] || ! isObject(payload)){
             throw new Error(`${typeof arguments[0]} was passed as payload to ${reducerName}.${actionName}. This need to be an object. Check you have not misspelled of the variable`);
-         }
+          }
 
             const wrappingFn = actionsBuilder[reducerName][actionName];
 
@@ -328,7 +328,6 @@ Object.assign(actionsBuilder,actionsImplementation);
                         return;
                       }
                     } // END settingsOptions.smartActions
-
 
                   dispatch({type:wrappingFn.fulfilled, reqPayload:payload, payload:result })
                   chaining(wrappingFn.fulfilled)

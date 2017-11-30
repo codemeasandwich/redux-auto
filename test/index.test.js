@@ -1404,3 +1404,66 @@ describe('Using the stores', () => {
     })
 
 })
+
+
+//=====================================================
+//================================== Issues from GitHub
+//=====================================================
+
+describe('Issues', () => {
+
+  let propName, actionName;
+
+    beforeEach(function() {
+      webpackModules.clear();
+      propName   = faker.address.city();
+      actionName = faker.address.streetName();
+    });
+
+
+//++ Chaining Example is invalid. Throws reducer error
+//++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    it('#5 Chaining Example is invalid; throws reducer error', (done) => {
+      // filled by: https://github.com/jschimmoeller
+
+      webpackModules.set("user","index","default",(data={})=> data )
+      webpackModules.set("user","getInfo","default", data => data )
+      webpackModules.set("user","reset",  "default", data => data )
+
+      webpackModules.set("nav","index","default",(data={})=> data )
+      webpackModules.set("nav","move", "default", data => { done(); return data } )
+
+      // ==== pending
+      const pendingFunction = (user, payload) => {
+        return user;
+      };
+
+      // ==== fulfilled
+      const fulfilledFunction = (user, payload, userFromServer) => {
+        return userFromServer;
+      };
+      fulfilledFunction.chain = (user, payload, userFromServer) => actions.nav.move({page:"home"})//setTimeout(()=>actions.nav.move({page:"home"}),0)
+
+      // ==== rejecteded
+      const rejectededFunction = (user, payload, userFromServer) => {
+        return userFromServer;
+      };
+      rejectededFunction.chain = ()=>actions.user.reset()
+
+      // ==== action
+      const actionFunction = (payload) => {
+        return Promise.resolve({name:faker.name.firstName()});
+      //return Promise.resolve({data:{name:faker.name.firstName()}});
+      };
+
+      webpackModules.set("user","getInfo","pending",    pendingFunction)
+      webpackModules.set("user","getInfo","fulfilled",fulfilledFunction)
+      webpackModules.set("user","getInfo","rejected",rejectededFunction)
+      webpackModules.set("user","getInfo","action",      actionFunction)
+
+      RefrashStore(false);
+      actions.user.getInfo();
+
+    })
+})
