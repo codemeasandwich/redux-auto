@@ -17,7 +17,7 @@
 
 I created this utility to allow you to get up and running with Redux in a fraction of the time!
 
-### plug & Play
+### Plug & Play
 * No wiring together of actions & reduces
 * No hardcoding actions types
 * No action creator or dispatcher to worry about
@@ -43,7 +43,7 @@ I created this utility to allow you to get up and running with Redux in a fracti
   * [Using along side other Redux middleware](#using-along-side-other-redux-middleware)
   * [Actions are available in the UI](#actions-are-available-in-the-ui)
 - [Action files](#action-files)
-  * [Chaining action together](#chaining-action-together)
+  * [Chaining action together](#chaining-actions-together)
   * [Cancel an action](#cancel-an-action)
 - [Index files](#index-files)
   * [before](#before)

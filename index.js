@@ -318,7 +318,11 @@ Object.assign(actionsBuilder,actionsImplementation);
                           chaining(wrappingFn.fulfilled)
                         })
                         .catch( errors => {
-                          errors.forEach(error => handleErrors(new Error(error.message)))
+                           if(Array.isArray(errors)){
+                             errors.forEach(handleErrors)
+                           } else {
+                             handleErrors(errors)
+                           }
                         })
                         return;
                       }else

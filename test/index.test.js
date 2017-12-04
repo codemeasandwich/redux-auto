@@ -393,8 +393,8 @@ describe('life cycle', () => {
             return JSON.parse(JSON.stringify(newAppsState)); // return a new object
         } )
 
-        webpackModules.set(propName,[actionName],"default",(posts, payload, stage, result)=>  posts )
-        webpackModules.set(propName,[actionName],"action", ()=> Promise.resolve({ ok:true }) )
+        webpackModules.set(propName,actionName,"default",(posts, payload, stage, result)=>  posts )
+        webpackModules.set(propName,actionName,"action", ()=> Promise.resolve({ ok:true }) )
 
         let unsubscribe;
         const values = [false,true];
@@ -428,8 +428,8 @@ describe('life cycle', () => {
             return JSON.parse(JSON.stringify(newAppsState)); // return a new object
         } )
 
-        webpackModules.set(propName,[actionName],"default",(txt, payload, stage, result)=>  txt )
-        webpackModules.set(propName,[actionName],"action", ()=> Promise.resolve({ ok:true }) )
+        webpackModules.set(propName,actionName,"default",(txt, payload, stage, result)=>  txt )
+        webpackModules.set(propName,actionName,"action", ()=> Promise.resolve({ ok:true }) )
 
         let unsubscribe;
         const values = [undefined,undefined];
@@ -455,11 +455,11 @@ describe('life cycle', () => {
 
         webpackModules.set(propName,"index","default",(user={})=> user )
 
-        webpackModules.set(propName,[actionName],"default",(user, payload, stage, result)=> { return user;} )
+        webpackModules.set(propName,actionName,"default",(user, payload, stage, result)=> { return user;} )
 
         const error = new Error("Boom with the async");
 
-        webpackModules.set(propName,[actionName],"action", ()=> Promise.reject(error) )
+        webpackModules.set(propName,actionName,"action", ()=> Promise.reject(error) )
 
         let unsubscribe;
         const values = [undefined,error,true];
@@ -1299,7 +1299,7 @@ describe('Using the stores', () => {
 
         webpackModules.set(propName,"index","default",(user={})=> user )
 
-        webpackModules.set(propName,[actionName],"default",(user, payload, stage, result)=> {
+        webpackModules.set(propName,actionName,"default",(user, payload, stage, result)=> {
           currentStage = stage;
           //console.log(currentStage)
           if(stage === "REJECTED")
@@ -1308,7 +1308,7 @@ describe('Using the stores', () => {
           return user;
         } )
 
-        webpackModules.set(propName,[actionName],"action", ()=> Promise.resolve() )
+        webpackModules.set(propName,actionName,"action", ()=> Promise.resolve() )
 
         let unsubscribe;
 
@@ -1333,9 +1333,9 @@ describe('Using the stores', () => {
 
         webpackModules.set(propName,"index","default",( user = defaultUser )=> user )
 
-        webpackModules.set(propName,[actionName],"default",(user, payload, stage, name)=> Object.assign({},user,{name}) )
+        webpackModules.set(propName,actionName,"default",(user, payload, stage, name)=> Object.assign({},user,{name}) )
 
-        webpackModules.set(propName,[actionName],"action", ()=> Promise.resolve("joe") )
+        webpackModules.set(propName,actionName,"action", ()=> Promise.resolve("joe") )
 
         let unsubscribe;
 
@@ -1373,8 +1373,8 @@ describe('Using the stores', () => {
         const defaultList = [1,2,3]
 
         webpackModules.set(propName,"index","default",( list = defaultList )=> list )
-        webpackModules.set(propName,[actionName],"default",(list, payload, stage, name)=> [...list,0] )
-        webpackModules.set(propName,[actionName],"action", ()=> Promise.resolve() )
+        webpackModules.set(propName,actionName,"default",(list, payload, stage, name)=> [...list,0] )
+        webpackModules.set(propName,actionName,"action", ()=> Promise.resolve() )
 
         let unsubscribe;
 
@@ -1401,6 +1401,59 @@ describe('Using the stores', () => {
         RefrashStore();
         unsubscribe = store.subscribe(testFn);
         actions[propName][actionName]();
+    })
+
+//++++ should handle coding errors in reduce functions
+//++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    it.skip('should handle coding errors in reduce functions', () => {
+
+      webpackModules.set(propName,"index", "default",(data={})=> data )
+      webpackModules.set(propName,actionName, "default", function(data,action) {
+        return Object.assign({},data,undefinedValue)
+      })
+
+      RefrashStore();
+      expect(actions[propName][actionName]).toThrow();
+
+
+    })
+
+//++++ should handle coding errors in reduce functions
+//++++++++++++++++++++++++++++++++++++++++ with action
+
+// react-redux Provider has it own way of rendeing on state change.
+// this is diffent from subscribe. So I cant test this case >:(
+
+    it.skip('should handle coding errors in reduce functions, while rendeing a state change', () => {
+
+      const Apn = "A "+propName,
+            Aan = "A "+actionName,
+            Ban = "B "+actionName;
+
+      webpackModules.set(Apn,"index", "default",(data={})=> data )
+      webpackModules.set(Apn, Aan, "default", x => x )
+      webpackModules.set(Apn, Aan, "action", () => Promise.resolve(true))
+      webpackModules.set(Apn, Ban, "default",   data    => {
+
+        return Object.assign({},data,undefinedValue.foo);
+      })
+
+      RefrashStore();
+
+      const unsubscribe = store.subscribe(()=>{
+      //  console.log("rendeing a state change",store.getState()[Apn].loading)
+      //  console.log(Apn,Aan,store.getState()[Apn].loading[Aan])
+          if(store.getState()[Apn].loading[Aan] === false){
+            unsubscribe();
+            actions[Apn][Ban]();
+          }
+      });
+
+      //expect(
+        actions[Apn][Aan]()
+    //  ).toThrow();
+
     })
 
 })
