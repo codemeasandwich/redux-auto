@@ -38,7 +38,7 @@ function chaining(actionType){
 }
 chaining.set = function(fn,actionType, argsArray){
   if (undefined === fn) return;
-  chaining[actionType] = ()=>setTimeout(()=>fn(...argsArray), 0)
+  chaining[actionType] = ()=>setTimeout(()=> (0 < fn.length) ? fn(...argsArray) : fn(), 0)
 }
 
 const settingsOptions = {}, testingOptions = {};

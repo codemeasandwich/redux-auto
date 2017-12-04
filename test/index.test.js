@@ -1085,7 +1085,10 @@ describe('chaining action together', () => {
     it('should chain actions for PENDING function', (done) => {
 
         const actionFunction = function (data, payload){ return data }
-              actionFunction.chain = done;
+              actionFunction.chain =  function(data, payload){
+                expect(arguments.length).toEqual(3);
+                done();
+          };
 
         webpackModules.set(propName,"index","default",(data={})=> data )
         webpackModules.set(propName,actionName,"default",(data)=>data)
@@ -1105,7 +1108,10 @@ describe('chaining action together', () => {
     it('should chain actions for fulfilled function', (done) => {
 
         const actionFunction =  data => data;
-              actionFunction.chain = done;
+              actionFunction.chain = function(){
+                      expect(arguments.length).toEqual(0);
+                      done();
+                }
 
         webpackModules.set(propName,"index","default",(data={})=> data )
         webpackModules.set(propName,actionName,"default", data => data )
