@@ -15,7 +15,7 @@ module.exports = {
 
   plugins: [
       new HtmlWebpackPlugin({
-        title: 'redux-auto: example', showErrors:true
+        showErrors:true,  template: 'index.html'
       }),
       new webpack.optimize.UglifyJsPlugin({sourceMap:true}),
       new SriPlugin({ hashFuncNames: ['sha256'] }) ],
