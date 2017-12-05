@@ -25,6 +25,7 @@ I created this utility to allow you to get up and running with Redux in a fracti
 * Easy *initialize* for parts of your store
 * Easy install = works as the same as other redux middleware
 * Pure JS no external dependencies!
+* SuperSmall: under 3k (minify + gzip)
 
 #### Have an existing project? No worries. Drop it in, to work along side the traditional redux way.
 
