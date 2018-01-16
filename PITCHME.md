@@ -107,7 +107,6 @@ const myApp = Redux.combineReducers({ myReducer });
 let store = Redux.createStore(myApp)
 
 
-
 let Provider = ReactRedux.Provider;
 React.render(
   <Provider store={store}>
@@ -236,7 +235,7 @@ Redux is SYNCHRONOUS
 +++
 
 Async - wish list 🌠
-<div class="fragment">case: talk to server</dic>
+<div class="fragment">case: talk to server</div>
 <ol>
 <li class="fragment">ajax code with reducer</li>
 <li class="fragment">manage steps
@@ -311,11 +310,11 @@ hydrate on start
 
 # How to use types.
 
-### Excite and Segment match
+### Exact and Group match
 
 +++
 
-## Excite match
+## Exact match
 
 **lets do something in "bar" with "foo.A" is fired**
 
@@ -339,7 +338,7 @@ export default function (bar = [], action)
 
 +++
 
-## Segment match
+## Group match
 
 **lets do something in "bar" with any "foo" is fired**
 
@@ -468,6 +467,7 @@ Redux-auto.. today?
 <ul>
 <li class="fragment"> Has 100% test coverage</li>
 <li class="fragment"> Being used in Production today</li>
+<li class="fragment"> No dependencies + (small)under 3k</li>
 <li class="fragment"> Can be dropped into any existing project</li>
 <li class="fragment"> compatible with existing redux tooling</li>
 </ul>
