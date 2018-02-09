@@ -1,13 +1,17 @@
 {
   "name": "redux-auto",
-  "version": "1.9.3",
+  "version": "1.9.4",
   "description": "automatically generate stories and actions from your folder and file structure",
-  "main": "index.js",
+  "main": "bundle.js",
   "scripts": {
     "test": "jest",
     "test:go": "npm test -- --watch --coverage",
     "test:cover": "npm test -- --coverage --no-cache",
-    "test:watch": "npm test -- --watch"
+    "test:watch": "npm test -- --watch",
+    "build":"rollup index.js --o __rollup.js --f cjs && babel __rollup.js --out-file bundle.js && rm __rollup.js"
+  },
+  "babel": {
+      "presets": ["es2015"]
   },
   "jest": {
     "browser": true,
@@ -41,6 +45,8 @@
   },
   "homepage": "https://github.com/codemeasandwich/redux-auto#readme",
   "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-core": "^6.26.0",
     "babel-jest": "^20.0.3",
     "babel-preset-es2015": "^6.24.1",
     "coveralls": "^2.13.1",
