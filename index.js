@@ -1,3 +1,4 @@
+'use strict';
 /**
 //========================================== redux-auto
 //======= https://github.com/codemeasandwich/redux-auto
@@ -99,9 +100,9 @@ function buildActionLayout(fileNameArray){
 
   const { actionName, reducerName } = names(key);
 
-  if(actionName.includes("."))
+  if(0<=actionName.indexOf("."))
       throw new Error(`file ${actionName} in ${reducerName} contains a DOT in its name`)
-  if(reducerName.includes("."))
+  if(0<=reducerName.indexOf("."))
       throw new Error(`the folder ${reducerName} contains a DOT in its name`)
 
   // get action name starts with _ skip it

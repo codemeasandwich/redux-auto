@@ -169,8 +169,8 @@ function auto(modules, fileNameArray) {
         actionName = _names2.actionName,
         reducerName = _names2.reducerName;
 
-    if (actionName.includes(".")) throw new Error('file ' + actionName + ' in ' + reducerName + ' contains a DOT in its name');
-    if (reducerName.includes(".")) throw new Error('the folder ' + reducerName + ' contains a DOT in its name');
+    if (0 <= actionName.indexOf(".")) throw new Error('file ' + actionName + ' in ' + reducerName + ' contains a DOT in its name');
+    if (0 <= reducerName.indexOf(".")) throw new Error('the folder ' + reducerName + ' contains a DOT in its name');
 
     // get action name starts with _ skip it
     if ("_" === actionName[0] || null === reducerName) return actionsImplementation;
