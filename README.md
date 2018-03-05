@@ -5,9 +5,10 @@
 ## Redux made easy (with a plug and play approach)
 ##### Removing the boilerplate code in setting up a store & actions
 
-[![npm version](https://badge.fury.io/js/redux-auto.svg)](https://badge.fury.io/js/redux-auto)
+[![npm version](https://badge.fury.io/js/redux-auto.svg)](https://www.npmjs.com/package/redux-auto)
 [![npm downloads](https://img.shields.io/npm/dt/redux-auto.svg)](http://www.npmtrends.com/redux-auto)
 [![Build Status](https://travis-ci.org/codemeasandwich/redux-auto.svg?branch=master)](https://travis-ci.org/codemeasandwich/redux-auto)
+![gzip size](http://img.badgesize.io/https://cdn.jsdelivr.net/npm/redux-auto@latest/bundle.min.js?compression=gzip)
 [![Coverage Status](https://coveralls.io/repos/github/codemeasandwich/redux-auto/badge.svg?branch=master)](https://coveralls.io/github/codemeasandwich/redux-auto?branch=master)
 [![Known Vulnerabilities](https://snyk.io/test/npm/redux-auto/badge.svg)](https://snyk.io/test/npm/redux-auto)
 [![compatible with preact-redux](https://img.shields.io/badge/compatible%20with-preact--redux-673ab8.svg)](https://github.com/developit/preact-redux)
@@ -52,6 +53,7 @@ I created this utility to allow you to get up and running with Redux in a fracti
   * [after](#after)
 - [handling async actions in your ui](#handling-async-actions-in-your-ui)
 - [smart actions](#smart-actions)
+- [resources](#resources)
 
 ### asynchronous
 
@@ -418,5 +420,7 @@ auto.settings({smartActions:true})
 This will now parce fetch and graphQL errors into your `rejected` function.
 As well as parsing the json if available
 
+## Resources
+* [Presentation](https://gitpitch.com/codemeasandwich/redux-auto)
 
 [lifecycle]:https://s3-eu-west-1.amazonaws.com/redux-auto/flow.png
