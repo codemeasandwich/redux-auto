@@ -21,7 +21,7 @@ module.exports = {
       new SriPlugin({ hashFuncNames: ['sha256'] }) ],
   resolve:{
     alias:{
-      'redux-auto':__dirname+'/../index.js',
+      'redux-auto':__dirname+'/../bundle.js',
     }
   },
   module:{
