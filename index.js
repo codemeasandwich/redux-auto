@@ -202,14 +202,15 @@ function buildActionLayout(fileNameArray){
       // check if newState's prototype is the shared Object?
       //console.log (action.type, newState, ({}).__proto__ === newState.__proto__)
 
-      if(newAsyncVal || isAsync[reducerName]){
-
+      if( newState &&
+         (newAsyncVal || isAsync[reducerName]) && ! newState.__proto__.async
+         ){
 
         if(isObject(newState)){
 
           const _newProto_ = {}
-          Object.defineProperty(_newProto_,"async",  {enumerable:false, value: async})
-          Object.defineProperty(_newProto_,"loading",{enumerable:false, value: async})
+          Object.defineProperty(_newProto_,"async",  {enumerable:false, configurable:true, writable: false, value: async})
+          Object.defineProperty(_newProto_,"loading",{enumerable:false, configurable:true, writable: false, value: async})
 
           //const newStateWithAsync = Object.create(Object.assign(Object.create(newState.__proto__),{async}));
           const newStateWithAsync = Object.create(_newProto_);
@@ -219,14 +220,18 @@ function buildActionLayout(fileNameArray){
           // I am a redux-auto proto
           const _newProto_ = Object.create(Array.prototype)
 
-          Object.defineProperty(_newProto_,"async",  {enumerable:false, value: async})
-          Object.defineProperty(_newProto_,"loading",{enumerable:false, value: async})
+          Object.defineProperty(_newProto_,"async",  {enumerable:false, configurable:true, writable: false, value: async})
+          Object.defineProperty(_newProto_,"loading",{enumerable:false, configurable:true, writable: false, value: async})
 
           newState = newState.slice(0); // clone array
 
           newState.__proto__ = _newProto_;
         } // END isArray
       } // END if(newAsyncVal)
+      else if (newState && newState.__proto__.async ) {
+          Object.defineProperty(newState.__proto__,"async",  {enumerable:false, configurable:true, writable: false, value: async})
+          Object.defineProperty(newState.__proto__,"loading",{enumerable:false, configurable:true, writable: false, value: async})
+      }
       return newState
 
     } // END reducers[reducerName] = (data, action) => {

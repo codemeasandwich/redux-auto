@@ -39,11 +39,6 @@ function smartAction(response) {
   }); // END Promise
 }
 
-/**
-//========================================== redux-auto
-//======= https://github.com/codemeasandwich/redux-auto
-*/
-
 function isFunction(value) {
   //return ({}).toString.call(value) === '[object Function]';
   return value instanceof Function;
@@ -60,16 +55,16 @@ function ActionIDGen(reducerName, actionName, stage) {
   if (3 === arguments.length) return "@@redux-auto/" + reducerName.toUpperCase() + "/" + actionName.toUpperCase() + "." + stage.toUpperCase();else return "@@redux-auto/" + reducerName.toUpperCase() + "/" + actionName.toUpperCase();
 }
 
-var actionsBuilder = {};
-var actionsBuilderPROTOTYPES = {};
-var lookup = {};
-var lifecycle = {};
-var isAsync = {};
+var actionsBuilder = {},
+    actionsBuilderPROTOTYPES = {},
+    lookup = {},
+    lifecycle = {},
+    isAsync = {};
 var mappingFromReducerActionNameToACTIONID = {};
 var reducersBeforeAutoErrorMessage = "You are trying to get reducers before calling 'auto'. Trying moving applyMiddleware BEFORE combineReducers";
 var reducersAfterCombineReducersErrorMessage = "You need to pass an object of reducers to 'mergeReducers' BEFORE calling combineReducers. Try createStore( combineReducers( mergeReducers(otherReducers) ) )";
-var autoWasCalled = false;
-var reducers = {
+var autoWasCalled = false,
+    reducers = {
   auto_function_not_call_before_combineReducers: function auto_function_not_call_before_combineReducers() {
     throw new Error(reducersBeforeAutoErrorMessage);
   }
@@ -86,8 +81,8 @@ chaining.set = function (fn, actionType, argsArray) {
   };
 };
 
-var settingsOptions = {};
-var testingOptions = {};
+var settingsOptions = {},
+    testingOptions = {};
 
 function reset() {
   Object.keys(settingsOptions).forEach(function (p) {
@@ -278,13 +273,13 @@ function auto(modules, fileNameArray) {
         // check if newState's prototype is the shared Object?
         //console.log (action.type, newState, ({}).__proto__ === newState.__proto__)
 
-        if (newAsyncVal || isAsync[reducerName]) {
+        if (newState && (newAsyncVal || isAsync[reducerName]) && !newState.__proto__.async) {
 
           if (isObject(newState)) {
 
             var _newProto_ = {};
-            Object.defineProperty(_newProto_, "async", { enumerable: false, value: async });
-            Object.defineProperty(_newProto_, "loading", { enumerable: false, value: async });
+            Object.defineProperty(_newProto_, "async", { enumerable: false, configurable: true, writable: false, value: async });
+            Object.defineProperty(_newProto_, "loading", { enumerable: false, configurable: true, writable: false, value: async });
 
             //const newStateWithAsync = Object.create(Object.assign(Object.create(newState.__proto__),{async}));
             var newStateWithAsync = Object.create(_newProto_);
@@ -293,14 +288,18 @@ function auto(modules, fileNameArray) {
             // I am a redux-auto proto
             var _newProto_2 = Object.create(Array.prototype);
 
-            Object.defineProperty(_newProto_2, "async", { enumerable: false, value: async });
-            Object.defineProperty(_newProto_2, "loading", { enumerable: false, value: async });
+            Object.defineProperty(_newProto_2, "async", { enumerable: false, configurable: true, writable: false, value: async });
+            Object.defineProperty(_newProto_2, "loading", { enumerable: false, configurable: true, writable: false, value: async });
 
             newState = newState.slice(0); // clone array
 
             newState.__proto__ = _newProto_2;
           } // END isArray
         } // END if(newAsyncVal)
+        else if (newState && newState.__proto__.async) {
+            Object.defineProperty(newState.__proto__, "async", { enumerable: false, configurable: true, writable: false, value: async });
+            Object.defineProperty(newState.__proto__, "loading", { enumerable: false, configurable: true, writable: false, value: async });
+          }
         return newState;
       }; // END reducers[reducerName] = (data, action) => {
     } // END !(reducerName in reducers)
