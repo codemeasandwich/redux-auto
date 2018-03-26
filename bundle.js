@@ -212,8 +212,8 @@ function auto(modules, fileNameArray) {
         if (isObject(action.payload) && !isObject(payload)) throw new Error(reducerName + '-before returned a "' + (typeof payload === 'undefined' ? 'undefined' : _typeof(payload)) + '" should be a payload object');
 
         var newState = data;
-        var newAsyncVal = !!(data && data.__proto__.async);
-        var async = newAsyncVal ? data.__proto__.async : {};
+        var newAsyncVal = false;
+        var async = {};
 
         if (avabileAction in avabileActions) {
 
@@ -273,13 +273,14 @@ function auto(modules, fileNameArray) {
         // check if newState's prototype is the shared Object?
         //console.log (action.type, newState, ({}).__proto__ === newState.__proto__)
 
-        if (newState && (newAsyncVal || isAsync[reducerName]) && !newState.__proto__.async) {
+
+        if (newAsyncVal || newState && isAsync[reducerName] && !newState.__proto__.async) {
 
           if (isObject(newState)) {
 
             var _newProto_ = {};
-            Object.defineProperty(_newProto_, "async", { enumerable: false, configurable: true, writable: false, value: async });
-            Object.defineProperty(_newProto_, "loading", { enumerable: false, configurable: true, writable: false, value: async });
+            Object.defineProperty(_newProto_, "async", { enumerable: false, writable: false, value: async });
+            Object.defineProperty(_newProto_, "loading", { enumerable: false, writable: false, value: async });
 
             //const newStateWithAsync = Object.create(Object.assign(Object.create(newState.__proto__),{async}));
             var newStateWithAsync = Object.create(_newProto_);
@@ -288,18 +289,15 @@ function auto(modules, fileNameArray) {
             // I am a redux-auto proto
             var _newProto_2 = Object.create(Array.prototype);
 
-            Object.defineProperty(_newProto_2, "async", { enumerable: false, configurable: true, writable: false, value: async });
-            Object.defineProperty(_newProto_2, "loading", { enumerable: false, configurable: true, writable: false, value: async });
+            Object.defineProperty(_newProto_2, "async", { enumerable: false, writable: false, value: async });
+            Object.defineProperty(_newProto_2, "loading", { enumerable: false, writable: false, value: async });
 
             newState = newState.slice(0); // clone array
 
             newState.__proto__ = _newProto_2;
           } // END isArray
         } // END if(newAsyncVal)
-        else if (newState && newState.__proto__.async) {
-            Object.defineProperty(newState.__proto__, "async", { enumerable: false, configurable: true, writable: false, value: async });
-            Object.defineProperty(newState.__proto__, "loading", { enumerable: false, configurable: true, writable: false, value: async });
-          }
+
         return newState;
       }; // END reducers[reducerName] = (data, action) => {
     } // END !(reducerName in reducers)
