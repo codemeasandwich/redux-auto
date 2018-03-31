@@ -70,14 +70,27 @@ var autoWasCalled = false,
   }
 };
 function chaining(actionType) {
-  chaining[actionType] && chaining[actionType]();
+
+  var result = chaining[actionType] && chaining[actionType]();
+
+  result && result.then && result.then(function (action) {
+    if (action && isObject(action) && action.type && action.payload) {
+      setTimeout(function () {
+        return chaining.dispatcher(action);
+      }, 0); //TODO: is this timeout need?
+    }
+  });
 }
+
 chaining.set = function (fn, actionType, argsArray) {
   if (undefined === fn) return;
   chaining[actionType] = function () {
-    return setTimeout(function () {
-      return 0 < fn.length ? fn.apply(undefined, _toConsumableArray(argsArray)) : fn();
-    }, 0);
+
+    return new Promise(function (resolve, reject) {
+      setTimeout(function () {
+        resolve(0 < fn.length ? fn.apply(undefined, _toConsumableArray(argsArray)) : fn());
+      }, 0);
+    });
   };
 };
 
@@ -337,6 +350,8 @@ function auto(modules, fileNameArray) {
     var getState = _ref.getState,
         dispatch = _ref.dispatch;
 
+
+    chaining.dispatcher = dispatch;
 
     Object.keys(actionsBuilder).forEach(function (reducerName) {
 

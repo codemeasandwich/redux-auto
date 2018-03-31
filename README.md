@@ -47,6 +47,7 @@ I created this utility to allow you to get up and running with Redux in a fracti
   * [Actions are available in the UI](#actions-are-available-in-the-ui)
 - [Action files](#action-files)
   * [Chaining action together](#chaining-actions-together)
+    * [call dispatcher](#chaining-to-dispatcher)
   * [Cancel an action](#cancel-an-action)
 - [Index files](#index-files)
   * [before](#before)
@@ -261,6 +262,37 @@ Else you can pass **thought** an "redux-auto" action function. Like with the **'
 
 So calling "**actions.user.getInfo({userId:1})**" will automatically call  **actions.nav.move** with the host arguments OR **actions.user.reset** *with out arguments.
 
+#### chaining to dispatcher
+
+Chained functions can call the dispatcher directly.To trigger the dispatcher from your chain you need to return an `object` with a `type` and `payload`
+
+**Example:**
+```JS
+import { push, replace } from 'react-router-redux';
+
+export default function highLightFirend(friendID, {id}) {
+  return id;
+}
+
+// This will call the 3rd party "router" reducer
+
+highLightFirend.chain = (friendID, {id})=>{
+  
+  const searchParams = new URLSearchParams(window.location.search);
+    
+  if (!id) {
+    searchParams.delete("friend");
+    const url = window.location.pathname+"#"+searchParams.toString()
+    return replace(url) // { type: '@@router/LOCATION_CHANGE',  payload: { ... } }
+
+  }else{
+    searchParams.set("resource", id);
+    const url = window.location.pathname+"#"+searchParams.toString()
+   return push(url) // { type: '@@router/LOCATION_CHANGE',  payload: { ... } }
+  }
+  
+}
+```
 
 ### cancel an action
 

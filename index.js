@@ -35,11 +35,26 @@ let autoWasCalled = false, reducers = {
   }
 }
 function chaining(actionType){
-  chaining[actionType] && chaining[actionType]();
+
+  const result = chaining[actionType] && chaining[actionType]();
+
+        result && result.then && result.then( action => {
+            if (action && isObject(action) && action.type && action.payload){
+              setTimeout(()=>chaining.dispatcher(action), 0) //TODO: is this timeout need?
+            }
+        })
 }
+
 chaining.set = function(fn,actionType, argsArray){
   if (undefined === fn) return;
-  chaining[actionType] = ()=>setTimeout(()=> (0 < fn.length) ? fn(...argsArray) : fn(), 0)
+  chaining[actionType] = ()=>{
+    
+    return new Promise((resolve, reject)=> {
+          setTimeout(()=> {
+            resolve( (0 < fn.length) ? fn(...argsArray) : fn() );
+          }, 0)
+    })
+  }
 }
 
 const settingsOptions = {}, testingOptions = {};
@@ -265,7 +280,9 @@ Object.assign(actionsBuilder,actionsImplementation);
 //++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   return function setDispatch ({ getState, dispatch}) {
-
+  
+   chaining.dispatcher = dispatch
+  
    Object.keys(actionsBuilder).forEach( (reducerName) => {
 
         Object.keys(actionsBuilder[reducerName]).forEach( (actionName) => {
