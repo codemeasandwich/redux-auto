@@ -9,7 +9,10 @@ function Posts(props){
 const posts = props.children;
 
   if( posts.async.init instanceof Error )
-    return <div style={{color:"red"}}> Error: { posts.async.init.message } <button onClick={posts.async.init.clear}> clear </button></div>
+    return <div style={{color:"red"}}>
+              Error: { posts.async.init.message }
+              <button onClick={posts.async.init.clear} name="posts.async.init.clear"> clear </button>
+            </div>
 
   if(posts.async.init)
     return <div> loading posts... </div>

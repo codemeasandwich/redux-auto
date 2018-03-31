@@ -39,7 +39,7 @@ chaining.set = function(fn,actionType, argsArray){
   chaining[actionType] = (0 < fn.length) ? fn.apply(null,argsArray) : fn;
 }
 
-const settingsOptions = {}, testingOptions = {};
+const settingsOptions = { }, testingOptions = {};
 
 function reset(){
   Object.keys(settingsOptions).forEach(p => delete settingsOptions[p]);
@@ -128,7 +128,7 @@ function buildActionLayout(fileNameArray){
 
   if(!(reducerName in reducers)){
     reducers[reducerName] = (data, action) => {
-
+      const dataBeforeExec = JSON.stringify(data)
       const avabileActions = lookup[reducerName];
       const actionFragments = action.type.split(".");
 
@@ -208,6 +208,10 @@ function buildActionLayout(fileNameArray){
 
         newState.__proto__ = _newProto_;
       }
+      
+      if (dataBeforeExec !== JSON.stringify(data))
+          throw new Error(" !! previous states was changed !! with "+action.type+" in "+reducerName)
+      
       return newState
 
     } // END reducers[reducerName] = (data, action) => {
