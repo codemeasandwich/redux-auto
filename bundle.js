@@ -226,7 +226,7 @@ function auto(modules, fileNameArray) {
 
         var newState = data;
         var newAsyncVal = false;
-        var async = {};
+        var async = data ? data.__proto__.async : {};
 
         if (avabileAction in avabileActions) {
 
@@ -235,7 +235,6 @@ function auto(modules, fileNameArray) {
             newAsyncVal = true;
             var stage = actionFragments[1].toLowerCase();
 
-            async = data && data.__proto__.async ? data.__proto__.async : {};
             async = Object.assign({}, async);
 
             if ("clear" === stage) {

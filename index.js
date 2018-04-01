@@ -164,7 +164,7 @@ function buildActionLayout(fileNameArray){
 
       let newState = data;
       let newAsyncVal = false
-      let async = {};
+      let async = data ? data.__proto__.async : {};
 
       if(avabileAction in avabileActions){
 
@@ -173,7 +173,6 @@ function buildActionLayout(fileNameArray){
           newAsyncVal = true;
           const stage = actionFragments[1].toLowerCase();
 
-          async = (data && data.__proto__.async)?data.__proto__.async : {};
           async = Object.assign({}, async);
 
           if( "clear" === stage ){
