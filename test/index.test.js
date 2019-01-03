@@ -825,6 +825,26 @@ describe('handling the result of fetch', () => {
           actions[propName][actionName]();
 
       })
+
+      it('should handle a bad response', (done) => {
+
+          webpackModules.set(propName,"index","default",(data={})=> data )
+          webpackModules.set(propName,actionName,"default", data => data )
+          webpackModules.set(propName,actionName,"fulfilled",(data,payload,reqPayload) => {
+            throw new Error("something is bad with response")
+          })
+          webpackModules.set(propName,actionName,"rejected",(data,payload,err) => {
+            expect("something is bad with response").toEqual(err.message);
+            done();
+            return data
+          })
+
+          webpackModules.set(propName,actionName,"action",()=> Promise.resolve({id:"***"}) )
+
+          RefrashStore();
+          actions[propName][actionName]();
+
+      })
 })
 
 describe('handling the result of GraphQl VIA "smartAction"', () => {

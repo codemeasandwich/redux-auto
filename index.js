@@ -48,7 +48,7 @@ function chaining(actionType){
 chaining.set = function(fn,actionType, argsArray){
   if (undefined === fn) return;
   chaining[actionType] = ()=>{
-    
+
     return new Promise((resolve, reject)=> {
           setTimeout(()=> {
             resolve( (0 < fn.length) ? fn(...argsArray) : fn() );
@@ -216,7 +216,7 @@ function buildActionLayout(fileNameArray){
       // check if newState's prototype is the shared Object?
       //console.log (action.type, newState, ({}).__proto__ === newState.__proto__)
 
-     
+
         if (newAsyncVal || (newState && isAsync[reducerName] && !newState.__proto__.async)) {
 
         if(isObject(newState)){
@@ -279,9 +279,9 @@ Object.assign(actionsBuilder,actionsImplementation);
 //++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   return function setDispatch ({ getState, dispatch}) {
-  
+
    chaining.dispatcher = dispatch
-  
+
    Object.keys(actionsBuilder).forEach( (reducerName) => {
 
         Object.keys(actionsBuilder[reducerName]).forEach( (actionName) => {
@@ -353,7 +353,7 @@ Object.assign(actionsBuilder,actionsImplementation);
 
                   dispatch({type:wrappingFn.fulfilled, reqPayload:payload, payload:result })
                   chaining(wrappingFn.fulfilled)
-                },handleErrors)
+                },handleErrors).catch(handleErrors)
               } else {
                 dispatch(actionOutput);
                 chaining(actionOutput.type)
