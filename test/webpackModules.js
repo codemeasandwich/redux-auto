@@ -31,7 +31,6 @@ const webpackModules       = function(file){ return files[file] }
       webpackModules.set = function(storeName,actionFileName,actionFunctionName,actionFunction){
         const path = `./${storeName}/${actionFileName}.js`;
         files[path] = files[path] || {}
-        files[path][actionFunctionName] = files[path][actionFunctionName] || {}
         files[path][actionFunctionName] = actionFunction;
         return files;
       }
