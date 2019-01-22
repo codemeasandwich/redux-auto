@@ -351,7 +351,7 @@ function auto(modules, fileNameArray) {
 
 
     chaining.dispatcher = dispatch;
-
+    var inits = [];
     Object.keys(actionsBuilder).forEach(function (reducerName) {
 
       Object.keys(actionsBuilder[reducerName]).forEach(function (actionName) {
@@ -427,7 +427,7 @@ function auto(modules, fileNameArray) {
 
                 dispatch({ type: wrappingFn.fulfilled, reqPayload: payload, payload: result });
                 chaining(wrappingFn.fulfilled);
-              }, handleErrors);
+              }, handleErrors).catch(handleErrors);
             } else {
               dispatch(actionOutput);
               chaining(actionOutput.type);
@@ -449,12 +449,19 @@ function auto(modules, fileNameArray) {
       // if there is an initialization action, fire it!!
       var init = actionsBuilder[reducerName].init || actionsBuilder[reducerName].INIT;
       if (isFunction(init)) {
-        init({});
+        inits.push(init);
       }
     });
     return function (next) {
       return function (action) {
-        return next(action);
+        if (inits.length) {
+          var setupToDo = inits;
+          inits = []; // clear out the list to stop recursion
+          setupToDo.forEach(function (init) {
+            return init({});
+          });
+        }
+        next(action);
       };
     };
   };

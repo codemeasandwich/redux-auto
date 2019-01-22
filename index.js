@@ -281,7 +281,7 @@ Object.assign(actionsBuilder,actionsImplementation);
   return function setDispatch ({ getState, dispatch}) {
 
    chaining.dispatcher = dispatch
-
+   let inits = []
    Object.keys(actionsBuilder).forEach( (reducerName) => {
 
         Object.keys(actionsBuilder[reducerName]).forEach( (actionName) => {
@@ -372,10 +372,17 @@ Object.assign(actionsBuilder,actionsImplementation);
         // if there is an initialization action, fire it!!
         const init = actionsBuilder[reducerName].init || actionsBuilder[reducerName].INIT
         if (isFunction(init)) {
-            init({});
+            inits.push(init);
         }
    })
-    return next => action => next(action)
+    return next => action => {
+      if (inits.length) {
+        const setupToDo = inits
+        inits = [] // clear out the list to stop recursion
+        setupToDo.forEach(init => init({}))
+      }
+      next(action)
+    }
  }
 }
 auto.reset = reset;
