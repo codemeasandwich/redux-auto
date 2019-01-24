@@ -58,6 +58,7 @@ chaining.set = function(fn,actionType, argsArray){
 }
 
 const settingsOptions = {}, testingOptions = {};
+let inits = [];
 
 function reset(){
   Object.keys(settingsOptions).forEach(p => delete settingsOptions[p]);
@@ -67,6 +68,8 @@ function reset(){
   Object.keys(lookup).forEach(p => delete lookup[p]);
   Object.keys(lifecycle).forEach(p => delete lifecycle[p]);
   Object.keys(mappingFromReducerActionNameToACTIONID).forEach(p => delete mappingFromReducerActionNameToACTIONID[p]);
+  inits = [];
+
 } // END reset
 
 function mergeReducers(otherReducers){
@@ -101,6 +104,8 @@ function buildActionLayout(fileNameArray){
       actionsBuilder[reducerName][actionName].clear = (...args) => actionsBuilder[reducerName][actionName].clear(...args);
   })
 } // END buildActionLayout
+
+
 
  function auto (modules, fileNameArray){
 
@@ -281,7 +286,7 @@ Object.assign(actionsBuilder,actionsImplementation);
   return function setDispatch ({ getState, dispatch}) {
 
    chaining.dispatcher = dispatch
-   let inits = []
+
    Object.keys(actionsBuilder).forEach( (reducerName) => {
 
         Object.keys(actionsBuilder[reducerName]).forEach( (actionName) => {
@@ -374,17 +379,17 @@ Object.assign(actionsBuilder,actionsImplementation);
         if (isFunction(init)) {
             inits.push(init);
         }
-   })
-    return next => action => {
+   }) // END forEach
+    setTimeout(()=>{
       if (inits.length) {
-        const setupToDo = inits
-        inits = [] // clear out the list to stop recursion
-        setupToDo.forEach(init => init({}))
+        inits.forEach(init => init({}))
       }
-      next(action)
-    }
+    }) // END setTimeout
+    return next => action => next(action)
  }
-}
+} // END of auto
+
+
 auto.reset = reset;
 auto.settings = function settings(options){
   Object.assign(settingsOptions,options)

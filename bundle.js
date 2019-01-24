@@ -96,6 +96,7 @@ chaining.set = function (fn, actionType, argsArray) {
 
 var settingsOptions = {},
     testingOptions = {};
+var inits = [];
 
 function reset() {
   Object.keys(settingsOptions).forEach(function (p) {
@@ -119,6 +120,7 @@ function reset() {
   Object.keys(mappingFromReducerActionNameToACTIONID).forEach(function (p) {
     return delete mappingFromReducerActionNameToACTIONID[p];
   });
+  inits = [];
 } // END reset
 
 function mergeReducers(otherReducers) {
@@ -162,6 +164,7 @@ function buildActionLayout(fileNameArray) {
     };
   });
 } // END buildActionLayout
+
 
 function auto(modules, fileNameArray) {
 
@@ -351,7 +354,7 @@ function auto(modules, fileNameArray) {
 
 
     chaining.dispatcher = dispatch;
-    var inits = [];
+
     Object.keys(actionsBuilder).forEach(function (reducerName) {
 
       Object.keys(actionsBuilder[reducerName]).forEach(function (actionName) {
@@ -451,21 +454,23 @@ function auto(modules, fileNameArray) {
       if (isFunction(init)) {
         inits.push(init);
       }
-    });
+    }); // END forEach
+    setTimeout(function () {
+      if (inits.length) {
+        inits.forEach(function (init) {
+          return init({});
+        });
+      }
+    }); // END setTimeout
     return function (next) {
       return function (action) {
-        if (inits.length) {
-          var setupToDo = inits;
-          inits = []; // clear out the list to stop recursion
-          setupToDo.forEach(function (init) {
-            return init({});
-          });
-        }
-        next(action);
+        return next(action);
       };
     };
   };
-}
+} // END of auto
+
+
 auto.reset = reset;
 auto.settings = function settings(options) {
   Object.assign(settingsOptions, options);

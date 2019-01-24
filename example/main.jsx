@@ -12,7 +12,10 @@ import Ui from './ui/index.jsx';
 const webpackModules = require.context("./store", true, /^(?!.*\.test\.js$).*\.js$/);
 
                                 // build 'auto' based on target files via Webpack
-const middleware = applyMiddleware( auto(webpackModules, webpackModules.keys()))
+let middleware = applyMiddleware( auto(webpackModules, webpackModules.keys()))
+
+if(window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__)
+middleware = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__(middleware);
 
 const store = createStore(combineReducers(reducers), middleware );
 
