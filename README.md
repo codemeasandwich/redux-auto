@@ -55,6 +55,7 @@ I created this utility to allow you to get up and running with Redux in a fracti
   * [after](#after)
 - [handling async actions in your ui](#handling-async-actions-in-your-ui)
 - [smart actions](#smart-actions)
+- [testing](#testing)
 - [resources](#resources)
 
 ### asynchronous
@@ -277,9 +278,9 @@ export default function highLightFirend(friendID, {id}) {
 // This will call the 3rd party "router" reducer
 
 highLightFirend.chain = (friendID, {id})=>{
-  
+
   const searchParams = new URLSearchParams(window.location.search);
-    
+
   if (!id) {
     searchParams.delete("friend");
     const url = window.location.pathname+"#"+searchParams.toString()
@@ -290,7 +291,7 @@ highLightFirend.chain = (friendID, {id})=>{
     const url = window.location.pathname+"#"+searchParams.toString()
    return push(url) // { type: '@@router/LOCATION_CHANGE',  payload: { ... } }
   }
-  
+
 }
 ```
 
@@ -452,6 +453,33 @@ auto.settings({smartActions:true})
 
 This will now parce fetch and graphQL errors into your `rejected` function.
 As well as parsing the json if available
+
+## Testing
+
+If you want to use a testing frameworking. There is helper funcsion [/test/fsModules](https://github.com/codemeasandwich/redux-auto/blob/master/test/fsModules.js)
+
+**For [jest](https://jestjs.io/) example:**
+```JS
+import React from 'react';
+import ReactDOM from 'react-dom';
+import { createStore, applyMiddleware, combineReducers } from 'redux';
+import { auto, reducers } from 'redux-auto';
+import fsModules from 'redux-auto/test/fsModules'
+import App from './Main';
+import path from 'path';
+import fs from 'fs';
+
+const storePath = path.join(path.dirname(fs.realpathSync(__filename)), 'store');
+const webpackModules = fsModules(storePath)
+const middleware = applyMiddleware( auto(webpackModules, webpackModules.keys()))
+const store = createStore(combineReducers(reducers), middleware );
+
+it('renders without crashing', () => {
+  const div = document.createElement('div');
+  ReactDOM.render(<App store={store} />, div);
+  ReactDOM.unmountComponentAtNode(div);
+});
+```
 
 ## Resources
 * [Presentation](https://gitpitch.com/codemeasandwich/redux-auto)
