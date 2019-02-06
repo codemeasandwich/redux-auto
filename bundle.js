@@ -409,6 +409,12 @@ function auto(modules, fileNameArray) {
               actionOutput.payload.then(function (result) {
 
                 if (true === settingsOptions.smartActions) {
+
+                  if (result.hasOwnProperty("ok") && !result.ok) {
+                    handleErrors(result);
+                    return;
+                  }
+
                   var smartActionOutPut = smartAction(result);
                   if (smartActionOutPut) {
                     smartActionOutPut.then(function (grafeQLPayload) {
@@ -421,9 +427,6 @@ function auto(modules, fileNameArray) {
                         handleErrors(errors);
                       }
                     });
-                    return;
-                  } else if (result.hasOwnProperty("ok") && !result.ok) {
-                    handleErrors(result);
                     return;
                   }
                 } // END settingsOptions.smartActions

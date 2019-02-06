@@ -936,7 +936,7 @@ describe('handling the result of GraphQl VIA "smartAction"', () => {
 
       })
 
-      it('should handle a rejection', (done) => {
+      it.only('should handle a bad request', (done) => {
 
           webpackModules.set(propName,"index","default",(data={})=> data )
           webpackModules.set(propName,actionName,"default", data => data )
@@ -946,9 +946,10 @@ describe('handling the result of GraphQl VIA "smartAction"', () => {
                                     headers:{},
                                     ok:false,
                                     redirected:false,
-                                    status:404,
+                                    status:501,
                                     statusText:"",
                                     type:"basic",
+                                    json:()=>Promise.resolve({error:"problem"}),
                                     url:"https://some.domain.com/kjhgfd" }
 
           webpackModules.set(propName,actionName,"rejected",(data,payload,err) => {

@@ -333,6 +333,13 @@ Object.assign(actionsBuilder,actionsImplementation);
                 .then(result => {
 
                     if(true === settingsOptions.smartActions){
+
+                      if(result.hasOwnProperty("ok")
+                      && ! result.ok){
+                        handleErrors(result);
+                        return;
+                      }
+
                       const smartActionOutPut = smartAction(result)
                       if(smartActionOutPut){
                         smartActionOutPut
@@ -348,12 +355,8 @@ Object.assign(actionsBuilder,actionsImplementation);
                            }
                         })
                         return;
-                      }else
-                      if(result.hasOwnProperty("ok")
-                      && ! result.ok){
-                        handleErrors(result);
-                        return;
                       }
+
                     } // END settingsOptions.smartActions
 
                   dispatch({type:wrappingFn.fulfilled, reqPayload:payload, payload:result })
