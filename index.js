@@ -5,6 +5,7 @@
 */
 
 import smartAction from './middleware/smartActions.js';
+import webpackModules from './test/webpackModules';
 
 function isFunction(value){
 //return ({}).toString.call(value) === '[object Function]';
@@ -108,6 +109,17 @@ function buildActionLayout(fileNameArray){
 
 
  function auto (modules, fileNameArray){
+
+   if("object" === typeof modules && arguments.length === 1){
+     Object.keys(modules).forEach(reducers =>{
+       Object.keys(modules[reducers]).forEach(actionName =>{ 
+         Object.keys(modules[reducers][actionName]).forEach(fnType =>{
+           webpackModules.set(reducers,actionName,fnType,modules[reducers][actionName][fnType]);
+         })
+       })
+     })
+     return auto(webpackModules, webpackModules.keys())
+   } // END if
 
    autoWasCalled = true;
    //reset();
@@ -333,13 +345,6 @@ Object.assign(actionsBuilder,actionsImplementation);
                 .then(result => {
 
                     if(true === settingsOptions.smartActions){
-
-                      if(result.hasOwnProperty("ok")
-                      && ! result.ok){
-                        handleErrors(result);
-                        return;
-                      }
-
                       const smartActionOutPut = smartAction(result)
                       if(smartActionOutPut){
                         smartActionOutPut
@@ -355,8 +360,12 @@ Object.assign(actionsBuilder,actionsImplementation);
                            }
                         })
                         return;
+                      }else
+                      if(result.hasOwnProperty("ok")
+                      && ! result.ok){
+                        handleErrors(result);
+                        return;
                       }
-
                     } // END settingsOptions.smartActions
 
                   dispatch({type:wrappingFn.fulfilled, reqPayload:payload, payload:result })
@@ -391,7 +400,6 @@ Object.assign(actionsBuilder,actionsImplementation);
     return next => action => next(action)
  }
 } // END of auto
-
 
 auto.reset = reset;
 auto.settings = function settings(options){

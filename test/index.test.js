@@ -936,7 +936,7 @@ describe('handling the result of GraphQl VIA "smartAction"', () => {
 
       })
 
-      it.only('should handle a bad request', (done) => {
+      it('should handle a bad request', (done) => {
 
           webpackModules.set(propName,"index","default",(data={})=> data )
           webpackModules.set(propName,actionName,"default", data => data )

@@ -17,8 +17,11 @@ export default function (response){
          } else {
            if(1 === Object.keys(jsonresult).length && "object" === typeof jsonresult.data)
               resolve( jsonresult.data )
-           else
+           else if(response.hasOwnProperty("ok") && ! response.ok){
+             reject( response );
+           } else {
               resolve( jsonresult )
+              }
          } // END else
       }) // END response.json()
       //.catch( e=>   resolve( response ) )

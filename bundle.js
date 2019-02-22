@@ -22,7 +22,11 @@ function smartAction(response) {
           reject(jsonresult.errors.length === 1 ? jsonresult.errors[0] : jsonresult.errors);
           //reject( new Error(jsonresult.errors.map(error => error.message).join()))
         } else {
-          if (1 === Object.keys(jsonresult).length && "object" === _typeof(jsonresult.data)) resolve(jsonresult.data);else resolve(jsonresult);
+          if (1 === Object.keys(jsonresult).length && "object" === _typeof(jsonresult.data)) resolve(jsonresult.data);else if (response.hasOwnProperty("ok") && !response.ok) {
+            reject(response);
+          } else {
+            resolve(jsonresult);
+          }
         } // END else
       }); // END response.json()
       //.catch( e=>   resolve( response ) )
@@ -38,6 +42,49 @@ function smartAction(response) {
     //  .catch((err)=>resolve(response))
   }); // END Promise
 }
+
+var files = void 0;
+
+//const webpackModules       = files => files[files]
+var webpackModules = function webpackModules(file) {
+  return files[file];
+};
+webpackModules.keys = function () {
+  return Object.keys(files);
+};
+/*  webpackModules.reset = () => {
+    files = {
+     "./user/changeName.js": {
+            pending:function(x){   return x       },
+            fulfilled:function(x){   return x  },
+            rejected:function(x){   return x   },
+            action:function(x){   return x     }
+          },
+     "./user/index.js":{
+            //before:function(x){   return x   },
+            default:function(user = {name:"bob"}){    return user     },
+            after:function(x){   return x     }
+          },
+     "./user/init.js":{
+            default:function(user = {name:"tom"}){    return user     },
+            action:function(x){   return x     }
+          }
+    }
+    return files;
+  }*/
+webpackModules.clear = function () {
+  files = {};
+};
+//webpackModules.clear = () => { console.log(files); Object.keys(files).forEach(storeName => delete files[storeName]); console.log(files);   }
+
+webpackModules.set = function (storeName, actionFileName, actionFunctionName, actionFunction) {
+  var path = './' + storeName + '/' + actionFileName + '.js';
+  files[path] = files[path] || {};
+  files[path][actionFunctionName] = actionFunction;
+  return files;
+};
+
+webpackModules.clear();
 
 function isFunction(value) {
   //return ({}).toString.call(value) === '[object Function]';
@@ -167,6 +214,17 @@ function buildActionLayout(fileNameArray) {
 
 
 function auto(modules, fileNameArray) {
+
+  if ("object" === (typeof modules === 'undefined' ? 'undefined' : _typeof(modules)) && arguments.length === 1) {
+    Object.keys(modules).forEach(function (reducers) {
+      Object.keys(modules[reducers]).forEach(function (actionName) {
+        Object.keys(modules[reducers][actionName]).forEach(function (fnType) {
+          webpackModules.set(reducers, actionName, fnType, modules[reducers][actionName][fnType]);
+        });
+      });
+    });
+    return auto(webpackModules, webpackModules.keys());
+  } // END if
 
   autoWasCalled = true;
   //reset();
@@ -409,12 +467,6 @@ function auto(modules, fileNameArray) {
               actionOutput.payload.then(function (result) {
 
                 if (true === settingsOptions.smartActions) {
-
-                  if (result.hasOwnProperty("ok") && !result.ok) {
-                    handleErrors(result);
-                    return;
-                  }
-
                   var smartActionOutPut = smartAction(result);
                   if (smartActionOutPut) {
                     smartActionOutPut.then(function (grafeQLPayload) {
@@ -427,6 +479,9 @@ function auto(modules, fileNameArray) {
                         handleErrors(errors);
                       }
                     });
+                    return;
+                  } else if (result.hasOwnProperty("ok") && !result.ok) {
+                    handleErrors(result);
                     return;
                   }
                 } // END settingsOptions.smartActions
@@ -472,7 +527,6 @@ function auto(modules, fileNameArray) {
     };
   };
 } // END of auto
-
 
 auto.reset = reset;
 auto.settings = function settings(options) {
