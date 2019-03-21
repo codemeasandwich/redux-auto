@@ -1,4 +1,4 @@
-# redux-auto | cookbook 🕮
+# redux-auto | cookbook 📖
 
 ## other middleware
 

@@ -13,10 +13,9 @@
 [![Known Vulnerabilities](https://snyk.io/test/npm/redux-auto/badge.svg)](https://snyk.io/test/npm/redux-auto)
 [![compatible with preact-redux](https://img.shields.io/badge/compatible%20with-preact--redux-673ab8.svg)](https://github.com/developit/preact-redux)
 [![compatible with reselect](https://img.shields.io/badge/compatible%20with-reselect-8ba376.svg)](https://www.npmjs.com/package/red-ux#redux-result-caching-with-genselectstate)
-[![Cookbook](https://img.shields.io/badge/coding%20cookbook-%F0%9F%95%AE-yellowgreen.svg)](https://github.com/codemeasandwich/redux-auto/blob/master/cookbook.md)
+[![Cookbook](https://img.shields.io/badge/coding%20cookbook-📖-yellowgreen.svg)](https://github.com/codemeasandwich/redux-auto/blob/master/cookbook.md)
 
 ## why
-
 I created this utility to allow you to get up and running with Redux in a fraction of the time!
 
 ### Plug & Play
@@ -43,7 +42,7 @@ I created this utility to allow you to get up and running with Redux in a fracti
 - [Overview](#overview)
 - [setup](#setup)
   * [Using along side an existing Redux setup](#using-along-side-an-existing-redux-setup)
-  * [Using along side other Redux middleware](#using-along-side-other-redux-middleware)
+  * [Using along side other Redux middleware](#using-along-side-other-redux-middleware---web-app-)
   * [Actions are available in the UI](#actions-are-available-in-the-ui)
 - [Action files](#action-files)
   * [Chaining action together](#chaining-actions-together)
@@ -53,6 +52,7 @@ I created this utility to allow you to get up and running with Redux in a fracti
   * [before](#before)
   * [logic](#default)
   * [after](#after)
+  * [listening for other actions](#listening-for-other-actions)
 - [handling async actions in your ui](#handling-async-actions-in-your-ui)
 - [smart actions](#smart-actions)
 - [testing](#testing)
@@ -73,7 +73,7 @@ redux-auto fixes this asynchronous problem simply by allowing you to create an [
 
 ## Overview
 
-**Redux-Auto was created to work with Webpacks.*
+**Redux-Auto was created to work with Webpacks*
 
 Steps:
 
@@ -103,7 +103,9 @@ Example layout:
 
 ## setup
 
-### Inside your setup file
+[Example of setup file](https://github.com/codemeasandwich/redux-auto/blob/master/example/main.jsx)
+
+### Inside your setup file **Web-App*
 
 ```JS
 ...
@@ -116,7 +118,26 @@ const webpackModules = require.context("./store", true, /\.js$/);
 const middleware = applyMiddleware( auto(webpackModules, webpackModules.keys()))
 const store = createStore(combineReducers(reducers), middleware );
 ...
+```
 
+### Inside your setup file **React-Native*
+
+➡ If you want to use Redux-auto in a **React-Native project**. You will just need to install the [babel-plugin-redux-auto](https://www.npmjs.com/package/babel-plugin-redux-auto) to allow to dynamic importing of your store.
+1. `npm i babel-plugin-redux-auto`
+2. Add **'babel-plugin-redux-auto'** to your **plugins** within your babel config
+
+Now back to the setup...
+
+```JS
+...
+import { auto, reducers } from 'redux-auto';
+...
+// load the folder that hold you store
+import nativeStore from './store/*'
+...
+const middleware = applyMiddleware( auto(nativeStore))
+const store = createStore(combineReducers(reducers), middleware );
+...
 ```
 
 ### Using along side an existing Redux setup.
@@ -131,22 +152,29 @@ import { auto, mergeReducers } from 'redux-auto';
 // pass into: reducers >> mergeReducers >> combineReducers
 const store = createStore(combineReducers(mergeReducers(reducers)), middleware );
 ...
-
 ```
 
-### Using along side other Redux middleware.
+### Using along side other Redux middleware. **Web-App*
 
 ```JS
-
 import logger from 'redux-logger';
 import { auto, reducers } from 'redux-auto';
 ...
-                                // pass all the middlewares in a normal arguments
+                    // pass all the middlewares in a normal arguments
 const middleware = applyMiddleware( logger, auto(webpackModules, webpackModules.keys()))
 const store = createStore(combineReducers(reducers), middleware );
-
 ```
 
+### Using along side other Redux middleware. **React-Native*
+
+```JS
+import logger from 'redux-logger';
+import { auto, reducers } from 'redux-auto';
+...
+                    // pass all the middlewares in a normal arguments
+const middleware = applyMiddleware( logger, auto(nativeStore))
+const store = createStore(combineReducers(reducers), middleware );
+```
 
 ### actions are available in the UI
 
@@ -168,13 +196,10 @@ The default export should be a function that will take 1) your piece of the stat
 Example: of an action to update the logged-in users name
 
 ```JS
-// /store/user/changeUserName.js
-
+// e.g. /store/user/changeUserName.js
 export default function (user, payload) {
-
   return Object.assign({}, user,{ name : payload.name } );
 }
-
 ```
 
 ★ Sometimes we want to talk to the server. This is done by action-middleware
@@ -205,7 +230,6 @@ switch(stage){
 export function action (payload,user){
 	return fetch('/api/foo/bar/user/'+payload.userId)
 }
-
 ```
 
 An alternative declaration for the same as above
@@ -228,7 +252,6 @@ export function rejected (posts, payload, error){
 export function action (payload,posts){
 	return fetch('/api/foo/bar/user/'+payload.userId)
 }
-
 ```
 
 ### chaining actions together
@@ -318,6 +341,8 @@ This file can exposes three funtions
 2) default
 3) after
 
+You can also [istening for other actions](#istening-for-other-actions) from other parts of the store.
+
 #### before
 
 Fires on every action, to tweek the **payload** that will be passed to you logic functions.
@@ -328,7 +353,6 @@ export function before(user, action){
 
 	return Object.assign({},action.payload,{ timeStamp : new Date() })
 }
-
 ```
 
 #### default
@@ -338,7 +362,6 @@ This is a normal redux reducer function, being passed the **previousState** and 
 export default function user(user = {name:"?"}, action) {
   return user;
 }
-
 ```
 
 ⚠ This function will be fired on all actions, **EXCEPT** for actions that are handled by a specific action file in this reducer folder.
@@ -384,7 +407,49 @@ export function after(newUserValues, action, oldUserValues){
 
 	return Object.assign({}, newUserValues, changes)
 }
+```
 
+#### listening for other actions
+
+There are two built-in ways to detect other actions from within your index.
+1)You can find if the current fire action that you have received matches a specific action **and** 2) You can find if their current action is part of another piece of the store.
+
+1. To find if the correct action is a specific action. [Import the actions](#actions-are-available-in-the-ui) as you normally would and do a **loose** equality check.
+
+**Example:** We want to have a count of how many post our user has done
+```js
+import actions from 'redux-auto'
+
+export default function user(user = {name:"?", posts:0}, action) {
+
+  // You can check on each state of an asynchronous action
+  if(actions.posts.save.fulfilled == action.type){
+    return Object.assign({},user,{posts:user.posts+1})
+
+    // And non-synchronous actions can be checked directly
+  } else if(actions.posts.something == action.type){
+    // ... do some work ...
+  }
+
+  return user;
+}
+```
+
+2. If you wish to listen to all actions from a specific part of the store. You can use the `in` keyword.
+
+**Example:** We wish to log all post actions
+```js
+import actions from 'redux-auto'
+
+export default function logging(log = [], action) {
+
+  // test if the action type is within the posts
+  if(action.type in actions.posts){
+    return [...log, action]
+  }
+
+  return log;
+}
 ```
 
 ## handling async actions in your UI
