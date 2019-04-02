@@ -21,6 +21,8 @@ function smartAction(response) {
         if (jsonresult.errors) {
           reject(jsonresult.errors.length === 1 ? jsonresult.errors[0] : jsonresult.errors);
           //reject( new Error(jsonresult.errors.map(error => error.message).join()))
+        } else if (jsonresult.errorMessage && jsonresult.errorType) {
+          reject(jsonresult);
         } else {
           if (1 === Object.keys(jsonresult).length && "object" === _typeof(jsonresult.data)) resolve(jsonresult.data);else if (response && response.hasOwnProperty("ok") && !response.ok) {
             reject(response);
