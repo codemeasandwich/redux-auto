@@ -2,7 +2,7 @@
 export default function (response){
 
   // skip if there's no to "json" function
-  if(!response.json) return false;
+  if (!response || !response.json) return false;
 
   return new Promise(function (resolve, reject) {
 
@@ -17,7 +17,7 @@ export default function (response){
          } else {
            if(1 === Object.keys(jsonresult).length && "object" === typeof jsonresult.data)
               resolve( jsonresult.data )
-           else if(response.hasOwnProperty("ok") && ! response.ok){
+           else if(response && response.hasOwnProperty("ok") && ! response.ok){
              reject( response );
            } else {
               resolve( jsonresult )

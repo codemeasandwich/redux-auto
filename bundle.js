@@ -9,7 +9,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 function smartAction(response) {
 
   // skip if there's no to "json" function
-  if (!response.json) return false;
+  if (!response || !response.json) return false;
 
   return new Promise(function (resolve, reject) {
 
@@ -22,7 +22,7 @@ function smartAction(response) {
           reject(jsonresult.errors.length === 1 ? jsonresult.errors[0] : jsonresult.errors);
           //reject( new Error(jsonresult.errors.map(error => error.message).join()))
         } else {
-          if (1 === Object.keys(jsonresult).length && "object" === _typeof(jsonresult.data)) resolve(jsonresult.data);else if (response.hasOwnProperty("ok") && !response.ok) {
+          if (1 === Object.keys(jsonresult).length && "object" === _typeof(jsonresult.data)) resolve(jsonresult.data);else if (response && response.hasOwnProperty("ok") && !response.ok) {
             reject(response);
           } else {
             resolve(jsonresult);
