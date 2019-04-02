@@ -1,4 +1,21 @@
 
+const ValidateDatetime = /^\d\d\d\d-(0?[1-9]|1[0-2])-(0?[1-9]|[12][0-9]|3[01])T(00|[0-9]|1[0-9]|2[0-3]):([0-9]|[0-5][0-9]):([0-9]|[0-5][0-9]).([0-9][0-9][0-9])Z$/
+
+function eachRecursive(obj){
+    const updatedObj = {}
+    for (const k in obj){
+      if(Array.isArray(obj[k]))
+          updatedObj[k] = obj[k].map(eachRecursive)
+      else if (typeof obj[k] === "object" && obj[k] !== null)
+            updatedObj[k] = eachRecursive(obj[k]);
+        else if (typeof obj[k] === "string")
+            updatedObj[k] = ValidateDatetime.test(obj[k]) ? new Date(obj[k]) : obj[k]
+        else
+            updatedObj[k] = obj[k]
+    }
+    return updatedObj
+}
+
 export default function (response){
 
   // skip if there's no to "json" function
@@ -22,7 +39,7 @@ export default function (response){
            else if(response && response.hasOwnProperty("ok") && ! response.ok){
              reject( response );
            } else {
-              resolve( jsonresult )
+              resolve( eachRecursive(jsonresult) )
             }
          } // END else
       }) // END response.json()
