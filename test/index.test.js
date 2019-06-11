@@ -1546,4 +1546,12 @@ describe('Issues', () => {
       actions.user.getInfo();
 
     })
+
+    it('#9 Uncaught Error: file reducer.test in account/tests contains a DOT in its name', () => {
+          expect(() => {
+            webpackModules.set("account","index","default",(data={})=> data )
+            webpackModules.set("account/test","reducer.test","default", data => data )
+            RefrashStore(false);
+          }).not.toThrow();
+    })
 })

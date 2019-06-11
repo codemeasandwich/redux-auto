@@ -132,6 +132,11 @@ function buildActionLayout(fileNameArray){
 
   const { actionName, reducerName } = names(key);
 
+  if(actionName.substr(-".test".length)    === ".test"
+  || actionName.substr(-".test.js".length) === ".test.js" ){
+    return actionsImplementation;
+  }
+
   if(0<=actionName.indexOf("."))
       throw new Error(`file ${actionName} in ${reducerName} contains a DOT in its name`)
   if(0<=reducerName.indexOf("."))
