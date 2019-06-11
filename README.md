@@ -58,6 +58,10 @@ I created this utility to allow you to get up and running with Redux in a fracti
 - [testing](#testing)
 - [resources](#resources)
 
+#### For Pro tips, don't forget to checkout the [![Cookbook](https://img.shields.io/badge/coding%20cookbook-📖-yellowgreen.svg)](https://github.com/codemeasandwich/redux-auto/blob/master/cookbook.md)
+
+---
+
 ### asynchronous
 
 In Redux your reducer returns a state object. This is very straight forward, but makes dealing with asynchronous updates quite tricky (there are [more than 60 different libraries](https://github.com/markerikson/redux-ecosystem-links/blob/master/side-effects.md) tackling this problem).
@@ -72,8 +76,6 @@ redux-auto fixes this asynchronous problem simply by allowing you to create an [
 4) Naming the file "**init**.js" will have it called once at app start. This is good for loading data from the server to warm up you client cache.
 
 ## Overview
-
-**Redux-Auto was created to work with Webpacks*
 
 Steps:
 
