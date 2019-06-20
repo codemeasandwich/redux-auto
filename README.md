@@ -14,6 +14,7 @@
 [![compatible with preact-redux](https://img.shields.io/badge/compatible%20with-preact--redux-673ab8.svg)](https://github.com/developit/preact-redux)
 [![compatible with reselect](https://img.shields.io/badge/compatible%20with-reselect-8ba376.svg)](https://www.npmjs.com/package/red-ux#redux-result-caching-with-genselectstate)
 [![Cookbook](https://img.shields.io/badge/coding%20cookbook-📖-yellowgreen.svg)](https://github.com/codemeasandwich/redux-auto/blob/master/cookbook.md)
+ [![Buy me a coffee](https://img.shields.io/badge/buy%20me-a%20coffee-orange.svg)](https://www.buymeacoffee.com/codemeasandwich)
 
 ## why
 I created this utility to allow you to get up and running with Redux in a fraction of the time!
