@@ -549,6 +549,11 @@ it('renders without crashing', () => {
 });
 ```
 
+
+## License
+
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fcodemeasandwich%2Fredux-auto.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fcodemeasandwich%2Fredux-auto?ref=badge_large)
+
 ## Resources
 * [Presentation](https://gitpitch.com/codemeasandwich/redux-auto)
 
