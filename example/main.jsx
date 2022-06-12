@@ -1,8 +1,7 @@
-import React from 'preact'
-import { render } from 'preact'
+import React, { h, render } from 'preact/compat'
 import { createStore, applyMiddleware, combineReducers } from 'redux'
 import { auto, reducers } from 'redux-auto';
-import { Provider } from 'preact-redux'
+import { Provider } from 'react-redux'
 
 import Ui from './ui/index.jsx';
 
@@ -10,7 +9,7 @@ import Ui from './ui/index.jsx';
 //++++++++++++++++++++++++++++++++++++++++ redux logic
 
 const webpackModules = require.context("./store", true, /^(?!.*\.test\.js$).*\.js$/);
-
+console.log(webpackModules, webpackModules.keys())
                                 // build 'auto' based on target files via Webpack
 let middleware = applyMiddleware( auto(webpackModules, webpackModules.keys()))
 

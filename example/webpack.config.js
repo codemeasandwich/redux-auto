@@ -24,6 +24,8 @@ var config = {
   resolve:{
     alias:{
       'redux-auto':__dirname+'/../index.js',
+      'react':'preact/compat',
+      'react-dom': 'preact/compat'
     }
   },
   module:{

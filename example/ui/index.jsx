@@ -1,4 +1,4 @@
-import React  from "preact"
+import React, { h, render } from "preact/compat"
 import actions from 'redux-auto'
 import { connect } from 'preact-redux'
 import ConsoleElem from "./console.jsx"

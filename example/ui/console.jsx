@@ -1,6 +1,6 @@
-import React, { Component } from 'preact';
-
-const consoleFn = window.console.log;
+import React, { Component } from 'preact/compat';
+const runningOnServer = typeof process === 'object'
+const consoleFn = /*window.*/console.log;
 const messages = [];
 
 function padNum(num){
@@ -16,7 +16,10 @@ function lineElem({time, message},index){
 class ConsoleElem extends Component {
 
   componentDidMount(){
-    window.console.log = function(){
+    if(runningOnServer){
+      return;
+    }
+    /*window.*/console.log = function(){
     consoleFn.apply(null,arguments)
         const date = new Date();
         const message = Array.prototype.slice.call(arguments).map( arg => ("object" === typeof arg)?JSON.stringify(arg):arg ).join(' ')
@@ -29,7 +32,10 @@ class ConsoleElem extends Component {
   }
 
   componentWillUnmount(){
-    window.console.log = consoleFn;
+    if(runningOnServer){
+      return;
+    }
+    /*window.*/console.log = consoleFn;
   }
 
   render() {
