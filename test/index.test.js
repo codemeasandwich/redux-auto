@@ -10,7 +10,7 @@ import faker from 'faker'
 import { createStore, applyMiddleware, combineReducers } from 'redux'
 
 import   webpackModules   from './webpackModules';
-import actions, { auto, reducers, mergeReducers, reset, after } from '../index';
+import actions, { auto, reducers, mergeReducers, after, filterSubStore, waitOfInitStore } from '../index';
 
 let middleware,store;
 
@@ -263,6 +263,113 @@ describe('initialization', () => {
     } )
       RefrashStore();
       // should be automatically called
+    })
+         
+//++++ should load parts of the store based on 2nd arg
+//++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    it('should only load the parts of the store based on 2nd arg', (done) => {
+      
+      const Apn = "A "+propName,
+            Bpn = "B "+propName;
+      let initComplete = false;
+
+      webpackModules.set(Apn, "index", "default",(data={})=> data )
+      webpackModules.set(Apn, "init",  "default",data => data )
+      webpackModules.set(Apn, "init", "action", () => Promise.resolve(true))
+      
+      const badFn = () => {
+        expect(false).toBe(true)
+        throw new Error("Should not be loaded OR run!")
+      }
+      
+      webpackModules.set(Bpn, "index", "default",badFn)
+      webpackModules.set(Bpn, "init", "default",badFn)
+      webpackModules.set(Bpn, "init", "action", badFn)
+      
+      auto.reset();
+      middleware = applyMiddleware( auto(webpackModules, filterSubStore(webpackModules.keys(),[Apn])));
+      store = createStore(combineReducers(reducers), middleware );
+      const state = store.getState()
+      expect(state).toHaveProperty(Apn)
+      expect(state).not.toHaveProperty(Bpn)
+      done()
+    })
+    
+//+++++ should provide a promise for when init is done
+//+++++++++++++++++++++++++++++++++++++++++++++ Single
+
+    it('should provide a promise for when initialisation is complete', (done) => {
+
+      let initComplete = false;
+
+      webpackModules.set(propName, "index", "default",(data={})=> data )
+      
+      webpackModules.set(propName, "init",  "default",(posts, payload, stage)=> {
+        expect(['PENDING','FULFILLED'].includes(stage)).toBe(true) // should call PENDING and FULFILLED
+        if ('FULFILLED' === stage) {
+          initComplete = true;
+        }
+        return posts;
+      })
+      webpackModules.set(propName, "init", "action", () => Promise.resolve(true))
+      RefrashStore();
+      waitOfInitStore(store,100) // wait... but the Promise.resolve should complete immediately
+      .then(storex => {
+        expect(storex).toBe(store)
+        expect(initComplete).toBe(true)
+        done();
+       })
+    })
+    
+//+++++ should provide a promise for when init is done
+//+++++++++++++++++++++++++++++++++++++++++++++ Muilti
+
+    it('should provide a promise for when Muil-initialisation is complete', (done) => {
+
+      let initCompleted = [];
+      
+      const Apn = "A "+propName, // with init
+            Bpn = "B "+propName, // with init
+            Cpn = "C "+propName; // with OUT init
+            
+      webpackModules.set(Apn, "index", "default",(data={})=> data )
+      webpackModules.set(Apn, "init",  "default",(posts, payload, stage)=> {
+        expect(['PENDING','FULFILLED'].includes(stage)).toBe(true) // should call PENDING and FULFILLED
+        expect(initCompleted.includes("A")).not.toBe(true)
+        if ('FULFILLED' === stage) {
+          initCompleted.push("A");
+        }
+        return posts;
+      })
+      webpackModules.set(Apn, "init", "action", () => {
+        return new Promise(resolve => {
+          setTimeout(()=>resolve(true), Math.random()*50); // add a bit of spice
+        });
+      })
+            
+      webpackModules.set(Bpn, "index", "default",(data={})=> data )
+      webpackModules.set(Bpn, "init",  "default",(posts, payload, stage)=> {
+        expect(['PENDING','FULFILLED'].includes(stage)).toBe(true) // should call PENDING and FULFILLED
+        expect(initCompleted.includes("B")).not.toBe(true)
+        if ('FULFILLED' === stage) {
+          initCompleted.push("B");
+        }
+        return posts;
+      })
+      webpackModules.set(Bpn, "init", "action", () => Promise.resolve(true))
+      webpackModules.set(Bpn, actionName, "default",(data={})=> data )
+      
+      webpackModules.set(Cpn, "index", "default",(data={})=> data )
+      webpackModules.set(Cpn, actionName, "default",(data={})=> data )
+      
+      RefrashStore();
+      waitOfInitStore(store,1000) // wait... but the Promise.resolve should complete immediately
+      .then(storex => {
+        expect(storex).toBe(store)
+        expect(initCompleted).toHaveLength(2)
+        done();
+       })
     })
 })
 

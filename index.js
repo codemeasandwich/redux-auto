@@ -6,6 +6,7 @@
 
 import smartAction from './middleware/smartActions.js';
 import webpackModules from './test/webpackModules';
+import fsModules from './test/fsModules';
 
 function isFunction(value){
 //return ({}).toString.call(value) === '[object Function]';
@@ -105,10 +106,8 @@ function buildActionLayout(fileNameArray){
       actionsBuilder[reducerName][actionName].clear = (...args) => actionsBuilder[reducerName][actionName].clear(...args);
   })
 } // END buildActionLayout
-
-
-
- function auto (modules, fileNameArray){
+ 
+ function auto (modules, fileNameArray, settings){
 
    if("object" === typeof modules && arguments.length === 1){
      Object.keys(modules).forEach(reducers =>{
@@ -348,8 +347,8 @@ Object.assign(actionsBuilder,actionsImplementation);
 
                 actionOutput.payload
                 .then(result => {
-
-                    if(true === settingsOptions.smartActions){
+                    if((settings && true === settings       .smartActions) ||
+                       (            true === settingsOptions.smartActions)){
                       const smartActionOutPut = smartAction(result)
                       if(smartActionOutPut){
                         smartActionOutPut
@@ -403,8 +402,52 @@ Object.assign(actionsBuilder,actionsImplementation);
       }
     }) // END setTimeout
     return next => action => next(action)
- }
+ } // END setDispatch
+ 
 } // END of auto
+
+function waitOfInitStore(store,timeToWait) {
+  
+   return new Promise((resolve, reject) => {
+    
+        const timeout = setTimeout(()=>{
+          console.log(x,new Date(),timeToWait)
+             reject(new Error("Store setup is taking to long!"))
+         },timeToWait)
+        
+        const unsubscribe = store.subscribe(()=>{
+          
+            const state = store.getState()
+            
+            const initsCompleted = 
+              Object.keys(state).reduce((check,name)=>{
+                if( ! check){
+                    return false
+                }
+                
+                if ( undefined === state[name].loading ) {
+                    return check
+                }
+                
+                return check && (undefined !== state[name].loading.init && // not fired yet
+                                      true !== state[name].loading.init) // in progress
+            },true) // END blockThisInitsComplete.reduce
+            
+            if(initsCompleted){
+                clearTimeout(timeout)
+                unsubscribe()
+                resolve(store)
+            } // END if initsCompleted
+            
+        }) // END store.subscribe
+        
+   }); // END new Promise
+}
+
+function filterSubStore(fileNameArray, loadSubStore){
+   return fileNameArray.filter(fileName => loadSubStore.some(name => fileName.includes(`${name}/`) ||
+                                                                     fileName.includes(`${name}\\`)))
+} // END filterSubStore
 
 auto.reset = reset;
 auto.settings = function settings(options){
@@ -416,4 +459,4 @@ auto.testing = function testing(options){
 }
 
 export default actionsBuilder;
-export { auto, mergeReducers, reducers  }
+export { auto, mergeReducers, reducers, filterSubStore, waitOfInitStore, fsModules }

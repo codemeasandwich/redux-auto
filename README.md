@@ -112,6 +112,7 @@ Example layout:
 
 ```JS
 ...
+import { createStore, applyMiddleware, combineReducers } from 'redux';
 import { auto, reducers } from 'redux-auto';
 ...
 // load the folder that hold you store
@@ -120,6 +121,37 @@ const webpackModules = require.context("./store", true, /\.js$/);
                                 // build 'auto' based on target files via Webpack
 const middleware = applyMiddleware( auto(webpackModules, webpackModules.keys()))
 const store = createStore(combineReducers(reducers), middleware );
+...
+```
+
+###  Inside your API file **Server-side Rendering*
+```JS
+...
+import React from 'react'
+import ReactDOMServer from 'react-dom/server'
+import { createStore, applyMiddleware, combineReducers } from 'redux';
+import { auto, reducers, waitOfInitStore, filterSubStore, fsModules } from 'redux-auto';
+import Main from './Main';
+...
+const webpackModules = fsModules("./store")
+...
+// Just calling genStore() without args, will load the complete store
+function genStore(subStoreToLoad, waitTime){
+    const limitStoreToLoad = arguments.length ? filterSubStore(webpackModules.keys(),subStoreToLoad) : webpackModules.keys()
+    const middleware = applyMiddleware( auto(webpackModules, limitStoreToLoad))
+    const store = createStore(combineReducers(reducers), middleware );
+  return waitOfInitStore(store,waitTime)
+}
+...
+app.get('/', function (req, res) {
+    genStore(["user"],5000) // wait 5 sec
+      .then( store => {
+            res.send(ReactDOMServer.renderToString(<Main store={store} />)))
+       }).catch( err => {
+            // check your init promise are completing
+           res.status(500).send("Problem in getting your page");
+       })
+})
 ...
 ```
 
@@ -133,6 +165,7 @@ Now back to the setup...
 
 ```JS
 ...
+import { createStore, applyMiddleware, combineReducers } from 'redux';
 import { auto, reducers } from 'redux-auto';
 ...
 // load the folder that hold you store
