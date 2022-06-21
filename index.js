@@ -7,6 +7,7 @@
 import smartAction from './middleware/smartActions.js';
 import webpackModules from './test/webpackModules';
 import fsModules from './test/fsModules';
+import { createStore, applyMiddleware, combineReducers } from 'redux';
 
 function isFunction(value){
 //return ({}).toString.call(value) === '[object Function]';
@@ -458,5 +459,13 @@ auto.testing = function testing(options){
   Object.assign(testingOptions,options)
 }
 
+// Just calling genStore() without args, will load the complete store
+function genStore(webpackModules, subStoreToLoad, waitTime){
+  const limitStoreToLoad = 1 === arguments.length ? webpackModules.keys() : filterSubStore(webpackModules.keys(),subStoreToLoad)
+  const middleware = applyMiddleware( auto(webpackModules, limitStoreToLoad))
+  const store = createStore(combineReducers(reducers), middleware );
+  return waitOfInitStore(store,waitTime)
+} // END genStore
+
 export default actionsBuilder;
-export { auto, mergeReducers, reducers, filterSubStore, waitOfInitStore, fsModules }
+export { auto, mergeReducers, reducers, filterSubStore, waitOfInitStore, fsModules, genStore }

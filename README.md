@@ -128,23 +128,15 @@ const store = createStore(combineReducers(reducers), middleware );
 ```JS
 ...
 import React from 'react'
-import ReactDOMServer from 'react-dom/server'
-import { createStore, applyMiddleware, combineReducers } from 'redux';
-import { auto, reducers, waitOfInitStore, filterSubStore, fsModules } from 'redux-auto';
+import ReactDOMServer from 'react-dom/server
+import { genStore, fsModules } from 'redux-auto';
 import Main from './Main';
 ...
 const webpackModules = fsModules("./store")
 ...
-// Just calling genStore() without args, will load the complete store
-function genStore(subStoreToLoad, waitTime){
-    const limitStoreToLoad = arguments.length ? filterSubStore(webpackModules.keys(),subStoreToLoad) : webpackModules.keys()
-    const middleware = applyMiddleware( auto(webpackModules, limitStoreToLoad))
-    const store = createStore(combineReducers(reducers), middleware );
-  return waitOfInitStore(store,waitTime)
-}
-...
 app.get('/', function (req, res) {
-    genStore(["user"],5000) // wait 5 sec
+    // Only load "user" in store and timeout 5 sec
+    genStore(webpackModules, ["user"], 5000)
       .then( store => {
             res.send(ReactDOMServer.renderToString(<Main store={store} />)))
        }).catch( err => {
