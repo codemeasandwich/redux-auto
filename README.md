@@ -14,6 +14,7 @@
 [![compatible with preact-redux](https://img.shields.io/badge/compatible%20with-preact--redux-673ab8.svg)](https://github.com/developit/preact-redux)
 [![compatible with reselect](https://img.shields.io/badge/compatible%20with-reselect-8ba376.svg)](https://www.npmjs.com/package/red-ux#redux-result-caching-with-genselectstate)
 [![Cookbook](https://img.shields.io/badge/coding%20cookbook-📖-yellowgreen.svg)](https://github.com/codemeasandwich/redux-auto/blob/master/cookbook.md)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fcodemeasandwich%2Fredux-auto.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fcodemeasandwich%2Fredux-auto?ref=badge_shield)
  [![Buy me a coffee](https://img.shields.io/badge/buy%20me-a%20coffee-orange.svg)](https://www.buymeacoffee.com/codemeasandwich)
 
 ## why
@@ -583,3 +584,7 @@ it('renders without crashing', () => {
 * [Presentation](https://gitpitch.com/codemeasandwich/redux-auto)
 
 [lifecycle]:https://s3-eu-west-1.amazonaws.com/redux-auto/flow.png
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fcodemeasandwich%2Fredux-auto.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fcodemeasandwich%2Fredux-auto?ref=badge_large)
