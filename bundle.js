@@ -6,6 +6,14 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
+function _interopDefault(ex) {
+  return ex && (typeof ex === 'undefined' ? 'undefined' : _typeof(ex)) === 'object' && 'default' in ex ? ex['default'] : ex;
+}
+
+var fs = _interopDefault(require('fs'));
+var path = _interopDefault(require('path'));
+var redux = require('redux');
+
 var ValidateDatetime = /^\d\d\d\d-(0?[1-9]|1[0-2])-(0?[1-9]|[12][0-9]|3[01])T(00|[0-9]|1[0-9]|2[0-3]):([0-9]|[0-5][0-9]):([0-9]|[0-5][0-9]).([0-9][0-9][0-9])Z$/;
 
 function eachRecursive(obj) {
@@ -90,13 +98,57 @@ webpackModules.clear = function () {
 //webpackModules.clear = () => { console.log(files); Object.keys(files).forEach(storeName => delete files[storeName]); console.log(files);   }
 
 webpackModules.set = function (storeName, actionFileName, actionFunctionName, actionFunction) {
-  var path = './' + storeName + '/' + actionFileName + '.js';
-  files[path] = files[path] || {};
-  files[path][actionFunctionName] = actionFunction;
+  var path$$1 = './' + storeName + '/' + actionFileName + '.js';
+  files[path$$1] = files[path$$1] || {};
+  files[path$$1][actionFunctionName] = actionFunction;
   return files;
 };
 
 webpackModules.clear();
+
+// var storePath = path.join(path.dirname(fs.realpathSync(__filename)), 'store');
+function nodeModules(storePath) {
+
+  storePath = path.resolve(storePath);
+
+  var files = [];
+
+  var webpackModules = function webpackModules(moduleName) {
+    return require(path.join(storePath, moduleName)); //(storePath+"/"+moduleName)
+  };
+  webpackModules.keys = function () {
+    return files;
+  };
+
+  webpackModules.set = function (storeName, actionFileName) {
+    files.push('./' + storeName + '/' + actionFileName); //(path.join(storeName,actionFileName))
+    return files;
+  };
+
+  fs.readdirSync(storePath, { withFileTypes: true }).forEach(function (dirent) {
+
+    if ("string" === typeof dirent) {
+      var name = dirent;
+      dirent = {
+        name: name,
+        isDirectory: function isDirectory() {
+          return fs.lstatSync(path.join(storePath, name)).isDirectory();
+        }
+      };
+    }
+
+    if (dirent.isDirectory()) {
+      fs.readdirSync(path.join(storePath, dirent.name)) //(storePath+"/"+dirent.name)
+      .forEach(function (actionName) {
+        if ('_' !== actionName[0]) {
+          webpackModules.set(dirent.name, actionName);
+        }
+      });
+    }
+  });
+
+  return webpackModules;
+}
 
 function isFunction(value) {
   //return ({}).toString.call(value) === '[object Function]';
@@ -224,8 +276,7 @@ function buildActionLayout(fileNameArray) {
   });
 } // END buildActionLayout
 
-
-function auto(modules, fileNameArray) {
+function auto(modules, fileNameArray, settings) {
 
   if ("object" === (typeof modules === 'undefined' ? 'undefined' : _typeof(modules)) && arguments.length === 1) {
     Object.keys(modules).forEach(function (reducers) {
@@ -241,7 +292,10 @@ function auto(modules, fileNameArray) {
   autoWasCalled = true;
   //reset();
   delete reducers.auto_function_not_call_before_combineReducers;
-  buildActionLayout(fileNameArray);
+  if (!settings || settings.skipBuildActionLayout) {
+    //default is to buildActionLayout
+    buildActionLayout(fileNameArray);
+  }
 
   if (testingOptions.preOnly) return;
 
@@ -475,14 +529,12 @@ function auto(modules, fileNameArray) {
                 err.clear = function () {
                   dispatch({ type: clearType });
                 };
-                //console.info({type:wrappingFn.rejected, reqPayload:payload, payload:err})
                 dispatch({ type: wrappingFn.rejected, reqPayload: payload, payload: err });
                 chaining(wrappingFn.rejected);
               };
 
               actionOutput.payload.then(function (result) {
-
-                if (true === settingsOptions.smartActions) {
+                if (settings && true === settings.smartActions || true === settingsOptions.smartActions) {
                   var smartActionOutPut = smartAction(result);
                   if (smartActionOutPut) {
                     smartActionOutPut.then(function (grafeQLPayload) {
@@ -525,7 +577,7 @@ function auto(modules, fileNameArray) {
       });
       // if there is an initialization action, fire it!!
       var init = actionsBuilder[reducerName].init || actionsBuilder[reducerName].INIT;
-      if (isFunction(init)) {
+      if (isFunction(init) && actionsImplementation[reducerName]) {
         inits.push(init);
       }
     }); // END forEach
@@ -535,14 +587,57 @@ function auto(modules, fileNameArray) {
           return init({});
         });
       }
-    }); // END setTimeout
+    }, 0); // END setTimeout
     return function (next) {
       return function (action) {
         return next(action);
       };
     };
-  };
+  }; // END setDispatch
 } // END of auto
+
+function waitOfInitStore(store, timeToWait, limitStoreToLoad) {
+
+  return new Promise(function (resolve, reject) {
+
+    var reducerWithInits = limitStoreToLoad.reduce(function (all, path$$1) {
+      var _names3 = names(path$$1),
+          actionName = _names3.actionName,
+          reducerName = _names3.reducerName;
+
+      if ("INIT" === actionName.toUpperCase()) {
+        all.push(reducerName);
+      }
+      return all;
+    }, []); // END reduce
+
+    var timeout = setTimeout(function () {
+      reject(new Error('Store setup is taking to long! ' + reducerWithInits.join() + ' init' + (reducerWithInits.length > 1 ? "s" : "") + ' did NOT complete'));
+    }, timeToWait);
+
+    store.lesionForActions(function (_ref2) {
+      var type = _ref2.type;
+
+      if (type.endsWith("INIT.FULFILLED")) {
+        reducerWithInits = reducerWithInits.filter(function (reducerWithInit) {
+          return !type.includes(('/' + reducerWithInit + '/').toUpperCase());
+        });
+      }
+      if (0 === reducerWithInits.length) {
+        clearTimeout(timeout);
+        resolve(store);
+      }
+    }); // END store.lesionForActions
+  }); // END new Promise
+} // END waitOfInitStore
+
+function filterSubStore(fileNameArray, loadSubStore) {
+  return fileNameArray.filter(function (fileName) {
+    return loadSubStore.some(function (name) {
+      return fileName.includes(name + '/') || fileName.includes(name + '\\');
+    });
+  });
+} // END filterSubStore
 
 auto.reset = reset;
 auto.settings = function settings(options) {
@@ -553,7 +648,33 @@ auto.testing = function testing(options) {
   Object.assign(testingOptions, options);
 };
 
+// Just calling genStore() without args, will load the complete store
+function genStore(webpackModules$$1, subStoreToLoad, waitTime) {
+  reset();
+  var webpackModulesKeys = webpackModules$$1.keys();
+  var limitStoreToLoad = 1 === arguments.length ? webpackModulesKeys : filterSubStore(webpackModulesKeys, subStoreToLoad);
+  buildActionLayout(webpackModulesKeys);
+  var middleware = redux.applyMiddleware(auto(webpackModules$$1, limitStoreToLoad, { skipBuildActionLayout: true }));
+  var cbs = [];
+  var store = redux.createStore(redux.combineReducers(Object.assign({}, reducers, {
+    checkIfAllActions_init_fulfilled: function checkIfAllActions_init_fulfilled(state, action) {
+      cbs.forEach(function (cb) {
+        return cb(action);
+      });
+      return null;
+    }
+  })), middleware);
+  store.lesionForActions = function (cb) {
+    cbs.push(cb);
+  };
+  return waitOfInitStore(store, waitTime, limitStoreToLoad);
+} // END genStore
+
 exports.default = actionsBuilder;
 exports.auto = auto;
 exports.mergeReducers = mergeReducers;
 exports.reducers = reducers;
+exports.filterSubStore = filterSubStore;
+exports.waitOfInitStore = waitOfInitStore;
+exports.fsModules = nodeModules;
+exports.genStore = genStore;

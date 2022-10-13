@@ -124,7 +124,11 @@ function buildActionLayout(fileNameArray){
    autoWasCalled = true;
    //reset();
   delete reducers.auto_function_not_call_before_combineReducers;
-  buildActionLayout(fileNameArray);
+  if (! settings || settings.skipBuildActionLayout) {
+    //default is to buildActionLayout
+    buildActionLayout(fileNameArray);
+  }
+  
 
   if(testingOptions.preOnly) return;
 
@@ -341,7 +345,6 @@ Object.assign(actionsBuilder,actionsImplementation);
 
                 const handleErrors = err => { // only handle external error
                   err.clear = ()=>{dispatch({type:clearType})};
-                  //console.info({type:wrappingFn.rejected, reqPayload:payload, payload:err})
                   dispatch({type:wrappingFn.rejected, reqPayload:payload, payload:err})
                   chaining(wrappingFn.rejected)
                 }
@@ -393,7 +396,7 @@ Object.assign(actionsBuilder,actionsImplementation);
         })
         // if there is an initialization action, fire it!!
         const init = actionsBuilder[reducerName].init || actionsBuilder[reducerName].INIT
-        if (isFunction(init)) {
+        if (isFunction(init) && actionsImplementation[reducerName]) {
             inits.push(init);
         }
    }) // END forEach
@@ -401,49 +404,40 @@ Object.assign(actionsBuilder,actionsImplementation);
       if (inits.length) {
         inits.forEach(init => init({}))
       }
-    }) // END setTimeout
+    },0) // END setTimeout
     return next => action => next(action)
  } // END setDispatch
  
 } // END of auto
 
-function waitOfInitStore(store,timeToWait) {
+function waitOfInitStore(store, timeToWait,limitStoreToLoad) {
+
+  return new Promise((resolve, reject)=> {
   
-   return new Promise((resolve, reject) => {
+    let reducerWithInits = limitStoreToLoad.reduce((all,path)=>{
+      const { actionName, reducerName } = names(path)
+      if ("INIT" === actionName.toUpperCase()) {
+          all.push(reducerName)
+      }
+      return all
+    },[]) // END reduce
     
         const timeout = setTimeout(()=>{
-          console.log(x,new Date(),timeToWait)
-             reject(new Error("Store setup is taking to long!"))
-         },timeToWait)
-        
-        const unsubscribe = store.subscribe(()=>{
-          
-            const state = store.getState()
-            
-            const initsCompleted = 
-              Object.keys(state).reduce((check,name)=>{
-                if( ! check){
-                    return false
-                }
-                
-                if ( undefined === state[name].loading ) {
-                    return check
-                }
-                
-                return check && (undefined !== state[name].loading.init && // not fired yet
-                                      true !== state[name].loading.init) // in progress
-            },true) // END blockThisInitsComplete.reduce
-            
-            if(initsCompleted){
-                clearTimeout(timeout)
-                unsubscribe()
-                resolve(store)
-            } // END if initsCompleted
-            
-        }) // END store.subscribe
-        
-   }); // END new Promise
-}
+          reject(new Error(`Store setup is taking to long! ${reducerWithInits.join()} init${reducerWithInits.length > 1 ? "s":""} did NOT complete`));
+    },timeToWait);
+    
+    store.lesionForActions(({type})=>{
+      if(type.endsWith("INIT.FULFILLED")){
+        reducerWithInits = reducerWithInits.filter(reducerWithInit => ! type.includes(`/${reducerWithInit}/`.toUpperCase()));
+      }
+      if (0 === reducerWithInits.length) {
+          clearTimeout(timeout);
+          resolve(store);
+      }
+    }) // END store.lesionForActions
+      
+  }); // END new Promise
+} // END waitOfInitStore
 
 function filterSubStore(fileNameArray, loadSubStore){
    return fileNameArray.filter(fileName => loadSubStore.some(name => fileName.includes(`${name}/`) ||
@@ -461,10 +455,23 @@ auto.testing = function testing(options){
 
 // Just calling genStore() without args, will load the complete store
 function genStore(webpackModules, subStoreToLoad, waitTime){
-  const limitStoreToLoad = 1 === arguments.length ? webpackModules.keys() : filterSubStore(webpackModules.keys(),subStoreToLoad)
-  const middleware = applyMiddleware( auto(webpackModules, limitStoreToLoad))
-  const store = createStore(combineReducers(reducers), middleware );
-  return waitOfInitStore(store,waitTime)
+  reset()
+  const webpackModulesKeys = webpackModules.keys()
+  const limitStoreToLoad = 1 === arguments.length ? webpackModulesKeys : filterSubStore(webpackModulesKeys,subStoreToLoad)
+  buildActionLayout(webpackModulesKeys);
+  const middleware = applyMiddleware( auto(webpackModules, limitStoreToLoad,{skipBuildActionLayout:true}))
+  const cbs = []  
+  const store = createStore(combineReducers(Object.assign({},
+                                                                    reducers,{
+      checkIfAllActions_init_fulfilled:(state,action)=>{
+        cbs.forEach(cb=> cb(action))
+        return null
+      }
+    })), middleware);
+  store.lesionForActions = (cb)=> {
+    cbs.push(cb)
+  }
+  return waitOfInitStore(store, waitTime,limitStoreToLoad);
 } // END genStore
 
 export default actionsBuilder;
