@@ -12,6 +12,23 @@ import { createStore, applyMiddleware, combineReducers } from 'redux'
 import   webpackModules   from './webpackModules';
 import actions, { auto, reducers, mergeReducers, after, filterSubStore, genStore } from '../index';
 
+import fsModules from './fsModules'
+
+jest.mock('fs',  ()=>({
+  lstatSync:(pathSt)=>({
+    isDirectory:()=>true
+  }),
+  readdirSync:(pathSt,optsOb)=>{
+    const name = "cats"
+    const fullPath = "./store"+"/"+name
+    if (pathSt === fullPath) {
+        return [name]
+    }
+    return [{ isDirectory:()=>true, name:"cats" }]
+  },
+}));
+jest.mock('path',()=>({join:(a,b)=>`${a}/${b}`,resolve:(path)=>path}));
+
 let middleware,store;
 
 function RefrashStore(reset = true){
@@ -21,6 +38,17 @@ function RefrashStore(reset = true){
   middleware = applyMiddleware( auto(webpackModules, webpackModules.keys()));
   store = createStore(combineReducers(reducers), middleware );
 }
+
+//=====================================================
+//====================================== utilities
+//=====================================================
+
+
+describe('utilities', () => {
+  it('should manually load from files-system', () => {
+    fsModules("./store")
+  })
+})
 
 //=====================================================
 //====================================== initialization
@@ -66,9 +94,24 @@ describe('initialization', () => {
       webpackModules.set(propName,actionName,"default",data => data );
       auto.reset();
       auto.testing({preOnly:true});
-      auto(webpackModules, webpackModules.keys())
+      const store = auto(webpackModules, webpackModules.keys())
     })
 
+//+++++++++++++++++++++++++ should set on React-Native
+//++++++++++++++++++ for reducers to ref at build time
+
+    it('should set on React-Native', () => {
+
+      const nativeStore = {
+        [propName]:{
+          [actionName]:{
+            index:()=>{}
+          }
+        }
+      }
+      const store = auto(nativeStore)
+    })
+    
 //+++++++++++ should have place holder action function
 //++++++++++++++++++ for reducers to ref at build time
 
