@@ -411,9 +411,10 @@ Object.assign(actionsBuilder,actionsImplementation);
 } // END of auto
 
 function waitOfInitStore(store, timeToWait,limitStoreToLoad) {
-
-  return new Promise((resolve, reject)=> {
   
+  limitStoreToLoad = limitStoreToLoad || Object.keys(store.getState())
+  return new Promise((resolve, reject)=> {
+  //console.log("Before limitStoreToLoad",limitStoreToLoad)
     let reducerWithInits = limitStoreToLoad.reduce((all,path)=>{
       const { actionName, reducerName } = names(path)
       if ("INIT" === actionName.toUpperCase()) {
@@ -422,16 +423,31 @@ function waitOfInitStore(store, timeToWait,limitStoreToLoad) {
       return all
     },[]) // END reduce
     
-        const timeout = setTimeout(()=>{
+  //console.log("After limitStoreToLoad",reducerWithInits)
+  let handleTimeOut = ()=>{}
+  if (timeToWait) {
+    //console.log(timeToWait)
+    const timeout = setTimeout(()=>{
           reject(new Error(`Store setup is taking to long! ${reducerWithInits.join()} init${reducerWithInits.length > 1 ? "s":""} did NOT complete`));
     },timeToWait);
+    handleTimeOut = ()=>{
+   // console.log("handleTimeOut")
+    clearTimeout(timeout)
+    }
+  }
+    
+    
     
     store.lesionForActions(({type})=>{
+      
+    
+  //console.log("IN lesionForActions",type)
       if(type.endsWith("INIT.FULFILLED")){
         reducerWithInits = reducerWithInits.filter(reducerWithInit => ! type.includes(`/${reducerWithInit}/`.toUpperCase()));
       }
+      //  console.log("reducerWithInits",reducerWithInits)
       if (0 === reducerWithInits.length) {
-          clearTimeout(timeout);
+          handleTimeOut();
           resolve(store);
       }
     }) // END store.lesionForActions
@@ -462,7 +478,7 @@ function genStore(webpackModules, subStoreToLoad, waitTime){
   const middleware = applyMiddleware( auto(webpackModules, limitStoreToLoad,{skipBuildActionLayout:true}))
   const cbs = []  
   const store = createStore(combineReducers(Object.assign({},
-                                                                    reducers,{
+    reducers,{
       checkIfAllActions_init_fulfilled:(state,action)=>{
         cbs.forEach(cb=> cb(action))
         return null
@@ -471,8 +487,11 @@ function genStore(webpackModules, subStoreToLoad, waitTime){
   store.lesionForActions = (cb)=> {
     cbs.push(cb)
   }
-  return waitOfInitStore(store, waitTime,limitStoreToLoad);
+  
+  const storeReadyPromise = waitOfInitStore(store, waitTime,limitStoreToLoad);
+        storeReadyPromise.store = store
+  return storeReadyPromise
 } // END genStore
 
 export default actionsBuilder;
-export { auto, mergeReducers, reducers, filterSubStore, waitOfInitStore, fsModules, genStore }
+export { auto, mergeReducers, reducers, filterSubStore, fsModules, genStore }

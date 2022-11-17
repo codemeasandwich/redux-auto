@@ -10,7 +10,7 @@ import faker from 'faker'
 import { createStore, applyMiddleware, combineReducers } from 'redux'
 
 import   webpackModules   from './webpackModules';
-import actions, { auto, reducers, mergeReducers, after, filterSubStore, waitOfInitStore } from '../index';
+import actions, { auto, reducers, mergeReducers, after, filterSubStore, genStore } from '../index';
 
 let middleware,store;
 
@@ -306,6 +306,7 @@ describe('initialization', () => {
       webpackModules.set(propName, "index", "default",(data={})=> data )
       
       webpackModules.set(propName, "init",  "default",(posts, payload, stage)=> {
+        //console.log(payload)
         expect(['PENDING','FULFILLED'].includes(stage)).toBe(true) // should call PENDING and FULFILLED
         if ('FULFILLED' === stage) {
           initComplete = true;
@@ -313,13 +314,19 @@ describe('initialization', () => {
         return posts;
       })
       webpackModules.set(propName, "init", "action", () => Promise.resolve(true))
-      RefrashStore();
+      const storeReadyPromise = genStore(webpackModules)
+            storeReadyPromise.then(storex => {
+                                    expect(storex).toBe(storeReadyPromise.store)
+                                    expect(initComplete).toBe(true)
+                                    done();
+                                   })
+      /*RefrashStore();
       waitOfInitStore(store,100) // wait... but the Promise.resolve should complete immediately
       .then(storex => {
         expect(storex).toBe(store)
         expect(initComplete).toBe(true)
         done();
-       })
+       })*/
     })
     
 //+++++ should provide a promise for when init is done
@@ -363,13 +370,134 @@ describe('initialization', () => {
       webpackModules.set(Cpn, "index", "default",(data={})=> data )
       webpackModules.set(Cpn, actionName, "default",(data={})=> data )
       
-      RefrashStore();
+      const storeReadyPromise = genStore(webpackModules)
+            storeReadyPromise.then(storex => {
+                                    expect(storex).toBe(storeReadyPromise.store)
+                                    expect(initCompleted).toHaveLength(2)
+                                    done();
+                                   })
+      /*RefrashStore();
       waitOfInitStore(store,1000) // wait... but the Promise.resolve should complete immediately
       .then(storex => {
         expect(storex).toBe(store)
         expect(initCompleted).toHaveLength(2)
         done();
-       })
+       })*/
+    })
+
+//+++++ should provide a promise when sub init is done
+//+++++++++++++++++++++++++++++++++++++++++++++ Muilti
+
+    it('should provide a promise when sub Muil-initialisation is complete', (done) => {
+
+      let initCompleted = [];
+      
+      const Apn = "A "+propName, // with init
+            Bpn = "B "+propName // with init
+            
+      webpackModules.set(Apn, "index", "default",(data={})=> data )
+      webpackModules.set(Apn, "init",  "default",(posts, payload, stage)=> {
+        expect(['PENDING','FULFILLED'].includes(stage)).toBe(true) // should call PENDING and FULFILLED
+        expect(initCompleted.includes("A")).not.toBe(true)
+        if ('FULFILLED' === stage) {
+          initCompleted.push("A");
+        }
+        return posts;
+      })
+      webpackModules.set(Apn, "init", "action", () => {
+        return new Promise(resolve => {
+          setTimeout(()=>resolve(true), Math.random()*50); // add a bit of spice
+        });
+      })
+            
+      webpackModules.set(Bpn, "index", "default",(data={})=> data )
+      webpackModules.set(Bpn, "init",  "default",(posts, payload, stage)=> {
+        expect(['PENDING','FULFILLED'].includes(stage)).toBe(true) // should call PENDING and FULFILLED
+        expect(initCompleted.includes("B")).not.toBe(true)
+        if ('FULFILLED' === stage) {
+          initCompleted.push("B");
+        }
+        return posts;
+      })
+      webpackModules.set(Bpn, "init", "action", () => Promise.resolve(true))
+      webpackModules.set(Bpn, actionName, "default",(data={})=> data )
+      
+      
+      const storeReadyPromise = genStore(webpackModules,[Apn])
+            storeReadyPromise.then(storex => {
+                                    expect(storex).toBe(storeReadyPromise.store)
+                                    expect(initCompleted).toHaveLength(1)
+                                    done();
+                                   })
+    })
+
+//+++++ should provide a promise when sub init is done
+//+++++++++++++++++++++++++++++++++++++++++++++ Muilti
+
+    it('should provide a promise when sub Muil-initialisation with time limit', (done) => {
+
+      let initCompleted = [];
+      
+      const Apn = "A "+propName, // with init
+            Cpn = "C "+propName; // with OUT init
+            
+      webpackModules.set(Apn, "index", "default",(data={})=> data )
+      webpackModules.set(Apn, "init",  "default",(posts, payload, stage)=> {
+        expect(['PENDING','FULFILLED'].includes(stage)).toBe(true) // should call PENDING and FULFILLED
+        expect(initCompleted.includes("A")).not.toBe(true)
+        if ('FULFILLED' === stage) {
+          initCompleted.push("A");
+        }
+        return posts;
+      })
+      webpackModules.set(Apn, "init", "action", () => {
+        return new Promise(resolve => {
+          setTimeout(()=>resolve(true), Math.random()*50); // add a bit of spice
+        });
+      })
+      
+      webpackModules.set(Cpn, "index", "default",(data={})=> data )
+      webpackModules.set(Cpn, actionName, "default",(data={})=> data )
+      
+      const storeReadyPromise = genStore(webpackModules,[Apn],1000)
+            storeReadyPromise.then(storex => {
+                                    expect(storex).toBe(storeReadyPromise.store)
+                                    expect(initCompleted).toHaveLength(1)
+                                    done();
+                                   })
+    })
+
+//+++++ should provide a promise when sub init is done
+//+++++++++++++++++++++++++++++++++++++++++++++ Muilti
+
+    it('should fail when sub Muil-initialisation hits time limit', (done) => {
+
+      let initCompleted = [];
+      
+      const Apn = "A "+propName, // with init
+            Bpn = "B "+propName, // with init
+            Cpn = "C "+propName; // with OUT init
+            
+      webpackModules.set(Apn, "index", "default",(data={})=> data )
+      webpackModules.set(Apn, "init",  "default",(posts, payload, stage)=> {
+        expect(['PENDING','FULFILLED'].includes(stage)).toBe(true) // should call PENDING and FULFILLED
+        expect(initCompleted.includes("A")).not.toBe(true)
+        if ('FULFILLED' === stage) {
+          initCompleted.push("A");
+        }
+        return posts;
+      })
+      webpackModules.set(Apn, "init", "action", () => {
+        return new Promise(resolve => {
+          setTimeout(()=>resolve(true), 100); // add a bit of spice
+        });
+      })
+      
+      const storeReadyPromise = genStore(webpackModules,[Apn],1)
+            storeReadyPromise.catch(err=>{
+              expect(err.message).toBe(`Store setup is taking to long! ${Apn} init did NOT complete`);
+              done()
+            })
     })
 })
 

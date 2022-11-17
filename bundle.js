@@ -598,8 +598,9 @@ function auto(modules, fileNameArray, settings) {
 
 function waitOfInitStore(store, timeToWait, limitStoreToLoad) {
 
+  limitStoreToLoad = limitStoreToLoad || Object.keys(store.getState());
   return new Promise(function (resolve, reject) {
-
+    //console.log("Before limitStoreToLoad",limitStoreToLoad)
     var reducerWithInits = limitStoreToLoad.reduce(function (all, path$$1) {
       var _names3 = names(path$$1),
           actionName = _names3.actionName,
@@ -611,20 +612,32 @@ function waitOfInitStore(store, timeToWait, limitStoreToLoad) {
       return all;
     }, []); // END reduce
 
-    var timeout = setTimeout(function () {
-      reject(new Error('Store setup is taking to long! ' + reducerWithInits.join() + ' init' + (reducerWithInits.length > 1 ? "s" : "") + ' did NOT complete'));
-    }, timeToWait);
+    //console.log("After limitStoreToLoad",reducerWithInits)
+    var handleTimeOut = function handleTimeOut() {};
+    if (timeToWait) {
+      //console.log(timeToWait)
+      var timeout = setTimeout(function () {
+        reject(new Error('Store setup is taking to long! ' + reducerWithInits.join() + ' init' + (reducerWithInits.length > 1 ? "s" : "") + ' did NOT complete'));
+      }, timeToWait);
+      handleTimeOut = function handleTimeOut() {
+        // console.log("handleTimeOut")
+        clearTimeout(timeout);
+      };
+    }
 
     store.lesionForActions(function (_ref2) {
       var type = _ref2.type;
 
+
+      //console.log("IN lesionForActions",type)
       if (type.endsWith("INIT.FULFILLED")) {
         reducerWithInits = reducerWithInits.filter(function (reducerWithInit) {
           return !type.includes(('/' + reducerWithInit + '/').toUpperCase());
         });
       }
+      //  console.log("reducerWithInits",reducerWithInits)
       if (0 === reducerWithInits.length) {
-        clearTimeout(timeout);
+        handleTimeOut();
         resolve(store);
       }
     }); // END store.lesionForActions
@@ -667,7 +680,10 @@ function genStore(webpackModules$$1, subStoreToLoad, waitTime) {
   store.lesionForActions = function (cb) {
     cbs.push(cb);
   };
-  return waitOfInitStore(store, waitTime, limitStoreToLoad);
+
+  var storeReadyPromise = waitOfInitStore(store, waitTime, limitStoreToLoad);
+  storeReadyPromise.store = store;
+  return storeReadyPromise;
 } // END genStore
 
 exports.default = actionsBuilder;
@@ -675,6 +691,5 @@ exports.auto = auto;
 exports.mergeReducers = mergeReducers;
 exports.reducers = reducers;
 exports.filterSubStore = filterSubStore;
-exports.waitOfInitStore = waitOfInitStore;
 exports.fsModules = nodeModules;
 exports.genStore = genStore;

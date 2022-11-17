@@ -24,10 +24,11 @@ I created this utility to allow you to get up and running with Redux in a fracti
 * No hardcoding actions types
 * No action creator or dispatcher to worry about
 * Easy Async for calling APIs
+* Server-side rendering - with all or partial store generation
 * Easy *initialize* for parts of your store
 * Easy install = works as the same as other redux middleware
 * Pure JS no external dependencies!
-* SuperSmall: under 3k (minify + gzip)
+* SuperSmall: 3k (minify + gzip)
 
 #### Have an existing project? No worries. Drop it in, to work along side the traditional redux way.
 
