@@ -169,7 +169,7 @@ const store = createStore(combineReducers(reducers), middleware );
 ...
 ```
 
-### Using along side an existing Redux setup.
+### Using along side an existing Redux setup
 
 ```JS
 ...
