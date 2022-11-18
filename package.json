@@ -17,6 +17,8 @@
   },
   "jest": {
     "browser": true,
+    "collectCoverage": true,
+    "coverageReporters": ["json", "html"],
     "testPathIgnorePatterns": [
       "<rootDir>/example/",
       "<rootDir>/node_modules/"
